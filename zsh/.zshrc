@@ -73,3 +73,8 @@ export PATH="$ANT_HOME/bin:$PATH"
 
 # Local overrides (machine specific or secrets)
 [ -f ~/.zshrc.local ] && source ~/.zshrc.local
+
+. "$HOME/.atuin/bin/env"
+
+eval "$(atuin init zsh)"
+eval "$(atuin init zsh)"
