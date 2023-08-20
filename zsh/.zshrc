@@ -52,7 +52,7 @@ alias ls="eza --icons=always -a"
 
 # Zoxide (better cd)
 eval "$(zoxide init zsh)"
-# alias cd="z"           # optional: you can uncomment this if you prefer cd → z
+alias cd="z"           # optional: you can uncomment this if you prefer cd → z
 
 # NVM (if installed via Homebrew or common path)
 export NVM_DIR="$HOME/.nvm"
@@ -77,3 +77,17 @@ export PATH="$ANT_HOME/bin:$PATH"
 . "$HOME/.atuin/bin/env"
 
 eval "$(atuin init zsh)"
+
+# Initialize zsh completion system
+autoload -Uz compinit
+compinit
+
+# Makefile target completion
+function _makefile_targets {
+    local -a targets
+    targets=($(command make -qp 2>/dev/null | awk -F':' '/^[a-zA-Z0-9][^$#\/\t=]*:([^=]|$)/ && !/^Makefile/ {split($1,A,/ /);for(i in A)print A[i]}' | sort -u))
+    compadd $targets
+}
+
+compdef _makefile_targets make
+
