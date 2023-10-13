@@ -8,7 +8,7 @@ local config = wezterm.config_builder()
 
 config.color_scheme = "nordfox"
 
-config.font = wezterm.font("JetBrainsMono Nerd Font")
+config.font = wezterm.font("JetBrainsMono Nerd Font Mono")
 config.font_size = 19
 
 config.enable_tab_bar = false
