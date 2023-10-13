@@ -6,7 +6,7 @@ local config = wezterm.config_builder()
 
 -- This is where you actually apply your config choices
 
-config.color_scheme = "nordfox"
+config.color_scheme = "OneDark (base16)"
 
 config.font = wezterm.font("JetBrainsMono Nerd Font Mono")
 config.font_size = 19
