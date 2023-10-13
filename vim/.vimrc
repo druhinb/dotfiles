@@ -96,9 +96,7 @@ let g:airline#extensions#hunks#enabled = 1
 let g:airline#extensions#whitespace#enabled = 1
 let g:airline#extensions#whitespace#mixed_indent_algo = 2
 " keep right edge compact
-let g:airline_section_z = ''
-let g:airline_section_y = '%3p%%  %l:%c'
-let g:airline_section_x = ''
+let g:airline_section_z = '%3p%% | %l:%c'
 
 " =======================
 " fzf search
@@ -141,11 +139,11 @@ nnoremap <leader>gP :G push<CR>
 nnoremap <leader>go :Gbrowse<CR>
 
 " fzf powered git pickers
-nnoremap <leader>g? :GFiles?<CR>      " modified and untracked
-nnoremap <leader>gf :GFiles<CR>       " tracked files
-nnoremap <leader>gl :Commits<CR>      " repo commits with preview
-nnoremap <leader>gL :BCommits<CR>     " buffer commits with preview
-nnoremap <leader>gt :BTags<CR>        " tags in current buffer
+nnoremap <leader>g? :GFiles?<CR>     
+nnoremap <leader>gf :GFiles<CR>     
+nnoremap <leader>gl :Commits<CR>   
+nnoremap <leader>gL :BCommits<CR> 
+nnoremap <leader>gt :BTags<CR>   
 
 " commit browser
 nnoremap <leader>gv :GV<CR>
