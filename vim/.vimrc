@@ -50,8 +50,9 @@ nnoremap <M-k> :m .-2<CR>==
 " =======================
 call plug#begin()
 
+"Plug 'edkolev/tmuxline.vim'
 Plug 'liuchengxu/vim-which-key'
-Plug 'joshdick/onedark.vim'
+Plug 'sainnhe/everforest'
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 Plug 'ryanoasis/vim-devicons'
@@ -75,9 +76,13 @@ call plug#end()
 " Theme and Airline
 " =======================
 syntax on 
-colorscheme onedark
+
+set background=dark
+let g:everforest_background = 'hard'
+colorscheme everforest
+
 let g:airline_powerline_fonts = 1
-let g:airline_theme = 'onedark'
+let g:airline_theme = 'everforest'
 let g:airline_left_sep  = ''
 let g:airline_left_alt_sep = ''
 let g:airline_right_sep = ''
