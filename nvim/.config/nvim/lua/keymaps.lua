@@ -56,6 +56,9 @@ vim.keymap.set('n', '<leader>x', '<cmd>close<CR>', { desc = 'Close split' })
 vim.keymap.set('n', '<M-j>', '<cmd>m .+1<CR>==', { desc = 'Move line down' })
 vim.keymap.set('n', '<M-k>', '<cmd>m .-2<CR>==', { desc = 'Move line up' })
 
+-- Switch to the last buffer (alternate file)
+vim.keymap.set('n', '<leader>p', '<C-^>', { desc = 'Switch to [P]revious buffer' })
+
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 

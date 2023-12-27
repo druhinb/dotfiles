@@ -33,6 +33,12 @@ return {
     vim.keymap.set('n', '<leader>4', function()
       harpoon:list():select(4)
     end, { desc = 'Harpoon to File 4' })
+    vim.keymap.set('n', '<leader>5', function()
+      harpoon:list():select(5)
+    end, { desc = 'Harpoon to File 5' })
+    vim.keymap.set('n', '<leader>6', function()
+      harpoon:list():select(6)
+    end, { desc = 'Harpoon to File 6' })
 
     -- Toggle previous & next buffers stored within Harpoon list
     vim.keymap.set('n', '<C-S-P>', function()
