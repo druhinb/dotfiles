@@ -30,9 +30,11 @@ mkdir -p "$(dirname "$HISTFILE")"
 SAVEHIST=1000
 HISTSIZE=999
 setopt share_history hist_expire_dups_first hist_ignore_dups hist_verify
+autoload -Uz up-line-or-history down-line-or-history history-search-backward history-search-forward
 
-bindkey '^[[A' history-search-backward
-bindkey '^[[B' history-search-forward
+bindkey '[[A' history-search-backward
+bindkey ']]B' history-search-forward
+
 
 # Source autosuggestions and syntax highlighting if present
 if [ -r /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]; then
