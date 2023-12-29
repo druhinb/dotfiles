@@ -9,7 +9,7 @@ return {
     vim.keymap.set('n', '<leader>gs', vim.cmd.Git, { desc = '[G]it [S]tatus' })
 
     -- Keymap for git blame
-    vim.keymap.set('n', '<leader>gb', function()
+    vim.keymap.set('n', '<leader>gB', function()
       vim.cmd.Git 'blame'
     end, { desc = '[G]it [B]lame' })
 
