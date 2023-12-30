@@ -54,9 +54,10 @@ return {
             'filetype',
           },
           lualine_y = { 'progress' },
-          tabline = {
-            lualine_z = { 'tabs' },
-          },
+          lualine_z = { 'location' },
+        },
+        tabline = {
+          lualine_z = { 'tabs' },
         },
       }
     end,
