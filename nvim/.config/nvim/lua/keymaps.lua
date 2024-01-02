@@ -32,8 +32,8 @@ vim.keymap.set('n', '<down>', '<cmd>echo "Use j to move!!"<CR>')
 -- vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
 -- Split windows like tmux
-vim.keymap.set('n', '|', '<cmd>vsplit<CR>', { desc = 'Vertical Split' })
-vim.keymap.set('n', '-', '<cmd>split<CR>', { desc = 'Horizontal Split' })
+vim.keymap.set('n', '<leader>|', '<cmd>vsplit<CR>', { desc = 'Vertical Split' })
+vim.keymap.set('n', '<leader>-', '<cmd>split<CR>', { desc = 'Horizontal Split' })
 
 -- Resize windows
 vim.keymap.set('n', '<leader>j', '<cmd>resize -5<CR>', { desc = 'Resize window down' })
@@ -59,7 +59,6 @@ vim.keymap.set('n', '<M-k>', '<cmd>m .-2<CR>==', { desc = 'Move line up' })
 -- Navigate through buffers
 vim.keymap.set('n', '<leader>p', '<cmd>bprevious<CR>', { desc = 'Previous buffer' })
 vim.keymap.set('n', '<leader>n', '<cmd>bnext<CR>', { desc = 'Next buffer' })
-
 
 -- Git Blame
 vim.keymap.set('n', '<leader>gb', '<cmd>Gitsigns blame_line<CR>', { desc = 'Toggle Git Blame' })
