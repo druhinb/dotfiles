@@ -4,14 +4,14 @@ return {
     -- change the command in the config to whatever the name of that colorscheme is.
     --
     -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
-    'neanias/everforest-nvim',
+    'navarasu/onedark.nvim',
     priority = 1000, -- Make sure to load this before all the other start plugins.
     config = function()
-      require('everforest').setup {
-        background = 'hard',
+      require('onedark').setup {
+        background = 'darker',
       }
-      vim.o.background = 'dark'
-      vim.cmd.colorscheme 'everforest'
+      require('onedark').load()
+      vim.cmd.colorscheme 'onedark'
     end,
   },
 }
