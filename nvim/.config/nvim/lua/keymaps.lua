@@ -37,7 +37,7 @@ vim.keymap.set('n', '<leader>h', '<cmd>vertical resize -5<CR>', { desc = 'Resize
 -- vim.keymap.set("n", "<C-S-k>", "<C-w>K", { desc = "Move window to the upper" })
 
 -- User defined keymaps
-vim.keymap.set('n', '<leader>w', '<cmd>w<CR>', { desc = 'Save buffer' })
+vim.keymap.set('n', '<leader>ww', '<cmd>w<CR>', { desc = 'Save buffer' })
 -- Removed conflicting <leader>q and <leader>x mappings to allow plugins to use them.
 -- Replaced with <leader>wc for closing split (Window Close)
 vim.keymap.set('n', '<leader>wc', '<cmd>close<CR>', { desc = '[W]indow [C]lose split' })
@@ -113,4 +113,3 @@ vim.api.nvim_create_autocmd('TextYankPost', {
 })
 
 -- vim: ts=2 sts=2 sw=2 et
-

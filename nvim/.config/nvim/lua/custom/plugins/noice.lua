@@ -28,6 +28,7 @@ return {
       mini = {
         position = {
           row = -2,
+          col = 0,
         },
         border = {
           style = "none",
