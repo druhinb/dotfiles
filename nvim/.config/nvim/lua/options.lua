@@ -26,6 +26,9 @@ end)
 -- Enable break indent
 vim.o.breakindent = true
 
+-- Set internal shell to zsh
+vim.o.shell = '/bin/zsh'
+
 -- Save undo history
 vim.o.undofile = true
 
@@ -49,7 +52,7 @@ vim.o.splitbelow = true
 -- Sets how neovim will display certain whitespace characters in the editor.
 --  See `:help 'list'`
 --  and `:help 'listchars'`
---
+--it
 --  Notice listchars is set using `vim.opt` instead of `vim.o`.
 --  It is very similar to `vim.o` but offers an interface for conveniently interacting with tables.
 --   See `:help lua-options`
