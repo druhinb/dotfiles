@@ -38,19 +38,37 @@ vim.keymap.set('n', '<leader>h', '<cmd>vertical resize -5<CR>', { desc = 'Resize
 
 -- User defined keymaps
 vim.keymap.set('n', '<leader>w', '<cmd>w<CR>', { desc = 'Save buffer' })
-vim.keymap.set('n', '<leader>q', '<cmd>q<CR>', { desc = 'Quit buffer' })
-vim.keymap.set('n', '<leader>x', '<cmd>close<CR>', { desc = 'Close split' })
+-- Removed conflicting <leader>q and <leader>x mappings to allow plugins to use them.
+-- Replaced with <leader>wc for closing split (Window Close)
+vim.keymap.set('n', '<leader>wc', '<cmd>close<CR>', { desc = '[W]indow [C]lose split' })
 
 -- Move lines up and down
 vim.keymap.set('n', '<M-j>', '<cmd>m .+1<CR>==', { desc = 'Move line down' })
 vim.keymap.set('n', '<M-k>', '<cmd>m .-2<CR>==', { desc = 'Move line up' })
 
 -- Navigate through buffers
-vim.keymap.set('n', '<leader>p', '<cmd>bprevious<CR>', { desc = 'Previous buffer' })
-vim.keymap.set('n', '<leader>n', '<cmd>bnext<CR>', { desc = 'Next buffer' })
+-- Removed <leader>p and <leader>n to avoid conflicts with Neogen/others and reduce clutter.
+-- Use <S-h> and <S-l> instead.
+vim.keymap.set('n', '<S-h>', '<cmd>bprevious<CR>', { desc = 'Previous buffer' })
+vim.keymap.set('n', '<S-l>', '<cmd>bnext<CR>', { desc = 'Next buffer' })
 
 -- Git Blame
-vim.keymap.set('n', '<leader>gb', '<cmd>Gitsigns blame_line<CR>', { desc = 'Toggle Git Blame' })
+vim.keymap.set('n', '<leader>tb', '<cmd>Gitsigns blame_line<CR>', { desc = '[T]oggle Git [B]lame' })
+
+vim.keymap.set({ 'n', 'v' }, '<Space>', '<Nop>', { silent = true })
+
+-- Remap for dealing with word wrap
+vim.keymap.set('n', 'k', "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
+vim.keymap.set('n', 'j', "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
+
+-- Diagnostic keymaps
+vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous [D]iagnostic message' })
+vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next [D]iagnostic message' })
+vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Show diagnostic [E]rror messages' })
+
+-- Map [[ and ]]
+vim.keymap.set('n', '[[', '[[', { desc = 'Previous Section' })
+vim.keymap.set('n', ']]', ']]', { desc = 'Next Section' })
 
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
