@@ -46,11 +46,35 @@ vim.keymap.set('n', '<leader>wc', '<cmd>close<CR>', { desc = '[W]indow [C]lose s
 vim.keymap.set('n', '<M-j>', '<cmd>m .+1<CR>==', { desc = 'Move line down' })
 vim.keymap.set('n', '<M-k>', '<cmd>m .-2<CR>==', { desc = 'Move line up' })
 
--- Navigate through buffers
--- Removed <leader>p and <leader>n to avoid conflicts with Neogen/others and reduce clutter.
--- Use <S-h> and <S-l> instead.
-vim.keymap.set('n', '<S-h>', '<cmd>bprevious<CR>', { desc = 'Previous buffer' })
-vim.keymap.set('n', '<S-l>', '<cmd>bnext<CR>', { desc = 'Next buffer' })
+-- Navigate through buffers (Non-cyclic)
+local function buffer_navigate(direction)
+  local buffers = vim.tbl_filter(function(b)
+    return vim.api.nvim_buf_is_valid(b) and vim.bo[b].buflisted
+  end, vim.api.nvim_list_bufs())
+
+  local current = vim.api.nvim_get_current_buf()
+  for i, buf in ipairs(buffers) do
+    if buf == current then
+      if direction == 'next' then
+        if i < #buffers then
+          vim.api.nvim_set_current_buf(buffers[i + 1])
+        end
+      elseif direction == 'prev' then
+        if i > 1 then
+          vim.api.nvim_set_current_buf(buffers[i - 1])
+        end
+      end
+      return
+    end
+  end
+end
+
+vim.keymap.set('n', '<S-h>', function()
+  buffer_navigate 'prev'
+end, { desc = 'Previous buffer' })
+vim.keymap.set('n', '<S-l>', function()
+  buffer_navigate 'next'
+end, { desc = 'Next buffer' })
 
 -- Git Blame
 vim.keymap.set('n', '<leader>tb', '<cmd>Gitsigns blame_line<CR>', { desc = '[T]oggle Git [B]lame' })
@@ -71,8 +95,8 @@ vim.keymap.set('n', '[[', '[[', { desc = 'Previous Section' })
 vim.keymap.set('n', ']]', ']]', { desc = 'Next Section' })
 
 -- Better indenting
-vim.keymap.set("v", "<", "<gv")
-vim.keymap.set("v", ">", ">gv")
+vim.keymap.set('v', '<', '<gv')
+vim.keymap.set('v', '>', '>gv')
 
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
@@ -89,3 +113,4 @@ vim.api.nvim_create_autocmd('TextYankPost', {
 })
 
 -- vim: ts=2 sts=2 sw=2 et
+
