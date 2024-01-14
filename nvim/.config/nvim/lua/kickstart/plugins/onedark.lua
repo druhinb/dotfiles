@@ -9,6 +9,7 @@ return {
     config = function()
       require('onedark').setup {
         background = 'darker',
+        term_colors = true,
       }
       require('onedark').load()
       vim.cmd.colorscheme 'onedark'
