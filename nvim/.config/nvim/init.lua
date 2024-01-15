@@ -108,10 +108,17 @@ require 'lazy-bootstrap'
 require 'lazy-plugins'
 
 -- Enable autoread and set up checking triggers
+-- This allows neovim to detect changes in files made by other programs (like git, CLI tools)
+-- 'checktime' checks for these changes.
 vim.o.autoread = true
-vim.api.nvim_create_autocmd({ 'FocusGained', 'BufEnter' }, {
-  command = "if mode() != 'c' | checktime | endif",
+vim.api.nvim_create_autocmd({ 'FocusGained', 'BufEnter', 'CursorHold', 'CursorHoldI' }, {
+  group = vim.api.nvim_create_augroup('kickstart-autoread', { clear = true }),
   pattern = '*',
+  callback = function()
+    if vim.fn.mode() ~= 'c' then
+      vim.cmd 'checktime'
+    end
+  end,
 })
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
