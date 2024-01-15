@@ -1,0 +1,155 @@
+"""
+""" IdeaVim Configuration
+""" Synthesized from Neovim config and "The Ultimate IdeaVim Setup"
+"""
+
+""" -------------------------------------------------------------------------
+""" General Settings (Matching lua/options.lua)
+""" -------------------------------------------------------------------------
+let mapleader=" "
+
+set number
+set relativenumber
+set scrolloff=10
+set showmode
+set history=1000
+set visualbell
+set noerrorbells
+
+" Clipboard (Sync with OS)
+set clipboard+=unnamed
+
+" Search
+set incsearch
+set hlsearch
+set ignorecase
+set smartcase
+
+" Editor
+set cursorline
+set ideajoin
+set idearefactormode=keep
+
+""" -------------------------------------------------------------------------
+""" Plugins (Matching Lazy plugins & Ultimate Setup recommendations)
+""" -------------------------------------------------------------------------
+" Surround (Like mini.surround / vim-surround)
+set surround
+
+" Multiple Cursors (Essential for power users)
+set multiple-cursors
+
+" Commentary (Like mini.comment / vim-commentary)
+set commentary
+
+" Highlight Yank (Like kickstart-highlight-yank)
+set highlightedyank
+
+" EasyMotion / AceJump (Fast navigation)
+set easymotion
+
+" ArgWrap (Optional but useful)
+set argtextobj
+
+" Text objects for indentation
+set textobj-indent
+
+" NERDTree support (Project View navigation)
+set nerdtree
+
+""" -------------------------------------------------------------------------
+""" Keymaps (Matching lua/keymaps.lua)
+""" -------------------------------------------------------------------------
+
+" Clear search highlights
+nnoremap <Esc> :nohlsearch<CR>
+
+" Window Splitting (Like tmux/kickstart)
+nnoremap <leader>| :action SplitVertically<CR>
+nnoremap <leader>- :action SplitHorizontally<CR>
+
+" Navigate popups/lists with Ctrl+j/k (Insert & Normal Mode)
+inoremap <C-j> <Down>
+inoremap <C-k> <Up>
+nnoremap <C-j> <Down>
+nnoremap <C-k> <Up>
+
+" Window Navigation
+nnoremap <C-h> <C-w>h
+nnoremap <C-l> <C-w>l
+
+" Window Resizing (Approximation of smart_resize)
+nnoremap <leader>h :action StretchSplitToLeft<CR>
+nnoremap <leader>j :action StretchSplitToBottom<CR>
+nnoremap <leader>k :action StretchSplitToTop<CR>
+nnoremap <leader>l :action StretchSplitToRight<CR>
+
+
+" Buffer/Tab Navigation
+nnoremap <S-h> :action PreviousTab<CR>
+nnoremap <S-l> :action NextTab<CR>
+nnoremap <leader>b :action RecentFiles<CR>
+
+" Move Lines (Using IntelliJ actions for better stability)
+nnoremap <M-j> :action MoveLineDown<CR>
+nnoremap <M-k> :action MoveLineUp<CR>
+vnoremap <M-j> :action MoveLineDown<CR>
+vnoremap <M-k> :action MoveLineUp<CR>
+
+" Indenting (Keep selection)
+vnoremap < <gv
+vnoremap > >gv
+
+" Method Navigation
+nnoremap [[ :action MethodUp<CR>
+nnoremap ]] :action MethodDown<CR>
+
+" Diagnostics
+nnoremap [d :action GotoPreviousError<CR>
+nnoremap ]d :action GotoNextError<CR>
+nnoremap <leader>e :action ShowErrorDescription<CR>
+
+" File/Project Navigation (Matching Telescope/FZF habits)
+nnoremap <leader>sf :action GotoFile<CR>
+nnoremap <leader>sg :action FindInPath<CR>
+nnoremap <leader>sh :action RecentLocations<CR>
+nnoremap <leader>? :action FindAction<CR>
+nnoremap <leader><space> :action GotoFile<CR>
+
+" Class/Symbol Navigation
+nnoremap gc :action GotoClass<CR>
+nnoremap <leader>ss :action GotoSymbol<CR>
+
+" Git (Matching gitsigns)
+nnoremap <leader>tb :action Annotate<CR>
+
+" Save and Close
+nnoremap <leader>ww :w<CR>
+nnoremap <leader>x :action CloseContent<CR>
+nnoremap <leader>q :action CloseContent<CR>
+
+" Tool Window Management
+nnoremap <leader>x :action HideActiveWindow<CR>
+nnoremap <leader>X :action HideAllWindows<CR>
+
+""" -------------------------------------------------------------------------
+""" Extra "Ultimate Setup" Goodies
+""" -------------------------------------------------------------------------
+
+" Project View (NerdTree toggle)
+nnoremap <leader>op :action ActivateProjectToolWindow<CR>
+
+" Refactoring
+nnoremap <leader>rn :action RenameElement<CR>
+
+" Code Actions
+nnoremap <leader>ca :action ShowIntentionActions<CR>
+
+" Go to definition/implementation
+nnoremap gd :action GotoDeclaration<CR>
+nnoremap gi :action GotoImplementation<CR>
+nnoremap gr :action ShowUsages<CR>
+
+" Reload IdeaVim config
+nnoremap <leader>vr :source ~/.ideavimrc<CR>
+
