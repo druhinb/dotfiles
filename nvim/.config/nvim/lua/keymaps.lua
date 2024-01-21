@@ -29,7 +29,9 @@ vim.keymap.set('n', '<C-u>', '<C-u>zz', { desc = 'Scroll down 1/2 page' })
 --  e.g. <leader>l will move the window separator to the right.
 local function smart_resize(direction)
   local current_win = vim.api.nvim_get_current_win()
-  local step = 5
+  local count = vim.v.count
+  local default_step = 4
+  local step = count > 0 and (count * default_step) or default_step
 
   -- Helper to check if there is a window in a direction
   local function has_neighbor(dir)
