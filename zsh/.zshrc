@@ -49,6 +49,7 @@ elif [ -r /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]; then
   source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 fi
 
+alias cat="bat"
 # Eza alias (better ls)
 alias ls="eza --icons=always -a"
 
@@ -67,11 +68,9 @@ if [ -s "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm" ]; then
   . "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"
 fi
 
-# The Fuck aliases (deduplicated)
 eval "$(thefuck --alias fk)"
 eval "$(thefuck --alias oops)"
 
-# Apache Ant custom path (if you need it)
 export ANT_HOME="$HOME/opt/apache-ant-1.10.15"
 export PATH="$ANT_HOME/bin:$PATH"
 
