@@ -1,0 +1,200 @@
+# Starship configuration to mimic Powerlevel10k "Lean" style
+# See https://starship.rs/config/
+
+add_newline = true
+
+# Left Prompt (Line 1)
+# format = ... (defined below)
+
+# Right Prompt (Line 1)
+right_format = """
+$status\
+$cmd_duration\
+$jobs\
+$direnv\
+$python\
+$conda\
+$nodejs\
+$bun\
+$deno\
+$golang\
+$rust\
+$php\
+$java\
+$ruby\
+$terraform\
+$aws\
+$gcloud\
+$azure\
+$kubernetes\
+$docker_context\
+$time\
+$username\
+$hostname\
+
+"""
+
+# Line 2 (Prompt Character)
+format = """
+$os\
+$directory\
+$git_branch\
+$git_status\
+$line_break\
+$character"""
+
+[os]
+disabled = false
+style = "bold white"
+
+[os.symbols]
+Macos = " "
+Ubuntu = " "
+Windows = " "
+Linux = " "
+
+[directory]
+style = "blue"
+truncation_length = 4
+truncate_to_repo = false
+truncation_symbol = "…/"
+read_only = " 🔒"
+
+[git_branch]
+symbol = " "
+style = "purple"
+
+[git_status]
+style = "red"
+conflicted = "=${count}"
+ahead = "⇡${count}"
+behind = "⇣${count}"
+diverged = "⇕⇡${ahead_count}⇣${behind_count}"
+untracked = "?${count}"
+stashed = "*${count}"
+modified = "!${count}"
+staged = "+${count}"
+renamed = "»${count}"
+deleted = "✘${count}"
+
+[cmd_duration]
+min_time = 2000
+style = "yellow"
+format = "took [$duration]($style) "
+
+[status]
+disabled = false
+style = "red"
+symbol = " "
+format = "[$symbol$status]($style) "
+
+[jobs]
+symbol = " "
+style = "blue"
+number_threshold = 1
+format = "[$symbol$number]($style) "
+
+[character]
+success_symbol = "[❯](bold green)"
+error_symbol = "[❯](bold red)"
+vimcmd_symbol = "[❮](bold green)"
+
+# --- Languages & Tools ---
+
+[python]
+symbol = " "
+style = "yellow"
+format = "via [${symbol}${pyenv_prefix}(${version})(\\($virtualenv\\))]($style) "
+
+[nodejs]
+symbol = " "
+style = "green"
+format = "via [${symbol}(${version})]($style) "
+
+[bun]
+symbol = " "
+style = "red"
+format = "via [${symbol}(${version})]($style) "
+
+[deno]
+symbol = " "
+style = "green"
+format = "via [${symbol}(${version})]($style) "
+
+[golang]
+symbol = " "
+style = "cyan"
+format = "via [${symbol}(${version})]($style) "
+
+[rust]
+symbol = " "
+style = "red"
+format = "via [${symbol}(${version})]($style) "
+
+[php]
+symbol = " "
+style = "blue"
+format = "via [${symbol}(${version})]($style) "
+
+[java]
+symbol = " "
+style = "red"
+format = "via [${symbol}(${version})]($style) "
+
+[ruby]
+symbol = " "
+style = "red"
+format = "via [${symbol}(${version})]($style) "
+
+[terraform]
+symbol = "󱁢 "
+style = "purple"
+format = "via [${symbol}${workspace}]($style) "
+
+[aws]
+symbol = "  "
+style = "yellow"
+format = "on [$symbol($profile )(\\($region\\) )]($style)"
+
+[gcloud]
+symbol = " "
+style = "blue"
+format = "on [$symbol$account(@$domain)(\\($project\\))]($style) "
+
+[azure]
+symbol = " "
+style = "blue"
+format = "on [$symbol($subscription)]($style) "
+
+[kubernetes]
+symbol = "󱃾 "
+style = "blue"
+format = "at [$symbol$context( \\($namespace\\))]($style) "
+
+[docker_context]
+symbol = " "
+style = "blue"
+format = "at [$symbol$context]($style) "
+
+[username]
+style_user = "white bold"
+style_root = "black bold"
+format = "[$user]($style) "
+disabled = false
+show_always = true
+
+[hostname]
+ssh_only = true
+format = "on [$hostname](bold red) "
+trim_at = "."
+disabled = false
+
+[conda]
+symbol = " "
+style = "green"
+format = "via [${symbol}${environment}]($style) "
+
+[time]
+disabled = false
+style = "bold yellow"
+format = "at [$time]($style) "
