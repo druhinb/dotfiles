@@ -117,3 +117,6 @@ compdef _makefile_targets make
 
 bindkey -v
 export keytimeout=1
+
+bindkey -M viins '^Y' autosuggest-accept
+bindkey '^Y' autosuggest-accept
