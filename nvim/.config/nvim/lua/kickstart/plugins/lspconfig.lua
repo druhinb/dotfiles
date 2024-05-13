@@ -145,6 +145,11 @@ return {
             }
           end, '[O]rganize [I]mports')
 
+          -- Toggle diagnostics
+          map('<leader>td', function()
+            vim.diagnostic.enable(not vim.diagnostic.is_enabled())
+          end, '[T]oggle [D]iagnostics')
+
           -- This function resolves a difference between neovim nightly (version 0.11) and stable (version 0.10)
           ---@param client vim.lsp.Client
           ---@param method vim.lsp.protocol.Method
