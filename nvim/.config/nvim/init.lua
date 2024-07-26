@@ -120,5 +120,36 @@ vim.api.nvim_create_autocmd({ 'FocusGained', 'BufEnter', 'CursorHold', 'CursorHo
     end
   end,
 })
+
+vim.api.nvim_create_user_command('ClangdFix', function()
+  local scan = require 'plenary.scandir' -- Requires 'nvim-lua/plenary.nvim'
+  local path = require 'plenary.path'
+
+  -- 1. Find all folders containing .h files
+  local dirs = scan.scan_dir('.', {
+    hidden = false,
+    only_dirs = true,
+    respect_gitignore = true,
+  })
+
+  local flags = { '-Wall', '-Wextra', '-I.' } -- Default flags
+  local identified_paths = {}
+
+  -- 2. Add found directories to flags
+  for _, dir in pairs(dirs) do
+    local has_header = scan.scan_dir(dir, { depth = 1, search_pattern = '.*%.h$' })
+    if #has_header > 0 then
+      table.insert(flags, '-I' .. dir)
+    end
+  end
+
+  -- 3. Write to compile_flags.txt
+  local file = path:new 'compile_flags.txt'
+  file:write(table.concat(flags, '\n'), 'w')
+
+  print('Generated compile_flags.txt with ' .. #flags .. ' flags! Restarting LSP...')
+  vim.cmd 'LspRestart clangd'
+end, {})
+
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
