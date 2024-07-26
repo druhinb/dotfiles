@@ -273,7 +273,7 @@ records = true
 ## Boolean, true or false. If unset, left up to the theme manager.
 # debug = true
 
-[search]
+##[search]
 ## The list of enabled filter modes, in order of priority.
 ## The "workspace" mode is skipped when not in a workspace or workspaces = false.
 ## Default filter mode can be overridden with the filter_mode setting.
@@ -281,5 +281,3 @@ records = true
 
 [keymap]
 cursor = { down = "ctrl-j", up = "ctrl-k" }
-secrets_filter = true
-history_filter = ["^ls", "^cd", "^clear", "^exit"]

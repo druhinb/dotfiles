@@ -63,6 +63,7 @@ setopt share_history hist_expire_dups_first hist_ignore_dups hist_verify
 alias cat="bat"
 alias ls="eza --icons=always -a"
 alias gs="git status"
+alias download='f(){aria2c -x16 -s16 $1};f'
 # cd is handled by zoxide below
 
 # Zoxide
