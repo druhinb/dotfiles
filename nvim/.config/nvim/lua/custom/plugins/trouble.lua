@@ -20,7 +20,9 @@ return {
 
     -- Default window configuration
     win = {
-      size = { width = 0.4 },
+      type = 'split',
+      position = 'bottom',
+      size = 0.3,
     },
 
     -- ===========================================================================
@@ -76,8 +78,9 @@ return {
         desc = 'Document Symbols',
         mode = 'lsp_document_symbols',
         win = {
+          type = 'split',
           position = 'right',
-          size = { width = 0.35 },
+          size = 0.35,
         },
         focus = false,
         filter = {
@@ -112,8 +115,9 @@ return {
         mode = 'lsp_references',
         focus = true,
         win = {
+          type = 'split',
           position = 'bottom',
-          size = { height = 0.3 },
+          size = 0.3,
         },
         params = {
           include_declaration = true,
@@ -125,8 +129,9 @@ return {
         desc = 'LSP Definitions / References / ...',
         mode = 'lsp',
         win = {
+          type = 'split',
           position = 'right',
-          size = { width = 0.4 },
+          size = 0.4,
         },
         focus = false,
       },
@@ -210,24 +215,6 @@ return {
           end
         end
       end,
-      desc = 'Next Trouble/Quickfix Item',
-    },
-
-    -- ===========================================================================
-    -- Legacy keymaps (for compatibility)
-    -- ===========================================================================
-    {
-      '<leader>dL',
-      '<cmd>Trouble diagnostics toggle<cr>',
-      desc = 'Project Diagnostics (Trouble)',
-    },
-    {
-      '<leader>dl',
-      '<cmd>Trouble diagnostics toggle filter.buf=0<cr>',
-      desc = 'Buffer Diagnostics (Trouble)',
-    },
-    {
-      '<leader>cl',
       '<cmd>Trouble lsp toggle focus=false win.position=right<cr>',
       desc = 'LSP Definitions/References (Trouble)',
     },

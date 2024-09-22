@@ -500,7 +500,7 @@ local function on_attach(event)
 
   -- Code lens
   if client_supports_method(client, vim.lsp.protocol.Methods.textDocument_codeLens, event.buf) then
-    vim.keymap.set('n', '<leader>cl', vim.lsp.codelens.run, { buffer = event.buf, desc = 'LSP: Run Code Lens' })
+    vim.keymap.set('n', '<leader>cL', vim.lsp.codelens.run, { buffer = event.buf, desc = 'LSP: Run Code Lens' })
     vim.api.nvim_create_autocmd({ 'BufEnter', 'CursorHold', 'InsertLeave' }, {
       buffer = event.buf,
       callback = vim.lsp.codelens.refresh,

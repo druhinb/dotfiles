@@ -24,20 +24,20 @@ return {
 
     -- Keymaps
     -- Run the test under the cursor
-    vim.keymap.set('n', '<leader>tr', function()
+    vim.keymap.set('n', '<leader>xnr', function()
       require('neotest').run.run()
-    end, { desc = '[T]est [R]un' })
+    end, { desc = 'Test Run' })
     -- Run the current file
-    vim.keymap.set('n', '<leader>tf', function()
+    vim.keymap.set('n', '<leader>xnf', function()
       require('neotest').run.run(vim.fn.expand '%')
-    end, { desc = '[T]est [F]ile' })
+    end, { desc = 'Test File' })
     -- Open the output window
-    vim.keymap.set('n', '<leader>to', function()
+    vim.keymap.set('n', '<leader>xno', function()
       require('neotest').output.open { enter = true }
-    end, { desc = '[T]est [O]utput' })
+    end, { desc = 'Test Output' })
     -- Open the summary window
-    vim.keymap.set('n', '<leader>ts', function()
+    vim.keymap.set('n', '<leader>xns', function()
       require('neotest').summary.toggle()
-    end, { desc = '[T]est [S]ummary' })
+    end, { desc = 'Test Summary' })
   end,
 }

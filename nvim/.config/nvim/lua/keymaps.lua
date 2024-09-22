@@ -1,36 +1,83 @@
--- [[ Basic Keymaps ]]
---  See `:help vim.keymap.set()`
+-- ============================================================================
+-- Global Keymaps - LazyVim Style
+-- General editor keymaps (not plugin-specific)
+-- Plugin-specific keymaps should be in their respective plugin specs
+-- ============================================================================
 
--- Clear highlights on search when pressing <Esc> in normal mode
---  See `:help hlsearch`
-vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
+local map = vim.keymap.set
 
--- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
--- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
--- is not what someone will guess without a bit more experience.
---
--- NOTE: This won't work in all terminal emulators/tmux/etc. Try your own mapping
--- or just use <C-\><C-n> to exit terminal mode
-vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
+-- ════════════════════════════════════════════════════════════════════════════
+-- General Editor
+-- ════════════════════════════════════════════════════════════════════════════
 
--- Split windows like tmux
-vim.keymap.set('n', '<leader>|', '<cmd>vsplit<CR>', { desc = 'Vertical Split' })
-vim.keymap.set('n', '<leader>-', '<cmd>split<CR>', { desc = 'Horizontal Split' })
+-- Clear search highlights with <Esc>
+map('n', '<Esc>', '<cmd>nohlsearch<CR>', { desc = 'Clear highlights' })
 
--- Better half-page scrolling
-vim.keymap.set('n', '<C-d>', '<C-d>zz', { desc = 'Scroll down 1/2 page' })
-vim.keymap.set('n', '<C-u>', '<C-u>zz', { desc = 'Scroll down 1/2 page' })
+-- Better escape from terminal
+map('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
+map('t', '<C-/>', '<cmd>close<cr>', { desc = 'Hide Terminal' })
 
--- Resize windows
---  Resize window relative to the direction of the key sent.
---  e.g. <leader>l will move the window separator to the right.
+-- Disable Space in normal/visual (leader key)
+map({ 'n', 'v' }, '<Space>', '<Nop>', { silent = true })
+
+-- ════════════════════════════════════════════════════════════════════════════
+-- Better Movement
+-- ════════════════════════════════════════════════════════════════════════════
+
+-- Move with wrap support
+map('n', 'j', "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true, desc = 'Move down' })
+map('n', 'k', "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true, desc = 'Move up' })
+map('x', 'j', "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true, desc = 'Move down' })
+map('x', 'k', "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true, desc = 'Move up' })
+
+-- Better half-page scrolling (centered)
+map('n', '<C-d>', '<C-d>zz', { desc = 'Scroll down half page' })
+map('n', '<C-u>', '<C-u>zz', { desc = 'Scroll up half page' })
+
+-- Keep cursor centered during search
+map('n', 'n', 'nzzzv', { desc = 'Next search result' })
+map('n', 'N', 'Nzzzv', { desc = 'Prev search result' })
+
+-- ════════════════════════════════════════════════════════════════════════════
+-- Move Lines (Alt + j/k)
+-- ════════════════════════════════════════════════════════════════════════════
+
+map('n', '<A-j>', '<cmd>m .+1<cr>==', { desc = 'Move line down' })
+map('n', '<A-k>', '<cmd>m .-2<cr>==', { desc = 'Move line up' })
+map('i', '<A-j>', '<esc><cmd>m .+1<cr>==gi', { desc = 'Move line down' })
+map('i', '<A-k>', '<esc><cmd>m .-2<cr>==gi', { desc = 'Move line up' })
+map('v', '<A-j>', ":m '>+1<cr>gv=gv", { desc = 'Move selection down' })
+map('v', '<A-k>', ":m '<-2<cr>gv=gv", { desc = 'Move selection up' })
+
+-- ════════════════════════════════════════════════════════════════════════════
+-- Better Indenting
+-- ════════════════════════════════════════════════════════════════════════════
+
+map('v', '<', '<gv', { desc = 'Indent left' })
+map('v', '>', '>gv', { desc = 'Indent right' })
+
+-- ════════════════════════════════════════════════════════════════════════════
+-- Windows
+-- ════════════════════════════════════════════════════════════════════════════
+
+-- Split windows (like tmux)
+map('n', '<leader>|', '<cmd>vsplit<cr>', { desc = 'Split vertical' })
+map('n', '<leader>-', '<cmd>split<cr>', { desc = 'Split horizontal' })
+map('n', '<leader>wd', '<cmd>close<cr>', { desc = 'Close window' })
+
+-- Navigate windows with Ctrl+hjkl
+map('n', '<C-h>', '<C-w>h', { desc = 'Go to left window', remap = true })
+map('n', '<C-j>', '<C-w>j', { desc = 'Go to lower window', remap = true })
+map('n', '<C-k>', '<C-w>k', { desc = 'Go to upper window', remap = true })
+map('n', '<C-l>', '<C-w>l', { desc = 'Go to right window', remap = true })
+
+-- Smart window resize (relative to direction)
 local function smart_resize(direction)
   local current_win = vim.api.nvim_get_current_win()
   local count = vim.v.count
   local default_step = 4
   local step = count > 0 and (count * default_step) or default_step
 
-  -- Helper to check if there is a window in a direction
   local function has_neighbor(dir)
     vim.cmd('wincmd ' .. dir)
     local new_win = vim.api.nvim_get_current_win()
@@ -42,28 +89,24 @@ local function smart_resize(direction)
   end
 
   if direction == 'h' then
-    -- Left: Shrink if right neighbor exists, else grow
     if has_neighbor 'l' then
       vim.cmd('vertical resize -' .. step)
     else
       vim.cmd('vertical resize +' .. step)
     end
   elseif direction == 'l' then
-    -- Right: Grow if right neighbor exists, else shrink
     if has_neighbor 'l' then
       vim.cmd('vertical resize +' .. step)
     else
       vim.cmd('vertical resize -' .. step)
     end
   elseif direction == 'j' then
-    -- Down: Grow if neighbor below, else shrink
     if has_neighbor 'j' then
       vim.cmd('resize +' .. step)
     else
       vim.cmd('resize -' .. step)
     end
   elseif direction == 'k' then
-    -- Up: Shrink if neighbor below, else grow
     if has_neighbor 'j' then
       vim.cmd('resize -' .. step)
     else
@@ -72,36 +115,16 @@ local function smart_resize(direction)
   end
 end
 
-vim.keymap.set('n', '<leader>h', function()
-  smart_resize 'h'
-end, { desc = 'Resize window left' })
-vim.keymap.set('n', '<leader>j', function()
-  smart_resize 'j'
-end, { desc = 'Resize window down' })
-vim.keymap.set('n', '<leader>k', function()
-  smart_resize 'k'
-end, { desc = 'Resize window up' })
-vim.keymap.set('n', '<leader>l', function()
-  smart_resize 'l'
-end, { desc = 'Resize window right' })
+map('n', '<leader>h', function() smart_resize 'h' end, { desc = 'Resize left' })
+map('n', '<leader>j', function() smart_resize 'j' end, { desc = 'Resize down' })
+map('n', '<leader>k', function() smart_resize 'k' end, { desc = 'Resize up' })
+map('n', '<leader>l', function() smart_resize 'l' end, { desc = 'Resize right' })
 
--- NOTE: Some terminals have colliding keymaps or are not able to send distinct keycodes
--- vim.keymap.set("n", "<C-S-h>", "<C-w>H", { desc = "Move window to the left" })
--- vim.keymap.set("n", "<C-S-l>", "<C-w>L", { desc = "Move window to the right" })
--- vim.keymap.set("n", "<C-S-j>", "<C-w>J", { desc = "Move window to the lower" })
--- vim.keymap.set("n", "<C-S-k>", "<C-w>K", { desc = "Move window to the upper" })
+-- ════════════════════════════════════════════════════════════════════════════
+-- Buffers
+-- ════════════════════════════════════════════════════════════════════════════
 
--- User defined keymaps
-vim.keymap.set('n', '<leader>ww', '<cmd>w<CR>', { desc = 'Save buffer' })
--- Removed conflicting <leader>q and <leader>x mappings to allow plugins to use them.
--- Replaced with <leader>= for closing split (Window Close) to avoid conflicts with <leader>c... chains
-vim.keymap.set('n', '<leader>=', '<cmd>close<CR>', { desc = '[W]indow [C]lose split' })
-
--- Move lines up and down
-vim.keymap.set('n', '<M-j>', '<cmd>m .+1<CR>==', { desc = 'Move line down' })
-vim.keymap.set('n', '<M-k>', '<cmd>m .-2<CR>==', { desc = 'Move line up' })
-
--- Navigate through buffers (Non-cyclic)
+-- Navigate through buffers (non-cyclic)
 local function buffer_navigate(direction)
   local buffers = vim.tbl_filter(function(b)
     return vim.api.nvim_buf_is_valid(b) and vim.bo[b].buflisted
@@ -124,78 +147,218 @@ local function buffer_navigate(direction)
   end
 end
 
-vim.keymap.set('n', '<S-h>', function()
-  buffer_navigate 'prev'
-end, { desc = 'Previous buffer' })
-vim.keymap.set('n', '<S-l>', function()
-  buffer_navigate 'next'
-end, { desc = 'Next buffer' })
+map('n', '<S-h>', function() buffer_navigate 'prev' end, { desc = 'Prev buffer' })
+map('n', '<S-l>', function() buffer_navigate 'next' end, { desc = 'Next buffer' })
+map('n', '[b', function() buffer_navigate 'prev' end, { desc = 'Prev buffer' })
+map('n', ']b', function() buffer_navigate 'next' end, { desc = 'Next buffer' })
 
--- Git Blame
-vim.keymap.set('n', '<leader>tb', '<cmd>Gitsigns blame_line<CR>', { desc = '[T]oggle Git [B]lame' })
+-- Buffer operations
+map('n', '<leader>bb', '<cmd>e #<cr>', { desc = 'Switch to other buffer' })
+map('n', '<leader>bd', '<cmd>bdelete<cr>', { desc = 'Delete buffer' })
+map('n', '<leader>bD', '<cmd>bdelete!<cr>', { desc = 'Delete buffer (force)' })
+map('n', '<leader>bn', '<cmd>bnext<cr>', { desc = 'Next buffer' })
+map('n', '<leader>bp', '<cmd>bprevious<cr>', { desc = 'Prev buffer' })
 
-vim.keymap.set({ 'n', 'v' }, '<Space>', '<Nop>', { silent = true })
+-- ════════════════════════════════════════════════════════════════════════════
+-- Save & Quit
+-- ════════════════════════════════════════════════════════════════════════════
 
--- Remap for dealing with word wrap
-vim.keymap.set('n', 'k', "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
-vim.keymap.set('n', 'j', "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
+map('n', '<leader>ww', '<cmd>w<cr>', { desc = 'Save' })
+map('n', '<leader>wa', '<cmd>wa<cr>', { desc = 'Save all' })
+map('n', '<leader>wq', '<cmd>wq<cr>', { desc = 'Save and quit' })
+map('n', '<leader>qq', '<cmd>qa<cr>', { desc = 'Quit all' })
+map('n', '<leader>qQ', '<cmd>qa!<cr>', { desc = 'Quit all (force)' })
 
--- Diagnostic keymaps
-vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Prev [D]iagnostic' })
-vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Next [D]iagnostic' })
-vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Show [E]rror messages' })
+-- Quick save with Ctrl+s
+map({ 'i', 'x', 'n', 's' }, '<C-s>', '<cmd>w<cr><esc>', { desc = 'Save file' })
 
--- Map [[ and ]]
-vim.keymap.set('n', '[[', '[[', { desc = 'Prev section start' })
-vim.keymap.set('n', ']]', ']]', { desc = 'Next section start' })
+-- ════════════════════════════════════════════════════════════════════════════
+-- Tabs
+-- ════════════════════════════════════════════════════════════════════════════
 
--- Quickfix/Location list navigation
-vim.keymap.set('n', '[q', '<cmd>cprevious<CR>', { desc = 'Prev [Q]uickfix item' })
-vim.keymap.set('n', ']q', '<cmd>cnext<CR>', { desc = 'Next [Q]uickfix item' })
-vim.keymap.set('n', '[Q', '<cmd>cfirst<CR>', { desc = 'First [Q]uickfix item' })
-vim.keymap.set('n', ']Q', '<cmd>clast<CR>', { desc = 'Last [Q]uickfix item' })
+map('n', '<leader>tn', '<cmd>tabnew<cr>', { desc = 'New tab' })
+map('n', '<leader>tc', '<cmd>tabclose<cr>', { desc = 'Close tab' })
+map('n', '<leader>to', '<cmd>tabonly<cr>', { desc = 'Close other tabs' })
+map('n', '[t', '<cmd>tabprevious<cr>', { desc = 'Prev tab' })
+map('n', ']t', '<cmd>tabnext<cr>', { desc = 'Next tab' })
+map('n', '[T', '<cmd>tabfirst<cr>', { desc = 'First tab' })
+map('n', ']T', '<cmd>tablast<cr>', { desc = 'Last tab' })
 
-vim.keymap.set('n', '[l', '<cmd>lprevious<CR>', { desc = 'Prev [L]ocation list item' })
-vim.keymap.set('n', ']l', '<cmd>lnext<CR>', { desc = 'Next [L]ocation list item' })
-vim.keymap.set('n', '[L', '<cmd>lfirst<CR>', { desc = 'First [L]ocation list item' })
-vim.keymap.set('n', ']L', '<cmd>llast<CR>', { desc = 'Last [L]ocation list item' })
+-- Jump to tab by number
+for i = 1, 9 do
+  map('n', '<leader>t' .. i, i .. 'gt', { desc = 'Tab ' .. i })
+end
+map('n', '<leader>t0', '<cmd>tablast<cr>', { desc = 'Last tab' })
 
--- Tab navigation with descriptions
-vim.keymap.set('n', '[t', '<cmd>tabprevious<CR>', { desc = 'Prev [T]ab' })
-vim.keymap.set('n', ']t', '<cmd>tabnext<CR>', { desc = 'Next [T]ab' })
-vim.keymap.set('n', '[T', '<cmd>tabfirst<CR>', { desc = 'First [T]ab' })
-vim.keymap.set('n', ']T', '<cmd>tablast<CR>', { desc = 'Last [T]ab' })
+-- ════════════════════════════════════════════════════════════════════════════
+-- Quickfix & Location List
+-- ════════════════════════════════════════════════════════════════════════════
 
--- Better indenting
-vim.keymap.set('v', '<', '<gv')
-vim.keymap.set('v', '>', '>gv')
+map('n', '[q', '<cmd>cprevious<cr>', { desc = 'Prev quickfix' })
+map('n', ']q', '<cmd>cnext<cr>', { desc = 'Next quickfix' })
+map('n', '[Q', '<cmd>cfirst<cr>', { desc = 'First quickfix' })
+map('n', ']Q', '<cmd>clast<cr>', { desc = 'Last quickfix' })
+map('n', '<leader>xq', '<cmd>copen<cr>', { desc = 'Quickfix list' })
 
--- [[ Basic Autocommands ]]
---  See `:help lua-guide-autocommands`
+map('n', '[l', '<cmd>lprevious<cr>', { desc = 'Prev location' })
+map('n', ']l', '<cmd>lnext<cr>', { desc = 'Next location' })
+map('n', '[L', '<cmd>lfirst<cr>', { desc = 'First location' })
+map('n', ']L', '<cmd>llast<cr>', { desc = 'Last location' })
+map('n', '<leader>xl', '<cmd>lopen<cr>', { desc = 'Location list' })
 
--- Highlight when yanking (copying) text
---  Try it with `yap` in normal mode
---  See `:help vim.hl.on_yank()`
+-- ════════════════════════════════════════════════════════════════════════════
+-- Diagnostics
+-- ════════════════════════════════════════════════════════════════════════════
+
+local diagnostic_goto = function(next, severity)
+  local go = next and vim.diagnostic.goto_next or vim.diagnostic.goto_prev
+  severity = severity and vim.diagnostic.severity[severity] or nil
+  return function()
+    go { severity = severity }
+  end
+end
+
+map('n', ']d', diagnostic_goto(true), { desc = 'Next diagnostic' })
+map('n', '[d', diagnostic_goto(false), { desc = 'Prev diagnostic' })
+map('n', ']e', diagnostic_goto(true, 'ERROR'), { desc = 'Next error' })
+map('n', '[e', diagnostic_goto(false, 'ERROR'), { desc = 'Prev error' })
+map('n', ']w', diagnostic_goto(true, 'WARN'), { desc = 'Next warning' })
+map('n', '[w', diagnostic_goto(false, 'WARN'), { desc = 'Prev warning' })
+map('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Line diagnostics' })
+
+-- ════════════════════════════════════════════════════════════════════════════
+-- UI Toggles
+-- ════════════════════════════════════════════════════════════════════════════
+
+-- Toggle options
+map('n', '<leader>uw', '<cmd>set wrap!<cr>', { desc = 'Toggle wrap' })
+map('n', '<leader>us', '<cmd>set spell!<cr>', { desc = 'Toggle spell' })
+map('n', '<leader>un', '<cmd>set number!<cr>', { desc = 'Toggle line numbers' })
+map('n', '<leader>ur', '<cmd>set relativenumber!<cr>', { desc = 'Toggle relative numbers' })
+map('n', '<leader>ul', '<cmd>set list!<cr>', { desc = 'Toggle list chars' })
+map('n', '<leader>uc', '<cmd>set cursorline!<cr>', { desc = 'Toggle cursorline' })
+map('n', '<leader>uC', '<cmd>set cursorcolumn!<cr>', { desc = 'Toggle cursorcolumn' })
+
+-- Toggle diagnostics
+local diagnostics_active = true
+map('n', '<leader>ud', function()
+  diagnostics_active = not diagnostics_active
+  if diagnostics_active then
+    vim.diagnostic.enable()
+  else
+    vim.diagnostic.disable()
+  end
+end, { desc = 'Toggle diagnostics' })
+
+-- Toggle inlay hints (if available)
+if vim.lsp.inlay_hint then
+  map('n', '<leader>uh', function()
+    vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
+  end, { desc = 'Toggle inlay hints' })
+end
+
+-- ════════════════════════════════════════════════════════════════════════════
+-- Miscellaneous
+-- ════════════════════════════════════════════════════════════════════════════
+
+-- Better paste in visual mode (don't yank replaced text)
+map('x', 'p', '"_dP', { desc = 'Paste (no yank)' })
+
+-- Add blank lines
+map('n', ']<space>', 'o<Esc>k', { desc = 'Add blank line below' })
+map('n', '[<space>', 'O<Esc>j', { desc = 'Add blank line above' })
+
+-- Select all
+map('n', '<C-a>', 'gg<S-v>G', { desc = 'Select all' })
+
+-- Lazy plugin manager
+map('n', '<leader>L', '<cmd>Lazy<cr>', { desc = 'Lazy' })
+
+-- Section navigation (built-in)
+map('n', '[[', '[[', { desc = 'Prev section start' })
+map('n', ']]', ']]', { desc = 'Next section start' })
+
+-- ════════════════════════════════════════════════════════════════════════════
+-- Autocommands
+-- ════════════════════════════════════════════════════════════════════════════
+
+-- Highlight on yank
 vim.api.nvim_create_autocmd('TextYankPost', {
-  desc = 'Highlight when yanking (copying) text',
-  group = vim.api.nvim_create_augroup('kickstart-highlight-yank', { clear = true }),
+  desc = 'Highlight when yanking text',
+  group = vim.api.nvim_create_augroup('highlight-yank', { clear = true }),
   callback = function()
     vim.hl.on_yank()
   end,
 })
 
--- Tab management
-vim.keymap.set('n', '<leader>tn', '<cmd>tabnew<CR>', { desc = '[T]ab [N]ew' })
-vim.keymap.set('n', '<leader>tc', '<cmd>tabclose<CR>', { desc = '[T]ab [C]lose' })
-vim.keymap.set('n', '<leader>t1', '1gt', { desc = '[T]ab [1]' })
-vim.keymap.set('n', '<leader>t2', '2gt', { desc = '[T]ab [2]' })
-vim.keymap.set('n', '<leader>t3', '3gt', { desc = '[T]ab [3]' })
-vim.keymap.set('n', '<leader>t4', '4gt', { desc = '[T]ab [4]' })
-vim.keymap.set('n', '<leader>t5', '5gt', { desc = '[T]ab [5]' })
-vim.keymap.set('n', '<leader>t6', '6gt', { desc = '[T]ab [6]' })
-vim.keymap.set('n', '<leader>t7', '7gt', { desc = '[T]ab [7]' })
-vim.keymap.set('n', '<leader>t8', '8gt', { desc = '[T]ab [8]' })
-vim.keymap.set('n', '<leader>t9', '9gt', { desc = '[T]ab [9]' })
-vim.keymap.set('n', '<leader>t0', '<cmd>tablast<CR>', { desc = '[T]ab Last [0]' })
+-- Resize splits when window is resized
+vim.api.nvim_create_autocmd('VimResized', {
+  desc = 'Resize splits on window resize',
+  group = vim.api.nvim_create_augroup('resize-splits', { clear = true }),
+  callback = function()
+    local current_tab = vim.fn.tabpagenr()
+    vim.cmd 'tabdo wincmd ='
+    vim.cmd('tabnext ' .. current_tab)
+  end,
+})
+
+-- Go to last location when opening a buffer
+vim.api.nvim_create_autocmd('BufReadPost', {
+  desc = 'Go to last location when opening a buffer',
+  group = vim.api.nvim_create_augroup('last-location', { clear = true }),
+  callback = function(event)
+    local exclude = { 'gitcommit' }
+    local buf = event.buf
+    if vim.tbl_contains(exclude, vim.bo[buf].filetype) or vim.b[buf].lazyvim_last_loc then
+      return
+    end
+    vim.b[buf].lazyvim_last_loc = true
+    local mark = vim.api.nvim_buf_get_mark(buf, '"')
+    local lcount = vim.api.nvim_buf_line_count(buf)
+    if mark[1] > 0 and mark[1] <= lcount then
+      pcall(vim.api.nvim_win_set_cursor, 0, mark)
+    end
+  end,
+})
+
+-- Close some filetypes with <q>
+vim.api.nvim_create_autocmd('FileType', {
+  desc = 'Close with q',
+  group = vim.api.nvim_create_augroup('close-with-q', { clear = true }),
+  pattern = {
+    'help',
+    'lspinfo',
+    'man',
+    'notify',
+    'qf',
+    'query',
+    'spectre_panel',
+    'startuptime',
+    'tsplayground',
+    'checkhealth',
+    'neotest-output',
+    'neotest-summary',
+    'neotest-output-panel',
+  },
+  callback = function(event)
+    vim.bo[event.buf].buflisted = false
+    map('n', 'q', '<cmd>close<cr>', { buffer = event.buf, silent = true })
+  end,
+})
+
+-- Auto create dir when saving a file
+vim.api.nvim_create_autocmd('BufWritePre', {
+  desc = 'Auto create dir when saving a file',
+  group = vim.api.nvim_create_augroup('auto-create-dir', { clear = true }),
+  callback = function(event)
+    if event.match:match '^%w%w+:[\\/][\\/]' then
+      return
+    end
+    local file = vim.uv.fs_realpath(event.match) or event.match
+    vim.fn.mkdir(vim.fn.fnamemodify(file, ':p:h'), 'p')
+  end,
+})
+
+-- vim: ts=2 sts=2 sw=2 et
 
 -- vim: ts=2 sts=2 sw=2 et

@@ -55,24 +55,25 @@ return {
 
         -- Actions
         -- visual mode
-        map('v', '<leader>Hp', function()
+        map('v', '<leader>ghp', function()
           gitsigns.preview_hunk { vim.fn.line '.', vim.fn.line 'v' }
-        end, { desc = 'git [p]review hunk' })
-        map('v', '<leader>Hs', function()
+        end, { desc = 'Preview hunk' })
+        map('v', '<leader>ghs', function()
           gitsigns.stage_hunk { vim.fn.line '.', vim.fn.line 'v' }
-        end, { desc = 'git [s]tage hunk' })
-        map('v', '<leader>Hr', function()
+        end, { desc = 'Stage hunk' })
+        map('v', '<leader>ghr', function()
           gitsigns.reset_hunk { vim.fn.line '.', vim.fn.line 'v' }
-        end, { desc = 'git [r]eset hunk' })
+        end, { desc = 'Reset hunk' })
         -- normal mode
-        map('n', '<leader>Hs', gitsigns.stage_hunk, { desc = 'git [s]tage hunk' })
-        map('n', '<leader>Hr', gitsigns.reset_hunk, { desc = 'git [r]eset hunk' })
-        map('n', '<leader>HS', gitsigns.stage_buffer, { desc = 'git [S]tage buffer' })
-        map('n', '<leader>Hu', gitsigns.undo_stage_hunk, { desc = 'git [u]ndo stage hunk' })
-        map('n', '<leader>HR', gitsigns.reset_buffer, { desc = 'git [R]eset buffer' })
-        map('n', '<leader>Hp', gitsigns.preview_hunk, { desc = 'git [p]review hunk' })
+        map('n', '<leader>ghs', gitsigns.stage_hunk, { desc = 'Stage hunk' })
+        map('n', '<leader>ghr', gitsigns.reset_hunk, { desc = 'Reset hunk' })
+        map('n', '<leader>ghS', gitsigns.stage_buffer, { desc = 'Stage buffer' })
+        map('n', '<leader>ghu', gitsigns.undo_stage_hunk, { desc = 'Undo stage hunk' })
+        map('n', '<leader>ghR', gitsigns.reset_buffer, { desc = 'Reset buffer' })
+        map('n', '<leader>ghp', gitsigns.preview_hunk, { desc = 'Preview hunk' })
+        map('n', '<leader>ghb', gitsigns.blame_line, { desc = 'Blame line' })
         -- Toggles
-        map('n', '<leader>tD', gitsigns.preview_hunk_inline, { desc = '[T]oggle git show [D]eleted' })
+        map('n', '<leader>tgd', gitsigns.toggle_deleted, { desc = 'Toggle git deleted' })
       end,
     },
     config = function(_, opts)
