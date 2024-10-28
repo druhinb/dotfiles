@@ -506,6 +506,10 @@ local function on_attach(event)
       callback = vim.lsp.codelens.refresh,
     })
   end
+
+  if client.server_capabilities.documentSymbolProvider then
+    require('nvim-navic').attach(client, event.buf)
+  end
 end
 
 -- =============================================================================
@@ -540,6 +544,7 @@ return {
 
       -- Schema support
       'b0o/schemastore.nvim',
+      'SmiteshP/nvim-navic',
     },
     opts = function()
       return {
@@ -682,4 +687,3 @@ return {
     end,
   },
 }
-
