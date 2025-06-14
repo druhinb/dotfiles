@@ -5,6 +5,19 @@ return {
     event = { 'BufReadPre', 'BufNewFile' },
     config = function()
       local lint = require 'lint'
+
+      -- Global toggle for cpplint
+      vim.g.cpplint_enabled = true
+      vim.keymap.set('n', '<leader>tl', function()
+        vim.g.cpplint_enabled = not vim.g.cpplint_enabled
+        print('cpplint ' .. (vim.g.cpplint_enabled and 'enabled' or 'disabled'))
+        if vim.g.cpplint_enabled then
+          lint.try_lint()
+        else
+          vim.diagnostic.reset(nil, 0)
+        end
+      end, { desc = 'Toggle cpplint' })
+
       lint.linters_by_ft = {
         -- C/C++ - cpplint is a Google style guide checker
         c = { 'cpplint' },
@@ -69,7 +82,10 @@ return {
           -- avoid superfluous noise, notably within the handy LSP pop-ups that
           -- describe the hovered symbol using Markdown.
           if vim.bo.modifiable then
-            lint.try_lint()
+            local linters = lint.get_running()
+            if #linters == 0 or vim.g.cpplint_enabled then
+              lint.try_lint()
+            end
           end
         end,
       })

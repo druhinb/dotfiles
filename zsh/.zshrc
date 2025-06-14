@@ -130,3 +130,4 @@ bindkey '^Y' autosuggest-accept
 
 
 
+export PATH="$HOME/.local/bin:$PATH"

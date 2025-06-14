@@ -10,12 +10,16 @@ return {
     -- Examples:
     -- "nvim-neotest/neotest-python",
     -- "nvim-neotest/neotest-go",
+    'rcasia/neotest-java',
     'nvim-neotest/neotest-plenary', -- This is for testing Lua plugins
   },
   config = function()
     require('neotest').setup {
       adapters = {
         -- Load your adapters here
+        require 'neotest-java' {
+          ignore_wrapper = false,
+        },
         require 'neotest-plenary',
         --require 'neotest-python',
         -- require("neotest-go"),
