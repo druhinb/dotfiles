@@ -3,25 +3,17 @@ return {
     'mfussenegger/nvim-jdtls',
     ft = 'java',
     dependencies = {
-      'mason-org/mason.nvim',
       'mfussenegger/nvim-dap',
       'saghen/blink.cmp',
     },
     config = function()
       local function get_jdtls_config()
-        local mason_registry = require 'mason-registry'
-
-        if not mason_registry.is_installed 'jdtls' then
+        local mason_packages = vim.fn.stdpath 'data' .. '/mason/packages'
+        local jdtls_path = mason_packages .. '/jdtls'
+        if vim.fn.isdirectory(jdtls_path) == 0 then
           vim.notify('jdtls not installed — run :MasonInstall jdtls', vim.log.levels.WARN)
           return nil
         end
-
-        local jdtls_pkg = mason_registry.get_package 'jdtls'
-        if not jdtls_pkg then
-          vim.notify('jdtls not found in Mason registry — try restarting Neovim', vim.log.levels.WARN)
-          return nil
-        end
-        local jdtls_path = jdtls_pkg:get_install_path()
 
         -- Launcher jar (glob since version is in the filename)
         local launcher_jars = vim.fn.glob(jdtls_path .. '/plugins/org.eclipse.equinox.launcher_*.jar', true, true)
@@ -99,30 +91,26 @@ return {
           '-data', workspace_dir,
         })
 
-        -- DAP and test bundles
+        -- DAP and test bundles (use direct paths — Mason's package object API
+        -- may not be available when the registry spec isn't fully loaded)
         local bundles = {}
 
-        if mason_registry.is_installed 'java-debug-adapter' then
-          local debug_pkg = mason_registry.get_package 'java-debug-adapter'
-          if debug_pkg then
-            local debug_jars = vim.fn.glob(
-              debug_pkg:get_install_path() .. '/extension/server/com.microsoft.java.debug.plugin-*.jar',
-              true,
-              true
-            )
-            for _, jar in ipairs(debug_jars) do
-              table.insert(bundles, jar)
-            end
+        local debug_path = mason_packages .. '/java-debug-adapter'
+        if vim.fn.isdirectory(debug_path) == 1 then
+          for _, jar in ipairs(vim.fn.glob(
+            debug_path .. '/extension/server/com.microsoft.java.debug.plugin-*.jar', true, true
+          )) do
+            table.insert(bundles, jar)
           end
         end
 
-        if mason_registry.is_installed 'java-test' then
-          local test_pkg = mason_registry.get_package 'java-test'
-          if test_pkg then
-            for _, jar in ipairs(vim.fn.glob(test_pkg:get_install_path() .. '/extension/server/*.jar', true, true)) do
-              table.insert(bundles, jar)
-            end
+        local has_test = false
+        local test_path = mason_packages .. '/java-test'
+        if vim.fn.isdirectory(test_path) == 1 then
+          for _, jar in ipairs(vim.fn.glob(test_path .. '/extension/server/*.jar', true, true)) do
+            table.insert(bundles, jar)
           end
+          has_test = true
         end
 
         local capabilities = require('blink.cmp').get_lsp_capabilities()
@@ -180,11 +168,12 @@ return {
             map('<leader>co', function() require('jdtls').organize_imports() end, 'Organize Imports')
             map('<leader>cv', function() require('jdtls').extract_variable() end, 'Extract Variable')
             map('<leader>cV', function() require('jdtls').extract_variable(true) end, 'Extract Variable (all occurrences)')
-            map('<leader>cm', function() require('jdtls').extract_method() end, 'Extract Method', { 'n', 'v' })
+            map('<leader>cm', function() require('jdtls').extract_method() end, 'Extract Method')
+            map('<leader>cm', function() require('jdtls').extract_method(true) end, 'Extract Method', 'v')
             map('<leader>cC', function() require('jdtls').extract_constant() end, 'Extract Constant')
             map('<leader>cu', function() require('jdtls').update_project_config() end, 'Update Project Config')
 
-            if mason_registry.is_installed 'java-test' then
+            if has_test then
               map('<leader>ct', function() require('jdtls').test_nearest_method() end, 'Run Nearest Test')
               map('<leader>cT', function() require('jdtls').test_class() end, 'Run Test Class')
             end
