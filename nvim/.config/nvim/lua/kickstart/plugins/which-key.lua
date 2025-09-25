@@ -78,6 +78,7 @@ return {
         { '<leader>j', group = 'resize down', icon = { icon = '󰁅', color = 'blue' } },
         { '<leader>k', group = 'resize up', icon = { icon = '󰁝', color = 'blue' } },
         { '<leader>l', group = 'layout/resize right', icon = { icon = '󰁔', color = 'blue' } },
+        { '<leader>m', group = 'cmake', icon = { icon = '󰄉', color = 'cyan' } },
         { '<leader>n', group = 'noice/notifications', icon = { icon = '󰎟', color = 'yellow' } },
         { '<leader>o', group = 'organize', icon = { icon = '󱃔', color = 'purple' } },
         { '<leader>p', group = 'peek', icon = { icon = '󰍉', color = 'green' } },
