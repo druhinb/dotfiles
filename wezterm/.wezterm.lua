@@ -11,7 +11,7 @@ config.color_scheme = "nordfox"
 config.font = wezterm.font("MesloLGS Nerd Font Mono")
 config.font_size = 19
 
---config.enable_tab_bar = false
+config.enable_tab_bar = false
 
 config.window_decorations = "RESIZE"
 
