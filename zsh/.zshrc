@@ -54,6 +54,8 @@ alias ls="eza --icons=always -a"
 eval "$(zoxide init zsh)"
 alias cd="z"           # optional: you can uncomment this if you prefer cd → z
 
+alias gs="git status"
+
 # NVM (if installed via Homebrew or common path)
 export NVM_DIR="$HOME/.nvm"
 if [ -s "/opt/homebrew/opt/nvm/nvm.sh" ]; then
@@ -90,4 +92,13 @@ function _makefile_targets {
 }
 
 compdef _makefile_targets make
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"  # This loads nvm
+[ -s "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"
+
+bindkey -v
+export keytimeout=1
+
+
 
