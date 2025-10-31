@@ -1,6 +1,6 @@
 " =======================
 " Vim .vimrc with fzf, One Dark, Airline, and enhanced Git
-" =======================
+
 
 set nocompatible
 set encoding=utf-8
@@ -48,8 +48,9 @@ nnoremap <M-k> :m .-2<CR>==
 " =======================
 " Plugins
 " =======================
-call plug#begin('~/.vim/plugged')
+call plug#begin()
 
+Plug 'liuchengxu/vim-which-key'
 Plug 'joshdick/onedark.vim'
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
@@ -155,3 +156,6 @@ nnoremap <leader>cn :ConflictMarkerNextHunk<CR>
 nnoremap <leader>cN :ConflictMarkerPrevHunk<CR>
 nnoremap <leader>co :ConflictMarkerOurselves<CR>
 nnoremap <leader>ct :ConflictMarkerThemselves<CR>
+
+set timeoutlen=300
+nnoremap <silent> <leader> :WhichKey '<Space>'<CR>
