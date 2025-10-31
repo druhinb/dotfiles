@@ -140,11 +140,11 @@ nnoremap <leader>gP :G push<CR>
 nnoremap <leader>go :Gbrowse<CR>
 
 " fzf powered git pickers
-nnoremap <leader>g? :GFiles?<CR>     
-nnoremap <leader>gf :GFiles<CR>     
-nnoremap <leader>gl :Commits<CR>   
-nnoremap <leader>gL :BCommits<CR> 
-nnoremap <leader>gt :BTags<CR>   
+nnoremap <leader>g? :GFiles?<CR>
+nnoremap <leader>gf :GFiles<CR>
+nnoremap <leader>gl :Commits<CR>
+nnoremap <leader>gL :BCommits<CR>
+nnoremap <leader>gt :BTags<CR>
 
 " commit browser
 nnoremap <leader>gv :GV<CR>
