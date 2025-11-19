@@ -70,6 +70,11 @@ return {
         map('n', '<leader>tD', gitsigns.preview_hunk_inline, { desc = '[T]oggle git show [D]eleted' })
       end,
     },
+    config = function(_, opts)
+      require('gitsigns').setup(opts)
+
+      -- Disable gitsigns when a merge or rebase conflict is detected
+    end,
   },
 }
 -- vim: ts=2 sts=2 sw=2 et
