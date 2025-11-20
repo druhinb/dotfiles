@@ -59,6 +59,11 @@ vim.keymap.set('n', '<M-k>', '<cmd>m .-2<CR>==', { desc = 'Move line up' })
 -- Switch to the last buffer (alternate file)
 vim.keymap.set('n', '<leader>p', '<C-^>', { desc = 'Switch to [P]revious buffer' })
 
+-- Diffview
+vim.keymap.set('n', '<leader>dv', '<cmd>DiffviewOpen<CR>', { desc = 'Open Diffview' })
+vim.keymap.set('n', '<leader>dc', '<cmd>DiffviewClose<CR>', { desc = 'Close Diffview' })
+vim.keymap.set('n', '<leader>dfh', '<cmd>DiffviewFileHistory %<CR>', { desc = 'Diffview File History' })
+
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 
