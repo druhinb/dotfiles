@@ -13,10 +13,20 @@ return {
       vim.cmd.Git 'blame'
     end, { desc = '[G]it [B]lame' })
 
-    -- Keymap for git diff
+    -- Keymap for git diff (Integrated with Diffview)
     vim.keymap.set('n', '<leader>gd', function()
-      vim.cmd.Gdiffsplit()
-    end, { desc = '[G]it [D]iff' })
+      vim.cmd.DiffviewOpen()
+    end, { desc = '[G]it [D]iff (Diffview)' })
+
+    -- Keymap to close diffview
+    vim.keymap.set('n', '<leader>gD', function()
+      vim.cmd.DiffviewClose()
+    end, { desc = '[G]it [D]iff Close' })
+
+    -- Keymap for file history (Integrated with Diffview)
+    vim.keymap.set('n', '<leader>gh', function()
+      vim.cmd.DiffviewFileHistory '%'
+    end, { desc = '[G]it [H]istory (File)' })
 
     -- Keymap for git commit
     vim.keymap.set('n', '<leader>gc', function()
