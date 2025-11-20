@@ -40,7 +40,7 @@ return {
         },
         sections = {
           lualine_a = { 'mode' },
-          lualine_b = { 'branch', 'diff', 'diagnostics' },
+          lualine_b = { 'branch', git_sync_status, 'diff', 'diagnostics' },
           lualine_c = {
             {
               'filename',
@@ -48,7 +48,6 @@ return {
             },
           },
           lualine_x = {
-            git_sync_status,
             'encoding',
             'fileformat',
             'filetype',
