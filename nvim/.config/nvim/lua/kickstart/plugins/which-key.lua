@@ -17,10 +17,34 @@ return {
     'folke/which-key.nvim',
     event = 'VimEnter', -- Sets the loading event to 'VimEnter'
     opts = {
+      preset = 'modern', -- 'classic', 'modern', 'helix'
       -- delay between pressing a key and opening which-key (milliseconds)
       -- this setting is independent of vim.o.timeoutlen
       delay = 0,
+      win = {
+        border = 'rounded', -- none, single, double, shadow
+        -- position = 'bottom', -- INVALID in v3
+        -- margin = { 1, 0, 1, 0 }, -- INVALID in v3
+        padding = { 2, 2 }, -- extra window padding [top/bottom, right/left]
+        wo = {
+          winblend = 0,
+        },
+      },
+      layout = {
+        height = { min = 4, max = 25 }, -- min and max height of the columns
+        width = { min = 20, max = 50 }, -- min and max width of the columns
+        spacing = 3, -- spacing between columns
+        align = 'left', -- align columns left, center or right
+      },
+      -- ignore_missing = true, -- DEPRECATED
+      -- show_help = true, -- DEPRECATED
+      -- show_keys = true, -- DEPRECATED
+      -- triggers = 'auto', -- DEPRECATED
+      
       icons = {
+        breadcrumb = '»', -- symbol used in the command line area that shows your active key combo
+        separator = '➜', -- symbol used between a key and it's label
+        group = '+', -- symbol prepended to a group
         -- set icon mappings to true if you have a Nerd Font
         mappings = vim.g.have_nerd_font,
         -- If you are using a Nerd Font: set icons.keys to an empty table which will use the
@@ -60,8 +84,16 @@ return {
       -- Document existing key chains
       spec = {
         { '<leader>s', group = '[S]earch' },
-        { '<leader>t', group = '[T]oggle' },
+        { '<leader>t', group = '[T]oggle/Test' },
+        { '<leader>g', group = '[G]it' },
         { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
+      },
+      filter = function(mapping)
+        -- return true to include the mapping, false to exclude it
+        return mapping.desc and mapping.desc ~= ''
+      end,
+      triggers = {
+        { '<auto>', mode = 'nixsotc' },
       },
     },
   },
