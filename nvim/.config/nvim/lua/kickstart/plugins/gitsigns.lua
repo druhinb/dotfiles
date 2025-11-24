@@ -52,6 +52,9 @@ return {
 
         -- Actions
         -- visual mode
+        map('v', '<leader>hp', function()
+          gitsigns.preview_hunk { vim.fn.line '.', vim.fn.line 'v' }
+        end, { desc = 'git [p]review hunk' })
         map('v', '<leader>hs', function()
           gitsigns.stage_hunk { vim.fn.line '.', vim.fn.line 'v' }
         end, { desc = 'git [s]tage hunk' })
