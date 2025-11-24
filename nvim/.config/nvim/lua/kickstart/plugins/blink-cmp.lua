@@ -47,19 +47,22 @@ return {
         -- For an understanding of why the 'default' preset is recommended,
         -- you will need to read `:help ins-completion`
         --
-        -- No, but seriously. Please read `:help ins-completion`, it is really good!
+        -- No, but seriously. Please read `:help ins-completion`, it is really good.
         --
         -- All presets have the following mappings:
         -- <tab>/<s-tab>: move to right/left of your snippet expansion
         -- <c-space>: Open menu or open docs if already open
         -- <c-n>/<c-p> or <up>/<down>: Select next/previous item
-        -- <c-e>: Hide menu
+        -- <c-e>: Hide menu 
         -- <c-k>: Toggle signature help
         --
         -- See :h blink-cmp-config-keymap for defining your own keymap
         preset = 'default',
 
-        -- For more advanced Luasnip keymaps (e.g. selecting choice nodes, expansion) see:
+        ['<C-k>'] = { 'select_prev', 'fallback' },
+        ['<C-j>'] = { 'select_next', 'fallback' },
+
+        -- For more advanced Luasnip keymaps (e.g. selecting choice nodes, expansi
         --    https://github.com/L3MON4D3/LuaSnip?tab=readme-ov-file#keymaps
       },
 
@@ -69,14 +72,47 @@ return {
         nerd_font_variant = 'mono',
       },
 
+      cmdline = {
+        enabled = true,
+        sources = function()
+          local type = vim.fn.getcmdtype()
+          -- Search forward and backward
+          if type == '/' or type == '?' then
+            return { 'buffer' }
+          end
+          -- Commands
+          if type == ':' or type == '@' then
+            return { 'cmdline' }
+          end
+          return {}
+        end,
+      },
+
       completion = {
+        -- 'prefix' (default) for top-down, 'postfix' for bottom-up
+        -- list = { selection = { preselect = false, auto_insert = true } },
+
         -- By default, you may press `<c-space>` to show the documentation.
         -- Optionally, set `auto_show = true` to show the documentation after a delay.
-        documentation = { auto_show = false, auto_show_delay_ms = 500 },
+        documentation = {
+          auto_show = true,
+          auto_show_delay_ms = 200,
+          window = { border = 'rounded' },
+        },
+
+        ghost_text = { enabled = true },
+
+        menu = {
+          border = 'rounded',
+          draw = {
+            treesitter = { 'lsp' },
+            columns = { { 'label', 'label_description', gap = 1 }, { 'kind_icon', 'kind' } },
+          },
+        },
       },
 
       sources = {
-        default = { 'lsp', 'path', 'snippets', 'lazydev' },
+        default = { 'lsp', 'path', 'snippets', 'lazydev', 'buffer' },
         providers = {
           lazydev = { module = 'lazydev.integrations.blink', score_offset = 100 },
         },
@@ -94,7 +130,7 @@ return {
       fuzzy = { implementation = 'prefer_rust_with_warning' },
 
       -- Shows a signature help window while you type arguments for a function
-      signature = { enabled = true },
+      signature = { enabled = false },
     },
   },
 }
