@@ -40,7 +40,7 @@ vim.keymap.set('n', '<leader>h', '<cmd>vertical resize -5<CR>', { desc = 'Resize
 vim.keymap.set('n', '<leader>ww', '<cmd>w<CR>', { desc = 'Save buffer' })
 -- Removed conflicting <leader>q and <leader>x mappings to allow plugins to use them.
 -- Replaced with <leader>wc for closing split (Window Close)
-vim.keymap.set('n', '<leader>wc', '<cmd>close<CR>', { desc = '[W]indow [C]lose split' })
+vim.keymap.set('n', '<leader>c', '<cmd>close<CR>', { desc = '[W]indow [C]lose split' })
 
 -- Move lines up and down
 vim.keymap.set('n', '<M-j>', '<cmd>m .+1<CR>==', { desc = 'Move line down' })
