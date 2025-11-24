@@ -75,13 +75,14 @@ vim.o.scrolloff = 10
 vim.o.confirm = true
 
 -- Set tab settings to 4 spaces (user preference)
-vim.opt.tabstop = 4
-vim.opt.shiftwidth = 4
-vim.opt.expandtab = true
 vim.opt.smartindent = true
 vim.opt.autoindent = true
 
 -- Show matching parentheses
 vim.opt.showmatch = true
 
+--
+local swap_dir = vim.fn.stdpath 'cache' .. '/swap'
+vim.fn.mkdir(swap_dir, 'p')
+vim.opt.directory = swap_dir
 -- vim: ts=2 sts=2 sw=2 et
