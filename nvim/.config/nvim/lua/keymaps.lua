@@ -25,10 +25,66 @@ vim.keymap.set('n', '<C-d>', '<C-d>zz', { desc = 'Scroll down 1/2 page' })
 vim.keymap.set('n', '<C-u>', '<C-u>zz', { desc = 'Scroll down 1/2 page' })
 
 -- Resize windows
-vim.keymap.set('n', '<leader>j', '<cmd>resize -5<CR>', { desc = 'Resize window down' })
-vim.keymap.set('n', '<leader>k', '<cmd>resize +5<CR>', { desc = 'Resize window up' })
-vim.keymap.set('n', '<leader>l', '<cmd>vertical resize +5<CR>', { desc = 'Resize window right' })
-vim.keymap.set('n', '<leader>h', '<cmd>vertical resize -5<CR>', { desc = 'Resize window left' })
+--  Resize window relative to the direction of the key sent.
+--  e.g. <leader>l will move the window separator to the right.
+local function smart_resize(direction)
+  local current_win = vim.api.nvim_get_current_win()
+  local step = 5
+
+  -- Helper to check if there is a window in a direction
+  local function has_neighbor(dir)
+    vim.cmd('wincmd ' .. dir)
+    local new_win = vim.api.nvim_get_current_win()
+    if new_win ~= current_win then
+      vim.api.nvim_set_current_win(current_win)
+      return true
+    end
+    return false
+  end
+
+  if direction == 'h' then
+    -- Left: Shrink if right neighbor exists, else grow
+    if has_neighbor 'l' then
+      vim.cmd('vertical resize -' .. step)
+    else
+      vim.cmd('vertical resize +' .. step)
+    end
+  elseif direction == 'l' then
+    -- Right: Grow if right neighbor exists, else shrink
+    if has_neighbor 'l' then
+      vim.cmd('vertical resize +' .. step)
+    else
+      vim.cmd('vertical resize -' .. step)
+    end
+  elseif direction == 'j' then
+    -- Down: Grow if neighbor below, else shrink
+    if has_neighbor 'j' then
+      vim.cmd('resize +' .. step)
+    else
+      vim.cmd('resize -' .. step)
+    end
+  elseif direction == 'k' then
+    -- Up: Shrink if neighbor below, else grow
+    if has_neighbor 'j' then
+      vim.cmd('resize -' .. step)
+    else
+      vim.cmd('resize +' .. step)
+    end
+  end
+end
+
+vim.keymap.set('n', '<leader>h', function()
+  smart_resize 'h'
+end, { desc = 'Resize window left' })
+vim.keymap.set('n', '<leader>j', function()
+  smart_resize 'j'
+end, { desc = 'Resize window down' })
+vim.keymap.set('n', '<leader>k', function()
+  smart_resize 'k'
+end, { desc = 'Resize window up' })
+vim.keymap.set('n', '<leader>l', function()
+  smart_resize 'l'
+end, { desc = 'Resize window right' })
 
 -- NOTE: Some terminals have colliding keymaps or are not able to send distinct keycodes
 -- vim.keymap.set("n", "<C-S-h>", "<C-w>H", { desc = "Move window to the left" })
@@ -39,8 +95,8 @@ vim.keymap.set('n', '<leader>h', '<cmd>vertical resize -5<CR>', { desc = 'Resize
 -- User defined keymaps
 vim.keymap.set('n', '<leader>ww', '<cmd>w<CR>', { desc = 'Save buffer' })
 -- Removed conflicting <leader>q and <leader>x mappings to allow plugins to use them.
--- Replaced with <leader>wc for closing split (Window Close)
-vim.keymap.set('n', '<leader>c', '<cmd>close<CR>', { desc = '[W]indow [C]lose split' })
+-- Replaced with <leader>= for closing split (Window Close) to avoid conflicts with <leader>c... chains
+vim.keymap.set('n', '<leader>=', '<cmd>close<CR>', { desc = '[W]indow [C]lose split' })
 
 -- Move lines up and down
 vim.keymap.set('n', '<M-j>', '<cmd>m .+1<CR>==', { desc = 'Move line down' })
