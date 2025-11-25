@@ -40,7 +40,7 @@ return {
       -- show_help = true, -- DEPRECATED
       -- show_keys = true, -- DEPRECATED
       -- triggers = 'auto', -- DEPRECATED
-      
+
       icons = {
         breadcrumb = '»', -- symbol used in the command line area that shows your active key combo
         separator = '➜', -- symbol used between a key and it's label
@@ -84,9 +84,21 @@ return {
       -- Document existing key chains
       spec = {
         { '<leader>s', group = '[S]earch' },
-        { '<leader>t', group = '[T]oggle/Test' },
+        { '<leader>t', group = '[T]oggle/Tabs' },
         { '<leader>g', group = '[G]it' },
-        { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
+        { '<leader>h', group = 'Git [H]unk / Resize Left', mode = { 'n', 'v' } },
+        { '<leader>l', group = '[L]ayout / Resize Right' },
+        { '<leader>c', group = '[C]onflict' },
+        { '<leader>d', group = '[D]iagnostic' },
+        { '<leader>w', group = '[W]rite' },
+        { '<C-w>', group = 'Window' },
+        { 'g', group = '[G]o' },
+        { 'z', group = '[Z] Fold' },
+        { '[', group = '[P]revious ...' },
+        { ']', group = '[N]ext ...' },
+        { 'm', group = '[M]ark' },
+        { "'", group = '[J]ump to Mark' },
+        { '"', group = '[R]egister' },
       },
       filter = function(mapping)
         -- return true to include the mapping, false to exclude it
