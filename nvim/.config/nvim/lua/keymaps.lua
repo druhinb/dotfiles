@@ -168,4 +168,18 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   end,
 })
 
+-- Tab management
+vim.keymap.set('n', '<leader>tn', '<cmd>tabnew<CR>', { desc = 'New [T]ab' })
+vim.keymap.set('n', '<leader>tc', '<cmd>tabclose<CR>', { desc = '[T]ab [C]lose' })
+vim.keymap.set('n', '<leader>t1', '1gt', { desc = 'Go to Tab 1' })
+vim.keymap.set('n', '<leader>t2', '2gt', { desc = 'Go to Tab 2' })
+vim.keymap.set('n', '<leader>t3', '3gt', { desc = 'Go to Tab 3' })
+vim.keymap.set('n', '<leader>t4', '4gt', { desc = 'Go to Tab 4' })
+vim.keymap.set('n', '<leader>t5', '5gt', { desc = 'Go to Tab 5' })
+vim.keymap.set('n', '<leader>t6', '6gt', { desc = 'Go to Tab 6' })
+vim.keymap.set('n', '<leader>t7', '7gt', { desc = 'Go to Tab 7' })
+vim.keymap.set('n', '<leader>t8', '8gt', { desc = 'Go to Tab 8' })
+vim.keymap.set('n', '<leader>t9', '9gt', { desc = 'Go to Tab 9' })
+vim.keymap.set('n', '<leader>t0', '<cmd>tablast<CR>', { desc = 'Go to Last Tab' })
+
 -- vim: ts=2 sts=2 sw=2 et
