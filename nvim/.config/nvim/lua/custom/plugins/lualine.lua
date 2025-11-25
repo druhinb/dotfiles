@@ -33,7 +33,7 @@ return {
 
       require('lualine').setup {
         options = {
-          theme = 'onedark',
+          theme = 'kanagawa',
           component_separators = { left = '', right = '' },
           section_separators = { left = '', right = '' },
           globalstatus = true,
