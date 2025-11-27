@@ -17,12 +17,12 @@ return {
       -- - gzr)'  - [G]o [Z]urround [R]eplace [)] [']
       require('mini.surround').setup {
         mappings = {
-          add = 'gza', -- Add surrounding in Normal and Visual modes
-          delete = 'gzd', -- Delete surrounding
-          find = 'gzf', -- Find surrounding (to the right)
-          find_left = 'gzF', -- Find surrounding (to the left)
-          highlight = 'gzh', -- Highlight surrounding
-          replace = 'gzr', -- Replace surrounding
+          add = 'gza',            -- Add surrounding in Normal and Visual modes
+          delete = 'gzd',         -- Delete surrounding
+          find = 'gzf',           -- Find surrounding (to the right)
+          find_left = 'gzF',      -- Find surrounding (to the left)
+          highlight = 'gzh',      -- Highlight surrounding
+          replace = 'gzr',        -- Replace surrounding
           update_n_lines = 'gzn', -- Update `n_lines`
         },
       }
@@ -44,6 +44,9 @@ return {
 
       -- ... and there is more!
       --  Check out: https://github.com/echasnovski/mini.nvim
+
+      -- Go comments
+      require('mini.comment').setup()
     end,
   },
 }
