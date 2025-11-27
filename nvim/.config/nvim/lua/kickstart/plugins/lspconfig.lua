@@ -24,10 +24,13 @@ return {
       'WhoIsSethDaniel/mason-tool-installer.nvim',
 
       -- Useful status updates for LSP.
-      { 'j-hui/fidget.nvim', opts = {} },
+      { 'j-hui/fidget.nvim',    opts = {} },
 
       -- Allows extra capabilities provided by blink.cmp
       'saghen/blink.cmp',
+
+      -- JSON/YAML schema support
+      'b0o/schemastore.nvim',
     },
     config = function()
       -- Brief aside: **What is LSP?**
@@ -80,6 +83,16 @@ return {
           -- or a suggestion from your LSP for this to activate.
           map('<leader>ca', vim.lsp.buf.code_action, '[C]ode [A]ction', { 'n', 'x' })
 
+          -- Quick fix - apply first available code action (like JetBrains Alt+Enter)
+          map('<leader>qf', function()
+            vim.lsp.buf.code_action {
+              filter = function(action)
+                return action.isPreferred
+              end,
+              apply = true,
+            }
+          end, '[Q]uick [F]ix')
+
           -- Find references for the word under your cursor.
           map('gR', require('fzf-lua').lsp_references, '[G]oto [R]eferences')
 
@@ -109,6 +122,29 @@ return {
           --  the definition of its *type*, not where it was *defined*.
           map('<leader>D', require('fzf-lua').lsp_typedefs, 'Type [D]efinition')
 
+          -- Signature help - show function parameters (like JetBrains Ctrl+P)
+          map('<C-k>', vim.lsp.buf.signature_help, 'Signature Help')
+          map('<C-k>', vim.lsp.buf.signature_help, 'Signature Help', 'i')
+
+          -- Hover documentation (like JetBrains Ctrl+Q)
+          map('K', vim.lsp.buf.hover, 'Hover Documentation')
+
+          -- Go to next/previous error only (more specific than ]d/[d in keymaps.lua)
+          map(']e', function()
+            vim.diagnostic.goto_next { severity = vim.diagnostic.severity.ERROR }
+          end, 'Next [E]rror')
+          map('[e', function()
+            vim.diagnostic.goto_prev { severity = vim.diagnostic.severity.ERROR }
+          end, 'Prev [E]rror')
+
+          -- Organize imports (common JetBrains feature)
+          map('<leader>oi', function()
+            vim.lsp.buf.code_action {
+              context = { only = { 'source.organizeImports' } },
+              apply = true,
+            }
+          end, '[O]rganize [I]mports')
+
           -- This function resolves a difference between neovim nightly (version 0.11) and stable (version 0.10)
           ---@param client vim.lsp.Client
           ---@param method vim.lsp.protocol.Method
@@ -128,6 +164,13 @@ return {
           --
           -- When you move your cursor, the highlights will be cleared (the second autocommand).
           local client = vim.lsp.get_client_by_id(event.data.client_id)
+
+          -- Python-specific: Disable formatting from basedpyright (ruff handles it via conform)
+          if client and client.name == 'basedpyright' then
+            client.server_capabilities.documentFormattingProvider = false
+            client.server_capabilities.documentRangeFormattingProvider = false
+          end
+
           if client and client_supports_method(client, vim.lsp.protocol.Methods.textDocument_documentHighlight, event.buf) then
             local highlight_augroup = vim.api.nvim_create_augroup('kickstart-lsp-highlight', { clear = false })
             vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
@@ -169,6 +212,8 @@ return {
         severity_sort = true,
         float = { border = 'rounded', source = 'if_many' },
         underline = { severity = vim.diagnostic.severity.ERROR },
+        -- Update diagnostics in insert mode (set to false if you find it distracting)
+        update_in_insert = true,
         signs = vim.g.have_nerd_font and {
           text = {
             [vim.diagnostic.severity.ERROR] = '󰅚 ',
@@ -192,162 +237,24 @@ return {
         },
       }
 
+      -- Reduce updatetime for faster CursorHold events (affects diagnostic popup delay)
+      vim.opt.updatetime = 250
+
+      -- Enable inlay hints by default (like JetBrains)
+      -- This shows parameter names, type hints, etc.
+      if vim.lsp.inlay_hint then
+        vim.lsp.inlay_hint.enable(true)
+      end
+
       -- LSP servers and clients are able to communicate to each other what features they support.
       --  By default, Neovim doesn't support everything that is in the LSP specification.
       --  When you add blink.cmp, luasnip, etc. Neovim now has *more* capabilities.
       --  So, we create new capabilities with blink.cmp, and then broadcast that to the servers.
       local capabilities = require('blink.cmp').get_lsp_capabilities()
 
-      -- Enable the following language servers
-      --  Feel free to add/remove any LSPs that you want here. They will automatically be installed.
-      --
-      --  Add any additional override configuration in the following tables. Available keys are:
-      --  - cmd (table): Override the default command used to start the server
-      --  - filetypes (table): Override the default list of associated filetypes for the server
-      --  - capabilities (table): Override fields in capabilities. Can be used to disable certain LSP features.
-      --  - settings (table): Override the default settings passed when initializing the server.
-      --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
-      local servers = {
-        -- C/C++ - clangd is the industry standard
-        clangd = {
-          cmd = {
-            'clangd',
-            '--background-index',
-            '--clang-tidy',
-            '--header-insertion=iwyu',
-            '--completion-style=detailed',
-            '--function-arg-placeholders',
-            '--fallback-style=llvm',
-          },
-          init_options = {
-            usePlaceholders = true,
-            completeUnimported = true,
-            clangdFileStatus = true,
-          },
-        },
-
-        -- Python - Basedpyright (faster fork of Pyright) + Ruff for linting/formatting
-        basedpyright = {
-          settings = {
-            basedpyright = {
-              analysis = {
-                autoSearchPaths = true,
-                typeCheckingMode = 'off',
-                diagnosticMode = 'openFilesOnly',
-                useLibraryCodeForTypes = true,
-              },
-            },
-          },
-        },
-        ruff = {
-          -- Ruff LSP provides fast linting and formatting
-          init_options = {
-            settings = {
-              -- Ruff settings can be configured here
-              args = {},
-            },
-          },
-        },
-
-        -- TypeScript/JavaScript - ts_ls (formerly tsserver)
-        ts_ls = {
-          settings = {
-            typescript = {
-              inlayHints = {
-                includeInlayParameterNameHints = 'all',
-                includeInlayParameterNameHintsWhenArgumentMatchesName = false,
-                includeInlayFunctionParameterTypeHints = true,
-                includeInlayVariableTypeHints = true,
-                includeInlayPropertyDeclarationTypeHints = true,
-                includeInlayFunctionLikeReturnTypeHints = true,
-                includeInlayEnumMemberValueHints = true,
-              },
-            },
-            javascript = {
-              inlayHints = {
-                includeInlayParameterNameHints = 'all',
-                includeInlayParameterNameHintsWhenArgumentMatchesName = false,
-                includeInlayFunctionParameterTypeHints = true,
-                includeInlayVariableTypeHints = true,
-                includeInlayPropertyDeclarationTypeHints = true,
-                includeInlayFunctionLikeReturnTypeHints = true,
-                includeInlayEnumMemberValueHints = true,
-              },
-            },
-          },
-        },
-
-        -- HTML
-        html = {
-          filetypes = { 'html', 'htmldjango' },
-        },
-
-        -- CSS/SCSS/LESS
-        cssls = {
-          settings = {
-            css = {
-              validate = true,
-              lint = {
-                unknownAtRules = 'ignore',
-              },
-            },
-            scss = {
-              validate = true,
-            },
-            less = {
-              validate = true,
-            },
-          },
-        },
-
-        -- Emmet for HTML/CSS
-        emmet_language_server = {
-          filetypes = { 'html', 'css', 'scss', 'javascript', 'javascriptreact', 'typescript', 'typescriptreact' },
-        },
-
-        -- Rust - rust-analyzer is the standard
-        rust_analyzer = {
-          settings = {
-            ['rust-analyzer'] = {
-              cargo = {
-                allFeatures = true,
-                loadOutDirsFromCheck = true,
-                buildScripts = {
-                  enable = true,
-                },
-              },
-              checkOnSave = {
-                allFeatures = true,
-                command = 'clippy',
-                extraArgs = { '--no-deps' },
-              },
-              procMacro = {
-                enable = true,
-                ignored = {
-                  ['async-trait'] = { 'async_trait' },
-                  ['napi-derive'] = { 'napi' },
-                  ['async-recursion'] = { 'async_recursion' },
-                },
-              },
-            },
-          },
-        },
-
-        lua_ls = {
-          -- cmd = { ... },
-          -- filetypes = { ... },
-          -- capabilities = {},
-          settings = {
-            Lua = {
-              completion = {
-                callSnippet = 'Replace',
-              },
-              -- You can toggle below to ignore Lua_LS's noisy `missing-fields` warnings
-              -- diagnostics = { disable = { 'missing-fields' } },
-            },
-          },
-        },
-      }
+      -- Load LSP server configurations from language-specific files
+      -- See lua/kickstart/plugins/lsp/ for individual language configurations
+      local servers = require('kickstart.plugins.lsp').get_servers()
 
       -- Ensure the servers and tools above are installed
       --
@@ -381,24 +288,48 @@ return {
         -- HTML/CSS
         'prettierd',
 
+        -- Shell
+        'shellcheck',
+        'shfmt',
+
+        -- Go
+        'gofumpt',
+        'goimports',
+        'golangci-lint',
+
+        -- Markdown
+        'markdownlint',
+
+        -- YAML/JSON
+        'yamllint',
+
+        -- SQL
+        'sqlfluff',
+
         -- Rust (rustfmt and clippy come with rustup)
         -- No additional tools needed for Rust
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
+      -- Setup LSP servers using vim.lsp.config (Neovim 0.11+)
+      -- This is the new recommended approach instead of require('lspconfig')
+      for server_name, server_config in pairs(servers) do
+        -- Merge capabilities with server config
+        local config = vim.tbl_deep_extend('force', {
+          capabilities = vim.tbl_deep_extend('force', {}, capabilities, server_config.capabilities or {}),
+        }, server_config)
+
+        -- Use vim.lsp.config to define the server configuration
+        vim.lsp.config[server_name] = config
+      end
+
+      -- Enable all configured servers
+      vim.lsp.enable(vim.tbl_keys(servers))
+
+      -- Setup mason-lspconfig to handle server installation
       require('mason-lspconfig').setup {
-        ensure_installed = {}, -- explicitly set to an empty table (Kickstart populates installs via mason-tool-installer)
+        ensure_installed = {},
         automatic_installation = false,
-        handlers = {
-          function(server_name)
-            local server = servers[server_name] or {}
-            -- This handles overriding only values explicitly passed
-            -- by the server configuration above. Useful when disabling
-            -- certain features of an LSP (for example, turning off formatting for ts_ls)
-            server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
-            require('lspconfig')[server_name].setup(server)
-          end,
-        },
       }
     end,
   },
