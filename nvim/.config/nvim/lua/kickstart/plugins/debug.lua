@@ -24,6 +24,10 @@ return {
     -- Add your own debuggers here
     'leoluz/nvim-dap-go',
     'mfussenegger/nvim-dap-python',
+
+    -- Additional language support
+    -- Note: C/C++ and Rust use codelldb (configured below)
+    -- JavaScript/TypeScript debugging handled by js-debug-adapter
   },
   keys = {
     -- Basic debugging keymaps, feel free to change to your liking!
@@ -94,10 +98,17 @@ return {
       -- You'll need to check that you have the required things installed
       -- online, please don't ask me how to install them :)
       ensure_installed = {
-        -- Update this to ensure that you have the debuggers for the langs you want
+        -- Go
         'delve',
+
+        -- Python
         'debugpy',
+
+        -- C/C++ and Rust
         'codelldb',
+
+        -- JavaScript/TypeScript/Node.js
+        'js-debug-adapter',
       },
     }
 
@@ -128,7 +139,7 @@ return {
     vim.api.nvim_set_hl(0, 'DapStop', { fg = '#ffcc00' })
     local breakpoint_icons = vim.g.have_nerd_font
         and { Breakpoint = '', BreakpointCondition = '', BreakpointRejected = '', LogPoint = '', Stopped = '' }
-      or { Breakpoint = '●', BreakpointCondition = '⊜', BreakpointRejected = '⊘', LogPoint = '◆', Stopped = '⭔' }
+        or { Breakpoint = '●', BreakpointCondition = '⊜', BreakpointRejected = '⊘', LogPoint = '◆', Stopped = '⭔' }
     for type, icon in pairs(breakpoint_icons) do
       local tp = 'Dap' .. type
       local hl = (type == 'Stopped') and 'DapStop' or 'DapBreak'
@@ -181,5 +192,39 @@ return {
         stopOnEntry = false,
       },
     }
+
+    -- C/C++ configurations (also uses codelldb)
+    dap.configurations.c = dap.configurations.rust
+    dap.configurations.cpp = dap.configurations.rust
+
+    -- JavaScript/TypeScript configurations
+    dap.adapters['pwa-node'] = {
+      type = 'server',
+      host = 'localhost',
+      port = '${port}',
+      executable = {
+        command = 'js-debug-adapter',
+        args = { '${port}' },
+      },
+    }
+
+    for _, language in ipairs { 'typescript', 'javascript', 'typescriptreact', 'javascriptreact' } do
+      dap.configurations[language] = {
+        {
+          type = 'pwa-node',
+          request = 'launch',
+          name = 'Launch file',
+          program = '${file}',
+          cwd = '${workspaceFolder}',
+        },
+        {
+          type = 'pwa-node',
+          request = 'attach',
+          name = 'Attach',
+          processId = require('dap.utils').pick_process,
+          cwd = '${workspaceFolder}',
+        },
+      }
+    end
   end,
 }
