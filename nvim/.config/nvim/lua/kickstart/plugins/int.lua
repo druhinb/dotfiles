@@ -6,7 +6,25 @@ return {
     config = function()
       local lint = require 'lint'
       lint.linters_by_ft = {
-        --markdown = { 'markdownlint' },
+        -- C/C++ - cpplint is a Google style guide checker
+        c = { 'cpplint' },
+        cpp = { 'cpplint' },
+        
+        -- Python - Ruff LSP handles linting, but can add mypy for type checking
+        -- python = { 'mypy' }, -- Uncomment if you want strict type checking
+        
+        -- TypeScript/JavaScript - ESLint is the standard
+        javascript = { 'eslint_d' },
+        typescript = { 'eslint_d' },
+        javascriptreact = { 'eslint_d' },
+        typescriptreact = { 'eslint_d' },
+        
+        -- HTML/CSS - Linting handled by LSPs
+        -- html = {},  -- htmlhint available if needed
+        -- css = {},   -- stylelint available if needed
+        
+        -- Rust - Clippy is run via rust-analyzer LSP
+        -- rust = {},  -- No additional linter needed
       }
 
       -- To allow other plugins to add linters to require('lint').linters_by_ft,
