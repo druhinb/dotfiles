@@ -141,13 +141,30 @@ vim.keymap.set('n', 'k', "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = tr
 vim.keymap.set('n', 'j', "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
 
 -- Diagnostic keymaps
-vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous [D]iagnostic message' })
-vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next [D]iagnostic message' })
-vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Show diagnostic [E]rror messages' })
+vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Prev [D]iagnostic' })
+vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Next [D]iagnostic' })
+vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Show [E]rror messages' })
 
 -- Map [[ and ]]
-vim.keymap.set('n', '[[', '[[', { desc = 'Previous Section' })
-vim.keymap.set('n', ']]', ']]', { desc = 'Next Section' })
+vim.keymap.set('n', '[[', '[[', { desc = 'Prev section start' })
+vim.keymap.set('n', ']]', ']]', { desc = 'Next section start' })
+
+-- Quickfix/Location list navigation
+vim.keymap.set('n', '[q', '<cmd>cprevious<CR>', { desc = 'Prev [Q]uickfix item' })
+vim.keymap.set('n', ']q', '<cmd>cnext<CR>', { desc = 'Next [Q]uickfix item' })
+vim.keymap.set('n', '[Q', '<cmd>cfirst<CR>', { desc = 'First [Q]uickfix item' })
+vim.keymap.set('n', ']Q', '<cmd>clast<CR>', { desc = 'Last [Q]uickfix item' })
+
+vim.keymap.set('n', '[l', '<cmd>lprevious<CR>', { desc = 'Prev [L]ocation list item' })
+vim.keymap.set('n', ']l', '<cmd>lnext<CR>', { desc = 'Next [L]ocation list item' })
+vim.keymap.set('n', '[L', '<cmd>lfirst<CR>', { desc = 'First [L]ocation list item' })
+vim.keymap.set('n', ']L', '<cmd>llast<CR>', { desc = 'Last [L]ocation list item' })
+
+-- Tab navigation with descriptions
+vim.keymap.set('n', '[t', '<cmd>tabprevious<CR>', { desc = 'Prev [T]ab' })
+vim.keymap.set('n', ']t', '<cmd>tabnext<CR>', { desc = 'Next [T]ab' })
+vim.keymap.set('n', '[T', '<cmd>tabfirst<CR>', { desc = 'First [T]ab' })
+vim.keymap.set('n', ']T', '<cmd>tablast<CR>', { desc = 'Last [T]ab' })
 
 -- Better indenting
 vim.keymap.set('v', '<', '<gv')
@@ -168,17 +185,17 @@ vim.api.nvim_create_autocmd('TextYankPost', {
 })
 
 -- Tab management
-vim.keymap.set('n', '<leader>tn', '<cmd>tabnew<CR>', { desc = 'New [T]ab' })
+vim.keymap.set('n', '<leader>tn', '<cmd>tabnew<CR>', { desc = '[T]ab [N]ew' })
 vim.keymap.set('n', '<leader>tc', '<cmd>tabclose<CR>', { desc = '[T]ab [C]lose' })
-vim.keymap.set('n', '<leader>t1', '1gt', { desc = 'Go to Tab 1' })
-vim.keymap.set('n', '<leader>t2', '2gt', { desc = 'Go to Tab 2' })
-vim.keymap.set('n', '<leader>t3', '3gt', { desc = 'Go to Tab 3' })
-vim.keymap.set('n', '<leader>t4', '4gt', { desc = 'Go to Tab 4' })
-vim.keymap.set('n', '<leader>t5', '5gt', { desc = 'Go to Tab 5' })
-vim.keymap.set('n', '<leader>t6', '6gt', { desc = 'Go to Tab 6' })
-vim.keymap.set('n', '<leader>t7', '7gt', { desc = 'Go to Tab 7' })
-vim.keymap.set('n', '<leader>t8', '8gt', { desc = 'Go to Tab 8' })
-vim.keymap.set('n', '<leader>t9', '9gt', { desc = 'Go to Tab 9' })
-vim.keymap.set('n', '<leader>t0', '<cmd>tablast<CR>', { desc = 'Go to Last Tab' })
+vim.keymap.set('n', '<leader>t1', '1gt', { desc = '[T]ab [1]' })
+vim.keymap.set('n', '<leader>t2', '2gt', { desc = '[T]ab [2]' })
+vim.keymap.set('n', '<leader>t3', '3gt', { desc = '[T]ab [3]' })
+vim.keymap.set('n', '<leader>t4', '4gt', { desc = '[T]ab [4]' })
+vim.keymap.set('n', '<leader>t5', '5gt', { desc = '[T]ab [5]' })
+vim.keymap.set('n', '<leader>t6', '6gt', { desc = '[T]ab [6]' })
+vim.keymap.set('n', '<leader>t7', '7gt', { desc = '[T]ab [7]' })
+vim.keymap.set('n', '<leader>t8', '8gt', { desc = '[T]ab [8]' })
+vim.keymap.set('n', '<leader>t9', '9gt', { desc = '[T]ab [9]' })
+vim.keymap.set('n', '<leader>t0', '<cmd>tablast<CR>', { desc = '[T]ab Last [0]' })
 
 -- vim: ts=2 sts=2 sw=2 et
