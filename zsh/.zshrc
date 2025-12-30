@@ -89,7 +89,6 @@ export PATH="$ANT_HOME/bin:$PATH"
 [ -f ~/.zshrc.local ] && source ~/.zshrc.local
 
 # Atuin
-. "$HOME/.atuin/bin/env"
 eval "$(atuin init zsh)"
 
 # Starship (Must be at the end to override OMZ prompt)
