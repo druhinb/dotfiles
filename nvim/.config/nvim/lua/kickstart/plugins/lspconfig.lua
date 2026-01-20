@@ -24,7 +24,7 @@ return {
       'WhoIsSethDaniel/mason-tool-installer.nvim',
 
       -- Useful status updates for LSP.
-      { 'j-hui/fidget.nvim',    opts = {} },
+      { 'j-hui/fidget.nvim', opts = {} },
 
       -- Allows extra capabilities provided by blink.cmp
       'saghen/blink.cmp',
@@ -121,10 +121,6 @@ return {
           --  Useful when you're not sure what type a variable is and you want to see
           --  the definition of its *type*, not where it was *defined*.
           map('<leader>D', require('fzf-lua').lsp_typedefs, 'Type [D]efinition')
-
-          -- Signature help - show function parameters (like JetBrains Ctrl+P)
-          map('<C-k>', vim.lsp.buf.signature_help, 'Signature Help')
-          map('<C-k>', vim.lsp.buf.signature_help, 'Signature Help', 'i')
 
           -- Hover documentation (like JetBrains Ctrl+Q)
           map('K', vim.lsp.buf.hover, 'Hover Documentation')
