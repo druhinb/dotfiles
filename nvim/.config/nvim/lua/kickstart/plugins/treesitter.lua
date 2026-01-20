@@ -4,8 +4,9 @@ return {
     build = ':TSUpdate',
     dependencies = {
       'nvim-treesitter/nvim-treesitter-textobjects',
+      branch = 'main',
     },
-    main = 'nvim-treesitter.configs', -- Sets main module to use for opts
+    main = 'nvim-treesitter.config', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     opts = {
       ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc', 'python', 'rust', 'toml' },
@@ -116,17 +117,6 @@ return {
         },
       },
     },
-    config = function(_, opts)
-      require('nvim-treesitter.configs').setup(opts)
-
-      -- Repeat movement with ; and ,
-      local ts_repeat_move = require 'nvim-treesitter.textobjects.repeatable_move'
-
-      -- Make ; and , repeat the last treesitter textobject move
-      vim.keymap.set({ 'n', 'x', 'o' }, ';', ts_repeat_move.repeat_last_move_next, { desc = 'Repeat last move (next)' })
-      vim.keymap.set({ 'n', 'x', 'o' }, ',', ts_repeat_move.repeat_last_move_previous,
-        { desc = 'Repeat last move (previous)' })
-    end,
   },
 }
 -- vim: ts=2 sts=2 sw=2 et
