@@ -101,6 +101,12 @@ return {
           Pmenu = { bg = '#202020', fg = '#CCCCCC' },
           PmenuSel = { bg = '#0078d4', fg = '#FFFFFF' },
           Search = { bg = '#9E6A03', fg = '#FFFFFF' },
+
+          -- Java semantic token tuning: keep modifiers keyword-colored so
+          -- declarations like `public static final class ...` are distinct.
+          ['@lsp.type.modifier.java'] = { link = '@keyword' },
+          ['@lsp.type.keyword.java'] = { link = '@keyword' },
+          ['@lsp.type.class.java'] = { link = '@type' },
         },
         styles = {
           comments = 'italic',

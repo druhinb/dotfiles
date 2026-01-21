@@ -23,7 +23,6 @@ local language_modules = {
   'markdown',
   'shell',
   'go',
-  'java',
   'docker',
   'config',
   'sql',

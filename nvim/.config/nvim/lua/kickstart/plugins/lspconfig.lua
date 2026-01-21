@@ -597,10 +597,7 @@ return {
           'yamllint',
           -- SQL
           'sqlfluff',
-          -- Java (LSP managed separately in lang-java.lua)
-          'jdtls',
-          'java-debug-adapter',
-          'java-test',
+          -- Java (managed by nvim-java in lang-java.lua)
           'google-java-format',
         },
       }

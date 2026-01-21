@@ -296,8 +296,7 @@ return {
         return
       end
 
-      local codelldb = mason_registry.get_package 'codelldb'
-      local extension_path = codelldb:get_install_path() .. '/extension/'
+      local extension_path = vim.fn.stdpath 'data' .. '/mason/packages/codelldb/extension/'
       local codelldb_path = extension_path .. 'adapter/codelldb'
       local liblldb_path = extension_path .. 'lldb/lib/liblldb' .. (vim.fn.has 'mac' == 1 and '.dylib' or '.so')
 
