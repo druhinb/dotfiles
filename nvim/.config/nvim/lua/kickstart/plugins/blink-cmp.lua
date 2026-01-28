@@ -72,16 +72,31 @@ return {
         nerd_font_variant = 'mono',
       },
 
+      -- ===========================================================================
+      -- Command-Line Intellisense (LazyVim Workflow)
+      -- ===========================================================================
+      -- Provides intelligent completion in command mode (:) and search (/)
+      -- Features:
+      --   - Command completion with documentation
+      --   - Path completion for file commands
+      --   - Buffer completion for search patterns
+      --   - Auto-show documentation for commands
+      -- ===========================================================================
       cmdline = {
         enabled = true,
+        min_keyword_length = 2,
         sources = function()
           local type = vim.fn.getcmdtype()
-          -- Search forward and backward
+          -- Search forward and backward (/, ?)
           if type == '/' or type == '?' then
             return { 'buffer' }
           end
-          -- Commands
-          if type == ':' or type == '@' then
+          -- Commands (:)
+          if type == ':' then
+            return { 'cmdline', 'path' }
+          end
+          -- Input (@)
+          if type == '@' then
             return { 'cmdline' }
           end
           return {}

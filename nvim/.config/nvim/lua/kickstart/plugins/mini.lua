@@ -1,20 +1,33 @@
+-- ============================================================================
+-- Mini.nvim Ecosystem - LazyVim Style
+-- Provides: text objects, surround, auto-pairs, commenting
+-- ============================================================================
 return {
-  { -- Collection of various small independent plugins/modules
-    'echasnovski/mini.nvim',
-    config = function()
-      -- Better Around/Inside textobjects
-      --
-      -- Examples:
-      --  - va)  - [V]isually select [A]round [)]paren
-      --  - yinq - [Y]ank [I]nside [N]ext [Q]uote
-      --  - ci'  - [C]hange [I]nside [']quote
-      --  - dii  - [D]elete [I]nside [I]ndent
-      --  - vai  - [V]isually select [A]round [I]ndent
+  -- ══════════════════════════════════════════════════════════════════════════
+  -- mini.ai - Enhanced Text Objects (replaces nvim-treesitter-textobjects)
+  -- ══════════════════════════════════════════════════════════════════════════
+  {
+    'echasnovski/mini.ai',
+    event = 'VeryLazy',
+    opts = function()
       local ai = require 'mini.ai'
-      ai.setup {
+      return {
         n_lines = 500,
         custom_textobjects = {
-          -- Whole buffer
+          -- Function (around/inside) - af, if
+          f = ai.gen_spec.treesitter({ a = '@function.outer', i = '@function.inner' }, {}),
+          -- Class (around/inside) - ac, ic
+          c = ai.gen_spec.treesitter({ a = '@class.outer', i = '@class.inner' }, {}),
+          -- Argument/parameter - aa, ia
+          a = ai.gen_spec.treesitter({ a = '@parameter.outer', i = '@parameter.inner' }, {}),
+          -- Conditional - ao, io (if/else blocks)
+          o = ai.gen_spec.treesitter({
+            a = { '@conditional.outer', '@loop.outer' },
+            i = { '@conditional.inner', '@loop.inner' },
+          }, {}),
+          -- Block (generic) - ab, ib
+          b = ai.gen_spec.treesitter({ a = '@block.outer', i = '@block.inner' }, {}),
+          -- Whole buffer - ag, ig
           g = function()
             local from = { line = 1, col = 1 }
             local to = {
@@ -23,18 +36,14 @@ return {
             }
             return { from = from, to = to }
           end,
-
-          -- Digit sequence
+          -- Digit sequence - ad, id
           d = { '%f[%d]%d+' },
-
-          -- Word with case (for camelCase, snake_case, etc.)
+          -- Word with case (camelCase, snake_case) - ae, ie
           e = {
             { '%u[%l%d]+%f[^%l%d]', '%f[%S][%l%d]+%f[^%l%d]', '%f[%P][%l%d]+%f[^%l%d]', '^[%l%d]+%f[^%l%d]' },
             '^().*()$',
           },
-
-          -- Indentation textobject (built-in from mini.ai)
-          -- ai = around indent, ii = inside indent
+          -- Indentation - ai, ii
           i = function(ai_type)
             local spaces = (' '):rep(vim.o.tabstop)
             local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
@@ -73,7 +82,6 @@ return {
             end
 
             if ai_type == 'a' then
-              -- Include blank lines below
               local last_line = vim.fn.line '$'
               while to_line < last_line and vim.fn.getline(to_line + 1):find '^%s*$' do
                 to_line = to_line + 1
@@ -85,57 +93,165 @@ return {
               to = { line = to_line, col = #vim.fn.getline(to_line) },
             }
           end,
-
-          -- Number (integer or float)
+          -- Number - an, in
           n = { '%f[%d]%d+%.?%d*' },
-
-          -- Key-value pair
+          -- Key-value pair - ak, ik
           k = { { '%w+%s*=' }, '^%s*().-()%s*$' },
-
-          -- URL
+          -- URL - au, iu
           u = {
             'https?://[%w._~:/?#%[%]@!$&\'()*+,;=-%%]+',
           },
+          -- Tag (HTML/XML) - at, it (built-in)
+          t = { '<([%p%w]-)%f[^<%w][^<>]->.-</%1>', '^<.->().googletag<googletag/%1>$' },
         },
-      }
-
-      -- Add/delete/replace surroundings (brackets, quotes, etc.)
-      --
-      -- - gzaiw) - [G]o [Z]urround [A]dd [I]nner [W]ord [)]Paren
-      -- - gzd'   - [G]o [Z]urround [D]elete [']quotes
-      -- - gzr)'  - [G]o [Z]urround [R]eplace [)] [']
-      require('mini.surround').setup {
+        -- Module mappings
         mappings = {
-          add = 'gza',            -- Add surrounding in Normal and Visual modes
-          delete = 'gzd',         -- Delete surrounding
-          find = 'gzf',           -- Find surrounding (to the right)
-          find_left = 'gzF',      -- Find surrounding (to the left)
-          highlight = 'gzh',      -- Highlight surrounding
-          replace = 'gzr',        -- Replace surrounding
-          update_n_lines = 'gzn', -- Update `n_lines`
+          -- Main textobject prefixes
+          around = 'a',
+          inside = 'i',
+          -- Next/last variants
+          around_next = 'an',
+          inside_next = 'in',
+          around_last = 'al',
+          inside_last = 'il',
+          -- Move cursor
+          goto_left = 'g[',
+          goto_right = 'g]',
         },
       }
+    end,
+    config = function(_, opts)
+      require('mini.ai').setup(opts)
+    end,
+  },
 
-      -- Simple and easy statusline.
-      --  You could remove this setup call if you don't like it,
-      --  and try some other statusline plugin
-      -- local statusline = require 'mini.statusline'
-      -- set use_icons to true if you have a Nerd Font
-      -- statusline.setup { use_icons = vim.g.have_nerd_font }
+  -- ══════════════════════════════════════════════════════════════════════════
+  -- mini.surround - Surround Operations (ys, ds, cs style)
+  -- ══════════════════════════════════════════════════════════════════════════
+  {
+    'echasnovski/mini.surround',
+    event = 'VeryLazy',
+    opts = {
+      -- LazyVim-style mappings (ys, ds, cs)
+      mappings = {
+        add = 'ys', -- Add surrounding in Normal and Visual modes (ysiw), ys{motion}{char})
+        delete = 'ds', -- Delete surrounding (ds{char})
+        find = 'gsf', -- Find surrounding (to the right)
+        find_left = 'gsF', -- Find surrounding (to the left)
+        highlight = 'gsh', -- Highlight surrounding
+        replace = 'cs', -- Replace surrounding (cs{target}{replacement})
+        update_n_lines = 'gsn', -- Update `n_lines`
+        suffix_last = 'l', -- Suffix to search with "prev" method
+        suffix_next = 'n', -- Suffix to search with "next" method
+      },
+      -- Number of lines within which surrounding is searched
+      n_lines = 50,
+      -- Whether to respect selection type (charwise, linewise, blockwise)
+      respect_selection_type = false,
+      -- How to search for surrounding (find more on `:h MiniSurround.config`)
+      search_method = 'cover_or_next',
+      -- Duration in ms for highlight when calling `MiniSurround.highlight()`
+      highlight_duration = 500,
+    },
+    -- Make sure to set up mapping for adding surrounding for line
+    keys = {
+      -- LazyVim adds this for a consistent "yss" to surround whole line
+      { 'yss', 'ys_', desc = 'Surround line', remap = true },
+    },
+  },
 
-      -- You can configure sections in the statusline by overriding their
-      -- default behavior. For example, here we set the section for
-      -- cursor location to LINE:COLUMN
-      ---@diagnostic disable-next-line: duplicate-set-field
-      -- statusline.section_location = function()
-      --   return '%2l:%-2v'
-      -- end
+  -- ══════════════════════════════════════════════════════════════════════════
+  -- mini.pairs - Auto Pairs
+  -- ══════════════════════════════════════════════════════════════════════════
+  {
+    'echasnovski/mini.pairs',
+    event = 'InsertEnter',
+    opts = {
+      -- In which modes mappings from this `config` should be created
+      modes = { insert = true, command = false, terminal = false },
+      -- Global mappings
+      mappings = {
+        ['('] = { action = 'open', pair = '()', neigh_pattern = '[^\\].' },
+        ['['] = { action = 'open', pair = '[]', neigh_pattern = '[^\\].' },
+        ['{'] = { action = 'open', pair = '{}', neigh_pattern = '[^\\].' },
+        [')'] = { action = 'close', pair = '()', neigh_pattern = '[^\\].' },
+        [']'] = { action = 'close', pair = '[]', neigh_pattern = '[^\\].' },
+        ['}'] = { action = 'close', pair = '{}', neigh_pattern = '[^\\].' },
+        ['"'] = { action = 'closeopen', pair = '""', neigh_pattern = '[^\\].', register = { cr = false } },
+        ["'"] = { action = 'closeopen', pair = "''", neigh_pattern = '[^%a\\].', register = { cr = false } },
+        ['`'] = { action = 'closeopen', pair = '``', neigh_pattern = '[^\\].', register = { cr = false } },
+      },
+    },
+    config = function(_, opts)
+      require('mini.pairs').setup(opts)
+    end,
+  },
 
-      -- ... and there is more!
-      --  Check out: https://github.com/echasnovski/mini.nvim
+  -- ══════════════════════════════════════════════════════════════════════════
+  -- mini.comment - Commenting (gcc, gc{motion})
+  -- ══════════════════════════════════════════════════════════════════════════
+  {
+    'echasnovski/mini.comment',
+    event = 'VeryLazy',
+    dependencies = {
+      -- For JSX/TSX and other embedded language support
+      {
+        'JoosepAlviste/nvim-ts-context-commentstring',
+        lazy = true,
+        opts = {
+          enable_autocmd = false,
+        },
+      },
+    },
+    opts = {
+      -- Options which control module behavior
+      options = {
+        -- Function to compute custom 'commentstring' (optional)
+        custom_commentstring = function()
+          return require('ts_context_commentstring').calculate_commentstring() or vim.bo.commentstring
+        end,
+        -- Whether to ignore blank lines
+        ignore_blank_line = false,
+        -- Whether to recognize as comment only lines without indent
+        start_of_line = false,
+        -- Whether to force single space inner padding for comment parts
+        pad_comment_parts = true,
+      },
+      -- Module mappings
+      mappings = {
+        -- Toggle comment (like `gcip` - Loss comment inner paragraph)
+        comment = 'gc',
+        -- Toggle comment on current line
+        comment_line = 'gcc',
+        -- Toggle comment on visual selection
+        comment_visual = 'gc',
+        -- Define 'comment' textobject (like `dgc` - delete whole comment block)
+        textobject = 'gc',
+      },
+    },
+  },
 
-      -- Go comments
-      require('mini.comment').setup()
+  -- ══════════════════════════════════════════════════════════════════════════
+  -- mini.icons - Icon provider (used by many plugins)
+  -- ══════════════════════════════════════════════════════════════════════════
+  {
+    'echasnovski/mini.icons',
+    lazy = true,
+    opts = {
+      file = {
+        ['.keep'] = { glyph = '󰊢', hl = 'MiniIconsGrey' },
+        ['devcontainer.json'] = { glyph = '', hl = 'MiniIconsAzure' },
+      },
+      filetype = {
+        dotenv = { glyph = '', hl = 'MiniIconsYellow' },
+      },
+    },
+    init = function()
+      -- Mock nvim-web-devicons for compatibility with other plugins
+      package.preload['nvim-web-devicons'] = function()
+        require('mini.icons').mock_nvim_web_devicons()
+        return package.loaded['nvim-web-devicons']
+      end
     end,
   },
 }

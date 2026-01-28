@@ -1,54 +1,44 @@
--- NOTE: Plugins can also be configured to run Lua code when they are loaded.
---
--- This is often very useful to both group configuration, as well as handle
--- lazy loading plugins that don't need to be loaded immediately at startup.
---
--- For example, in the following configuration, we use:
---  event = 'VimEnter'
---
--- which loads which-key before all the UI elements are loaded. Events can be
--- normal autocommands events (`:help autocmd-events`).
---
--- Then, because we use the `opts` key (recommended), the configuration runs
--- after the plugin has been loaded as `require(MODULE).setup(opts)`.
-
+-- ============================================================================
+-- Which-Key.nvim - Keybinding Popup (LazyVim Style)
+-- Shows pending keybinds in a bottom-right popup
+-- ============================================================================
 return {
-  { -- Useful plugin to show you pending keybinds.
+  {
     'folke/which-key.nvim',
-    event = 'VimEnter', -- Sets the loading event to 'VimEnter'
+    event = 'VeryLazy',
+    opts_extend = { 'spec' },
     opts = {
-      preset = 'modern', -- 'classic', 'modern', 'helix'
-      -- delay between pressing a key and opening which-key (milliseconds)
-      -- this setting is independent of vim.o.timeoutlen
+      -- Preset: 'classic', 'modern', 'helix'
+      preset = 'modern',
+      -- Delay before showing popup (instant feel)
       delay = 0,
+      -- Window configuration (bottom-right positioning)
       win = {
-        border = 'rounded', -- none, single, double, shadow
-        -- position = 'bottom', -- INVALID in v3
-        -- margin = { 1, 0, 1, 0 }, -- INVALID in v3
-        padding = { 2, 2 }, -- extra window padding [top/bottom, right/left]
+        border = 'rounded',
+        padding = { 1, 2 },
         wo = {
           winblend = 0,
         },
+        -- Position calculated to be bottom-right
+        row = -1,
+        col = 0.99,
       },
+      -- Layout configuration
       layout = {
-        height = { min = 4, max = 25 }, -- min and max height of the columns
-        width = { min = 20, max = 50 }, -- min and max width of the columns
-        spacing = 3, -- spacing between columns
-        align = 'left', -- align columns left, center or right
+        height = { min = 4, max = 25 },
+        width = { min = 20, max = 50 },
+        spacing = 3,
+        align = 'left',
       },
-      -- ignore_missing = true, -- DEPRECATED
-      -- show_help = true, -- DEPRECATED
-      -- show_keys = true, -- DEPRECATED
-      -- triggers = 'auto', -- DEPRECATED
-
+      -- Icons configuration
       icons = {
-        breadcrumb = '»', -- symbol used in the command line area that shows your active key combo
-        separator = '➜', -- symbol used between a key and it's label
-        group = '+', -- symbol prepended to a group
-        -- set icon mappings to true if you have a Nerd Font
+        breadcrumb = '»',
+        separator = '➜',
+        group = '+',
+        ellipsis = '…',
         mappings = vim.g.have_nerd_font,
-        -- If you are using a Nerd Font: set icons.keys to an empty table which will use the
-        -- default which-key.nvim defined Nerd Font icons, otherwise define a string table
+        rules = {},
+        colors = true,
         keys = vim.g.have_nerd_font and {} or {
           Up = '<Up> ',
           Down = '<Down> ',
@@ -66,140 +56,143 @@ return {
           BS = '<BS> ',
           Space = '<Space> ',
           Tab = '<Tab> ',
-          F1 = '<F1>',
-          F2 = '<F2>',
-          F3 = '<F3>',
-          F4 = '<F4>',
-          F5 = '<F5>',
-          F6 = '<F6>',
-          F7 = '<F7>',
-          F8 = '<F8>',
-          F9 = '<F9>',
-          F10 = '<F10>',
-          F11 = '<F11>',
-          F12 = '<F12>',
         },
       },
-
-      -- Document existing key chains
+      -- Show keybinding help
+      show_help = true,
+      show_keys = true,
+      -- Key groups and mappings (LazyVim style organization)
       spec = {
-        -- Leader groups
-        { '<leader>a', group = '[A]rgument swap' },
-        { '<leader>b', group = '[B]uffer' },
-        { '<leader>c', group = '[C]onflict' },
-        { '<leader>d', group = '[D]iagnostics' },
-        { '<leader>g', group = '[G]it' },
-        { '<leader>h', group = 'Git [H]unk / Resize Left', mode = { 'n', 'v' } },
-        { '<leader>l', group = '[L]ayout / Resize Right' },
-        { '<leader>o', group = '[O]rganize' },
-        { '<leader>p', group = '[P]eek Definition' },
-        { '<leader>q', group = '[Q]uickfix' },
-        { '<leader>r', group = '[R]ename/Refactor' },
-        { '<leader>s', group = '[S]earch' },
-        { '<leader>t', group = '[T]oggle/Tabs' },
-        { '<leader>w', group = '[W]rite/Workspace' },
-
-        -- Vim motion groups
-        { '<C-w>', group = '[W]indow' },
-        { 'g', group = '[G]o to' },
-        { 'z', group = '[Z] Fold/Scroll' },
-        { 'm', group = 'Set [M]ark' },
-        { "'", group = "Jump to [']Mark" },
-        { '`', group = 'Jump to [`]Mark (exact)' },
-        { '"', group = '["]Registers' },
-
-        -- Navigation groups
-        { '[', group = '[P]revious ...' },
-        { ']', group = '[N]ext ...' },
-
+        -- ════════════════════════════════════════════════════════════════════
+        -- Leader Groups (Top-Level Categories)
+        -- ════════════════════════════════════════════════════════════════════
+        { '<leader>a', group = 'argument swap', icon = { icon = '󰌶', color = 'cyan' } },
+        { '<leader>b', group = 'buffer', icon = { icon = '󰈔', color = 'blue' } },
+        { '<leader>c', group = 'code', icon = { icon = '', color = 'orange' } },
+        { '<leader>d', group = 'debug/diagnostics', icon = { icon = '', color = 'red' } },
+        { '<leader>f', group = 'file/find', icon = { icon = '󰈞', color = 'cyan' } },
+        { '<leader>g', group = 'git', icon = { icon = '', color = 'orange' } },
+        { '<leader>gf', group = 'find', icon = { icon = '', color = 'cyan' } },
+        { '<leader>gh', group = 'hunks', icon = { icon = '', color = 'orange' } },
+        { '<leader>h', group = 'resize left', icon = { icon = '󰁍', color = 'blue' } },
+        { '<leader>j', group = 'resize down', icon = { icon = '󰁅', color = 'blue' } },
+        { '<leader>k', group = 'resize up', icon = { icon = '󰁝', color = 'blue' } },
+        { '<leader>l', group = 'layout/resize right', icon = { icon = '󰁔', color = 'blue' } },
+        { '<leader>n', group = 'noice/notifications', icon = { icon = '󰎟', color = 'yellow' } },
+        { '<leader>o', group = 'organize', icon = { icon = '󱃔', color = 'purple' } },
+        { '<leader>p', group = 'peek', icon = { icon = '󰍉', color = 'green' } },
+        { '<leader>q', group = 'quit/session', icon = { icon = '󰈆', color = 'red' } },
+        { '<leader>r', group = 'rename/refactor', icon = { icon = '󰑕', color = 'purple' } },
+        { '<leader>s', group = 'search', icon = { icon = '', color = 'green' } },
+        { '<leader>sn', group = 'noice', icon = { icon = '󰎟', color = 'yellow' } },
+        { '<leader>t', group = 'toggle/tabs', icon = { icon = '󰔡', color = 'yellow' } },
+        { '<leader>tg', group = 'git', icon = { icon = '', color = 'orange' } },
+        { '<leader>u', group = 'ui/undo', icon = { icon = '󰙵', color = 'cyan' } },
+        { '<leader>w', group = 'windows/write', icon = { icon = '', color = 'blue' } },
+        { '<leader>x', group = 'trouble/quickfix', icon = { icon = '󱖫', color = 'red' } },
+        { '<leader>xn', group = 'neotest', icon = { icon = '󰙨', color = 'green' } },
+        -- ════════════════════════════════════════════════════════════════════
+        -- Vim Motion Groups (Built-in Keys)
+        -- ════════════════════════════════════════════════════════════════════
+        { '<C-w>', group = 'window', icon = { icon = '', color = 'blue' } },
+        { 'g', group = 'goto', icon = { icon = '󱞫', color = 'cyan' } },
+        { 'z', group = 'fold/scroll', icon = { icon = '󰁌', color = 'purple' } },
+        { 'm', group = 'mark', icon = { icon = '󰃀', color = 'yellow' } },
+        { "'", group = 'jump to mark', icon = { icon = '󰃀', color = 'yellow' } },
+        { '`', group = 'jump to mark (exact)', icon = { icon = '󰃀', color = 'yellow' } },
+        { '"', group = 'registers', icon = { icon = '󱓥', color = 'orange' } },
+        -- ════════════════════════════════════════════════════════════════════
+        -- Navigation Groups ([ and ])
+        -- ════════════════════════════════════════════════════════════════════
+        { '[', group = 'prev', icon = { icon = '󰒮', color = 'cyan' } },
+        { ']', group = 'next', icon = { icon = '󰒭', color = 'cyan' } },
         -- Quickfix navigation
-        { '[q', desc = 'Prev [Q]uickfix item' },
-        { ']q', desc = 'Next [Q]uickfix item' },
-        { '[Q', desc = 'First [Q]uickfix item' },
-        { ']Q', desc = 'Last [Q]uickfix item' },
-
+        { '[q', desc = 'Prev Quickfix' },
+        { ']q', desc = 'Next Quickfix' },
+        { '[Q', desc = 'First Quickfix' },
+        { ']Q', desc = 'Last Quickfix' },
         -- Location list navigation
-        { '[l', desc = 'Prev [L]ocation list item' },
-        { ']l', desc = 'Next [L]ocation list item' },
-        { '[L', desc = 'First [L]ocation list item' },
-        { ']L', desc = 'Last [L]ocation list item' },
-
+        { '[l', desc = 'Prev Location' },
+        { ']l', desc = 'Next Location' },
+        { '[L', desc = 'First Location' },
+        { ']L', desc = 'Last Location' },
         -- Tab navigation
-        { '[t', desc = 'Prev [T]ab' },
-        { ']t', desc = 'Next [T]ab' },
-        { '[T', desc = 'First [T]ab' },
-        { ']T', desc = 'Last [T]ab' },
-
+        { '[t', desc = 'Prev Tab' },
+        { ']t', desc = 'Next Tab' },
+        { '[T', desc = 'First Tab' },
+        { ']T', desc = 'Last Tab' },
         -- Diagnostic navigation
-        { '[d', desc = 'Prev [D]iagnostic' },
-        { ']d', desc = 'Next [D]iagnostic' },
-
-        -- Treesitter textobject navigation (defined in treesitter.lua)
-        { '[f', desc = 'Prev [F]unction start' },
-        { ']f', desc = 'Next [F]unction start' },
-        { '[F', desc = 'Prev [F]unction end' },
-        { ']F', desc = 'Next [F]unction end' },
-        { '[k', desc = 'Prev [K]lass start' },
-        { ']k', desc = 'Next [K]lass start' },
-        { '[K', desc = 'Prev [K]lass end' },
-        { ']K', desc = 'Next [K]lass end' },
-        { '[a', desc = 'Prev [A]rgument' },
-        { ']a', desc = 'Next [A]rgument' },
-        { '[o', desc = 'Prev l[O]op' },
-        { ']o', desc = 'Next l[O]op' },
-        { '[r', desc = 'Prev [R]eturn' },
-        { ']r', desc = 'Next [R]eturn' },
-        { '[/', desc = 'Prev comment' },
-        { ']/', desc = 'Next comment' },
-        { '[=', desc = 'Prev assignment' },
-        { ']=', desc = 'Next assignment' },
-
-        -- Spell navigation
-        { '[s', desc = 'Prev mi[S]spelled word' },
-        { ']s', desc = 'Next mi[S]spelled word' },
-
-        -- Git/Diff change navigation (gitsigns)
-        { '[c', desc = 'Prev [C]hange hunk' },
-        { ']c', desc = 'Next [C]hange hunk' },
-
-        -- Method navigation (built-in)
-        { '[m', desc = 'Prev [M]ethod start' },
-        { ']m', desc = 'Next [M]ethod start' },
-        { '[M', desc = 'Prev [M]ethod end' },
-        { ']M', desc = 'Next [M]ethod end' },
-
-        -- Section navigation
-        { '[[', desc = 'Prev section start' },
-        { ']]', desc = 'Next section start' },
-        { '[]', desc = 'Prev section end' },
-        { '][', desc = 'Next section end' },
-
-        -- Fold navigation
-        { '[z', desc = 'Start of current fold' },
-        { ']z', desc = 'End of current fold' },
-        { 'zj', desc = 'Next fold' },
-        { 'zk', desc = 'Prev fold' },
-
-        -- Empty line/paragraph navigation
-        { '{', desc = 'Prev empty line/paragraph' },
-        { '}', desc = 'Next empty line/paragraph' },
-
-        -- Brace/paren navigation
-        { '[(', desc = 'Prev unmatched (' },
-        { '])', desc = 'Next unmatched )' },
-        { '[{', desc = 'Prev unmatched {' },
-        { ']}', desc = 'Next unmatched }' },
-
-        -- Operator-pending textobject descriptions
-        { 'a', group = '[A]round (textobject)', mode = { 'o', 'x' } },
-        { 'i', group = '[I]nside (textobject)', mode = { 'o', 'x' } },
+        { '[d', desc = 'Prev Diagnostic' },
+        { ']d', desc = 'Next Diagnostic' },
+        { '[e', desc = 'Prev Error' },
+        { ']e', desc = 'Next Error' },
+        { '[w', desc = 'Prev Warning' },
+        { ']w', desc = 'Next Warning' },
+        -- Treesitter/Code navigation
+        { '[f', desc = 'Prev Function' },
+        { ']f', desc = 'Next Function' },
+        { '[c', desc = 'Prev Class/Change' },
+        { ']c', desc = 'Next Class/Change' },
+        { '[a', desc = 'Prev Argument' },
+        { ']a', desc = 'Next Argument' },
+        -- Git navigation
+        { '[h', desc = 'Prev Hunk' },
+        { ']h', desc = 'Next Hunk' },
+        -- ════════════════════════════════════════════════════════════════════
+        -- Surround/Text Object Groups (gs prefix for mini.surround)
+        -- ════════════════════════════════════════════════════════════════════
+        { 'gs', group = 'surround find', icon = { icon = '󰅪', color = 'purple' } },
+        -- ════════════════════════════════════════════════════════════════════
+        -- Text Objects (operator-pending and visual modes)
+        -- ════════════════════════════════════════════════════════════════════
+        { 'a', group = 'around', mode = { 'o', 'x' }, icon = { icon = '󰅪', color = 'yellow' } },
+        { 'i', group = 'inside', mode = { 'o', 'x' }, icon = { icon = '󰅪', color = 'yellow' } },
+        -- Common text object descriptions
+        { 'af', desc = 'around function', mode = { 'o', 'x' } },
+        { 'if', desc = 'inside function', mode = { 'o', 'x' } },
+        { 'ac', desc = 'around class', mode = { 'o', 'x' } },
+        { 'ic', desc = 'inside class', mode = { 'o', 'x' } },
+        { 'aa', desc = 'around argument', mode = { 'o', 'x' } },
+        { 'ia', desc = 'inside argument', mode = { 'o', 'x' } },
+        { 'ab', desc = 'around block', mode = { 'o', 'x' } },
+        { 'ib', desc = 'inside block', mode = { 'o', 'x' } },
+        { 'ao', desc = 'around loop/conditional', mode = { 'o', 'x' } },
+        { 'io', desc = 'inside loop/conditional', mode = { 'o', 'x' } },
+        { 'ai', desc = 'around indent', mode = { 'o', 'x' } },
+        { 'ii', desc = 'inside indent', mode = { 'o', 'x' } },
+        { 'ag', desc = 'around buffer', mode = { 'o', 'x' } },
+        { 'ig', desc = 'inside buffer', mode = { 'o', 'x' } },
       },
+      -- Filter to only show mappings with descriptions
       filter = function(mapping)
-        -- return true to include the mapping, false to exclude it
         return mapping.desc and mapping.desc ~= ''
       end,
+      -- Trigger which-key automatically
       triggers = {
         { '<auto>', mode = 'nixsotc' },
+      },
+      -- Plugin integrations
+      plugins = {
+        marks = true,
+        registers = true,
+        spelling = {
+          enabled = true,
+          suggestions = 20,
+        },
+        presets = {
+          operators = true,
+          motions = true,
+          text_objects = true,
+          windows = true,
+          nav = true,
+          z = true,
+          g = true,
+        },
+      },
+      -- Disable for certain filetypes
+      disable = {
+        ft = {},
+        bt = {},
       },
     },
   },

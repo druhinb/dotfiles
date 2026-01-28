@@ -56,7 +56,8 @@ require('lazy').setup({
   require 'kickstart.plugins.debug',
   require 'kickstart.plugins.indent_line',
   require 'kickstart.plugins.int',
-  require 'kickstart.plugins.autopairs',
+  -- NOTE: autopairs disabled - using mini.pairs instead (see mini.lua)
+  -- require 'kickstart.plugins.autopairs',
   -- require 'kickstart.plugins.neo-tree',
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
@@ -87,6 +88,25 @@ require('lazy').setup({
       start = '🚀',
       task = '📌',
       lazy = '💤 ',
+    },
+  },
+  -- Performance optimization
+  performance = {
+    cache = {
+      enabled = true,
+    },
+    rtp = {
+      -- Disable some rtp plugins for faster startup
+      disabled_plugins = {
+        'gzip',
+        'matchit',
+        'matchparen',
+        'netrwPlugin',
+        'tarPlugin',
+        'tohtml',
+        'tutor',
+        'zipPlugin',
+      },
     },
   },
 })
