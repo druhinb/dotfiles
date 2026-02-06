@@ -66,16 +66,17 @@ return {
         -- Global options
         global_resume = true,
         global_resume_query = true,
+
         -- Winopts for floating window
         winopts = {
           height = 0.85,
           width = 0.80,
           row = 0.35,
           col = 0.50,
-          border = 'rounded',
+          border = { '╭', '─', '╮', '│', '╯', '─', '╰', '│' },
           preview = {
             default = 'builtin',
-            border = 'border',
+            border = { '╭', '─', '╮', '│', '╯', '─', '╰', '│' },
             wrap = 'nowrap',
             hidden = 'nohidden',
             vertical = 'down:45%',
@@ -105,6 +106,16 @@ return {
             vim.keymap.set('t', '<C-k>', '<Up>', { silent = true, buffer = true })
           end,
         },
+
+        hls = {
+          normal = 'NormalFloat',
+          border = 'FloatBorder', -- Matches your #1F1F1F background
+          preview_normal = 'NormalFloat',
+          preview_border = 'FloatBorder',
+          help_normal = 'NormalFloat',
+          help_border = 'FloatBorder',
+        },
+
         -- Key bindings
         keymap = {
           builtin = {
