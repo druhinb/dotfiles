@@ -29,7 +29,7 @@ return {
       { '<leader>sw', function() require('fzf-lua').grep_visual() end, mode = 'v', desc = 'Selection (Root)' },
       { '<leader>sW', function() require('fzf-lua').grep_visual({ cwd = vim.fn.expand('%:p:h') }) end, mode = 'v', desc = 'Selection (cwd)' },
       { '<leader>sb', function() require('fzf-lua').lgrep_curbuf() end, desc = 'Buffer Lines' },
-      { '<leader>/', function() require('fzf-lua').lgrep_curbuf() end, desc = 'Search in Buffer' },
+      { '<leader>/', function() require('fzf-lua').lfuzzy_curbuf() end, desc = 'Search in Buffer' },
       { '<leader>ss', function() require('fzf-lua').builtin() end, desc = 'FzfLua Builtins' },
       { '<leader>sr', function() require('fzf-lua').resume() end, desc = 'Resume' },
       { '<leader>s"', function() require('fzf-lua').registers() end, desc = 'Registers' },
