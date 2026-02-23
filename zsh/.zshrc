@@ -64,6 +64,7 @@ alias cat="bat"
 alias ls="eza --icons=always -a"
 alias gs="git status"
 alias download='f(){aria2c -x16 -s16 $1};f'
+alias lg='lazygit'
 # cd is handled by zoxide below
 
 # Zoxide
@@ -90,8 +91,6 @@ export PATH="$ANT_HOME/bin:$PATH"
 # Local overrides
 [ -f ~/.zshrc.local ] && source ~/.zshrc.local
 
-# Atuin
-eval "$(atuin init zsh)"
 
 # Starship (Must be at the end to override OMZ prompt)
 eval "$(starship init zsh)"
@@ -119,5 +118,15 @@ compdef _makefile_targets make
 bindkey -v
 export keytimeout=1
 
+# Atuin
+eval "$(atuin init zsh)"
+bindkey '^n' atuin-search
+bindkey '^p' atuin-search
+bindkey -M viins '^n' atuin-search
+bindkey -M viins '^p' atuin-search
+
 bindkey -M viins '^Y' autosuggest-accept
 bindkey '^Y' autosuggest-accept
+
+
+
