@@ -9,6 +9,8 @@
 --   5. Deep integration with trouble.nvim for diagnostics/references
 -- =============================================================================
 
+local is_ssh = vim.env.SSH_CLIENT ~= nil or vim.env.SSH_TTY ~= nil or vim.env.SSH_CONNECTION ~= nil
+
 -- =============================================================================
 -- Server Configurations Table
 -- =============================================================================
@@ -358,10 +360,14 @@ local function setup_keymaps(event)
     require('trouble').open { mode = 'lsp_references', focus = true }
   end, 'References (Trouble)')
 
-  -- Also keep fzf-lua references on gR for quick fuzzy finding
+  -- Also keep fzf-lua references on gR for quick fuzzy finding (or Telescope if fzf is absent or we are over SSH)
   map('gR', function()
-    require('fzf-lua').lsp_references()
-  end, 'References (FZF)')
+    if not is_ssh and vim.fn.executable('fzf') == 1 then
+      require('fzf-lua').lsp_references()
+    else
+      require('telescope.builtin').lsp_references()
+    end
+  end, 'References')
 
   -- ===========================================================================
   -- Code Actions (LazyVim style)
@@ -386,10 +392,18 @@ local function setup_keymaps(event)
   -- Document/Workspace Operations
   -- ===========================================================================
   map('<leader>ds', function()
-    require('fzf-lua').lsp_document_symbols()
+    if not is_ssh and vim.fn.executable('fzf') == 1 then
+      require('fzf-lua').lsp_document_symbols()
+    else
+      require('telescope.builtin').lsp_document_symbols()
+    end
   end, 'Document Symbols')
   map('<leader>ws', function()
-    require('fzf-lua').lsp_live_workspace_symbols()
+    if not is_ssh and vim.fn.executable('fzf') == 1 then
+      require('fzf-lua').lsp_live_workspace_symbols()
+    else
+      require('telescope.builtin').lsp_workspace_symbols()
+    end
   end, 'Workspace Symbols')
 
   -- ===========================================================================
@@ -424,6 +438,8 @@ local function setup_keymaps(event)
     vim.diagnostic.enable(not vim.diagnostic.is_enabled())
   end, 'Toggle Diagnostics')
 end
+
+
 
 -- =============================================================================
 -- On Attach Handler
@@ -480,10 +496,14 @@ local function on_attach(event)
   -- Code lens
   if client_supports_method(client, vim.lsp.protocol.Methods.textDocument_codeLens, event.buf) then
     vim.keymap.set('n', '<leader>cL', vim.lsp.codelens.run, { buffer = event.buf, desc = 'LSP: Run Code Lens' })
-    vim.api.nvim_create_autocmd({ 'BufEnter', 'CursorHold', 'InsertLeave' }, {
-      buffer = event.buf,
-      callback = vim.lsp.codelens.refresh,
-    })
+    if vim.lsp.codelens.enable then
+      vim.lsp.codelens.enable(true, { bufnr = event.buf })
+    else
+      vim.api.nvim_create_autocmd({ 'BufEnter', 'CursorHold', 'InsertLeave' }, {
+        buffer = event.buf,
+        callback = vim.lsp.codelens.refresh,
+      })
+    end
   end
 
   if client.server_capabilities.documentSymbolProvider then
@@ -603,6 +623,7 @@ return {
       }
     end,
     config = function(_, opts)
+
       -- ===========================================================================
       -- Setup LspAttach autocmd
       -- ===========================================================================
@@ -616,6 +637,20 @@ return {
       -- ===========================================================================
       vim.diagnostic.config(opts.diagnostics)
       vim.opt.updatetime = 250
+
+      -- ===========================================================================
+      -- Configure LSP Handlers (Borders for hover and signatureHelp)
+      -- ===========================================================================
+      vim.lsp.handlers['textDocument/hover'] = function(err, result, ctx, config)
+        return vim.lsp.handlers.hover(err, result, ctx, vim.tbl_deep_extend('force', {
+          border = 'rounded',
+        }, config or {}))
+      end
+      vim.lsp.handlers['textDocument/signatureHelp'] = function(err, result, ctx, config)
+        return vim.lsp.handlers.signatureHelp(err, result, ctx, vim.tbl_deep_extend('force', {
+          border = 'rounded',
+        }, config or {}))
+      end
 
       -- ===========================================================================
       -- Enable Inlay Hints (if supported)
@@ -632,12 +667,14 @@ return {
       -- ===========================================================================
       -- Mason Tool Installer (formatters, linters)
       -- ===========================================================================
-      local ensure_installed = vim.tbl_keys(opts.servers or {})
-      vim.list_extend(ensure_installed, opts.ensure_installed or {})
-      require('mason-tool-installer').setup { ensure_installed = ensure_installed }
+      if not is_ssh then
+        local ensure_installed = vim.tbl_keys(opts.servers or {})
+        vim.list_extend(ensure_installed, opts.ensure_installed or {})
+        require('mason-tool-installer').setup { ensure_installed = ensure_installed }
+      end
 
       -- ===========================================================================
-      -- Configure LSP Servers (Neovim 0.11+ style)
+      -- Configure LSP Servers (Neovim 0.11+ / 0.12+ Native Style)
       -- ===========================================================================
       for server_name, server_config in pairs(opts.servers) do
         -- Merge capabilities
@@ -666,6 +703,9 @@ return {
       require('mason-lspconfig').setup {
         ensure_installed = {},
         automatic_installation = false,
+        automatic_enable = {
+          exclude = { 'jdtls' },
+        },
       }
     end,
   },

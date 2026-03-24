@@ -16,18 +16,60 @@ vim.o.mouse = 'a'
 vim.o.showmode = false
 
 -- Sync clipboard between OS and Neovim.
---  Schedule the setting after `UiEnter` because it can increase startup-time.
---  Remove this option if you want your OS clipboard to remain independent.
---  See `:help 'clipboard'`
+-- Schedule the setting after `UiEnter` because it can increase startup-time.
+-- Remove this option if you want your OS clipboard to remain independent.
+-- See `:help 'clipboard'`
+local is_ssh = vim.env.SSH_CLIENT ~= nil or vim.env.SSH_TTY ~= nil or vim.env.SSH_CONNECTION ~= nil
+
 vim.schedule(function()
+  if is_ssh then
+    -- Use native OSC 52 if available (Neovim >= 0.10)
+    local ok, osc52 = pcall(require, 'vim.ui.clipboard.osc52')
+    if ok then
+      vim.g.clipboard = {
+        name = 'OSC 52',
+        copy = {
+          ['+'] = osc52.copy('+'),
+          ['*'] = osc52.copy('*'),
+        },
+        -- paste queries the terminal and blocks waiting for stdin, which causes Neovim to hang
+        -- indefinitely if the terminal blocks clipboard reads for security.
+        -- We fall back to Neovim's internal register instead, completely avoiding network query hangs!
+        paste = {
+          ['+'] = function() return vim.fn.getreg('"', 1, true), vim.fn.getregtype('"') end,
+          ['*'] = function() return vim.fn.getreg('"', 1, true), vim.fn.getregtype('"') end,
+        },
+      }
+    else
+      -- Fallback basic OSC 52 copy implementation for older Neovim versions
+      local function osc52_copy(str)
+        local base64 = vim.fn.base64_encode(str)
+        local osc = string.format('\x1b]52;c;%s\x07', base64)
+        vim.fn.chansend(vim.v.stderr, osc)
+      end
+      vim.g.clipboard = {
+        name = 'OSC 52 Fallback',
+        copy = {
+          ['+'] = function(lines) osc52_copy(table.concat(lines, '\n')) end,
+          ['*'] = function(lines) osc52_copy(table.concat(lines, '\n')) end,
+        },
+        paste = {
+          ['+'] = function() return vim.fn.getreg('"', 1, true), vim.fn.getregtype('"') end,
+          ['*'] = function() return vim.fn.getreg('"', 1, true), vim.fn.getregtype('"') end,
+        },
+      }
+    end
+  end
   vim.o.clipboard = 'unnamedplus'
 end)
 
 -- Enable break indent
 vim.o.breakindent = true
 
--- Set internal shell to zsh
-vim.o.shell = '/bin/zsh'
+-- Set internal shell to zsh if available
+if vim.fn.executable('/bin/zsh') == 1 then
+  vim.o.shell = '/bin/zsh'
+end
 
 -- Save undo history
 vim.o.undofile = true
@@ -44,6 +86,8 @@ vim.o.updatetime = 250
 
 -- Decrease mapped sequence wait time
 vim.o.timeoutlen = 300
+vim.o.ttimeout = true
+vim.o.ttimeoutlen = 50 -- Fast keycode timeout for instant Escape key response over SSH
 
 -- Configure how new splits should be opened
 vim.o.splitright = true

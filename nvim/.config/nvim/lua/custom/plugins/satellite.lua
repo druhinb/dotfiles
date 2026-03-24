@@ -1,5 +1,8 @@
+local is_ssh = vim.env.SSH_CLIENT ~= nil or vim.env.SSH_TTY ~= nil or vim.env.SSH_CONNECTION ~= nil
+
 return {
   'lewis6991/satellite.nvim',
+  enabled = not is_ssh,
   config = function()
     require('satellite').setup {
       current_only = false,

@@ -27,7 +27,7 @@ require('lazy').setup({
 
   require 'kickstart.plugins.which-key',
 
-  -- require 'kickstart.plugins.telescope',
+  require 'kickstart.plugins.telescope',
   require 'kickstart.plugins.fzf-lua',
 
   require 'kickstart.plugins.lspconfig',
@@ -101,7 +101,6 @@ require('lazy').setup({
         'gzip',
         'matchit',
         'matchparen',
-        'netrwPlugin',
         'tarPlugin',
         'tohtml',
         'tutor',

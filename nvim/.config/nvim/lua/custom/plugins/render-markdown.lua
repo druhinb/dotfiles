@@ -1,3 +1,5 @@
+local have_nerd = vim.g.have_nerd_font
+
 return {
   'MeanderingProgrammer/render-markdown.nvim',
   dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-mini/mini.nvim' },
@@ -26,8 +28,8 @@ return {
     heading = {
       enabled = true,
       sign = true,
-      icons = { '󰲡 ', '󰲣 ', '󰲥 ', '󰲧 ', '󰲩 ', '󰲫 ' },
-      signs = { '󰫎 ' },
+      icons = have_nerd and { '󰲡 ', '󰲣 ', '󰲥 ', '󰲧 ', '󰲩 ', '󰲫 ' } or { '# ', '## ', '### ', '#### ', '##### ', '###### ' },
+      signs = have_nerd and { '󰫎 ' } or { '●' },
       width = 'full',
       backgrounds = {
         'RenderMarkdownH1Bg',
@@ -64,12 +66,6 @@ return {
       highlight_inline = 'RenderMarkdownCodeInline',
     },
     
-    -- Inline code
-    inline_code = {
-      enabled = true,
-      highlight = 'RenderMarkdownCodeInline',
-    },
-    
     -- Dash/bullet rendering
     bullet = {
       enabled = true,
@@ -82,19 +78,19 @@ return {
     checkbox = {
       enabled = true,
       unchecked = {
-        icon = '󰄱 ',
+        icon = have_nerd and '󰄱 ' or '[ ] ',
         highlight = 'RenderMarkdownUnchecked',
         scope_highlight = nil,
       },
       checked = {
-        icon = '󰱒 ',
+        icon = have_nerd and '󰱒 ' or '[x] ',
         highlight = 'RenderMarkdownChecked',
         scope_highlight = nil,
       },
       custom = {
-        todo = { raw = '[-]', rendered = '󰥔 ', highlight = 'RenderMarkdownTodo' },
-        important = { raw = '[!]', rendered = ' ', highlight = 'DiagnosticWarn' },
-        question = { raw = '[?]', rendered = ' ', highlight = 'DiagnosticInfo' },
+        todo = { raw = '[-]', rendered = have_nerd and '󰥔 ' or '[-] ', highlight = 'RenderMarkdownTodo' },
+        important = { raw = '[!]', rendered = have_nerd and ' ' or '[!] ', highlight = 'DiagnosticWarn' },
+        question = { raw = '[?]', rendered = have_nerd and ' ' or '[?] ', highlight = 'DiagnosticInfo' },
       },
     },
     
@@ -156,11 +152,11 @@ return {
     -- Link rendering
     link = {
       enabled = true,
-      image = '󰥶 ',
-      hyperlink = '󰌹 ',
+      image = have_nerd and '󰥶 ' or 'IMG ',
+      hyperlink = have_nerd and '󰌹 ' or 'LINK ',
       highlight = 'RenderMarkdownLink',
       custom = {
-        web = { pattern = '^http[s]?://', icon = '󰖟 ', highlight = 'RenderMarkdownLink' },
+        web = { pattern = '^http[s]?://', icon = have_nerd and '󰖟 ' or 'WEB ', highlight = 'RenderMarkdownLink' },
       },
     },
     

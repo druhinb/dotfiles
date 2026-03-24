@@ -13,6 +13,33 @@ return {
       vim.env.PATH = home .. '/.local/bin:' .. home .. '/.fzf/bin:' .. vim.env.PATH
     end
 
+    -- Automatically align remote Neovim versions with local version (e.g. v0.12.2)
+    local config_dir = vim.fn.stdpath("data") .. "/remote-nvim.nvim"
+    local config_file = config_dir .. "/workspace.json"
+    local local_version = "v" .. vim.version().major .. "." .. vim.version().minor .. "." .. vim.version().patch
+    local f = io.open(config_file, "r")
+    if f then
+      local content = f:read("*a")
+      f:close()
+      local ok, data = pcall(vim.json.decode, content)
+      if ok and type(data) == "table" then
+        local changed = false
+        for _, cfg in pairs(data) do
+          if cfg.neovim_version ~= local_version then
+            cfg.neovim_version = local_version
+            changed = true
+          end
+        end
+        if changed then
+          local out = io.open(config_file, "w")
+          if out then
+            out:write(vim.json.encode(data))
+            out:close()
+          end
+        end
+      end
+    end
+
     require('remote-nvim').setup {
       -- offline_mode = false, -- Ensure downloading is permitted
       remote = {
@@ -67,6 +94,23 @@ return {
                 cd "$CD_DIR"
                 rm -rf "$TMP_DIR"
               fi
+            fi
+            # 3. Portable Tree-Sitter CLI Installation (No sudo required, for Treesitter parser compilation)
+            if ! command -v tree-sitter &>/dev/null && [ ! -f "$HOME/.local/bin/tree-sitter" ]; then
+              # Pin a version compatible with GLIBC 2.35 (e.g. v0.25.2)
+              TARGET_TAG="v0.25.2"
+              
+              TMP_DIR=$(mktemp -d)
+              CD_DIR=$(pwd)
+              cd "$TMP_DIR"
+              
+              curl -sLO "https://github.com/tree-sitter/tree-sitter/releases/download/${TARGET_TAG}/tree-sitter-linux-x64.gz"
+              gunzip -f tree-sitter-linux-x64.gz
+              mv tree-sitter-linux-x64 "$HOME/.local/bin/tree-sitter"
+              chmod +x "$HOME/.local/bin/tree-sitter"
+              
+              cd "$CD_DIR"
+              rm -rf "$TMP_DIR"
             fi
           ]]
 

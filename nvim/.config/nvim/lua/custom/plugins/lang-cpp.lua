@@ -12,14 +12,10 @@ return {
       -- clangd requires utf-16 offset encoding; without this it emits a warning on every attach
       capabilities.offsetEncoding = { 'utf-16' }
 
-      -- Configure clangd via Neovim 0.11+ native LSP config
-      -- No --compile-commands-dir: clangd walks up the tree automatically, so CMake,
-      -- Make, Bazel, and hand-placed compile_commands.json all work without config.
-      vim.lsp.config['clangd'] = {
+      vim.lsp.config('clangd', {
         cmd = {
           'clangd',
           '--background-index',
-          '--background-index-priority=normal',
           '--clang-tidy',
           '--all-scopes-completion',
           '--completion-style=detailed',
@@ -35,44 +31,21 @@ return {
           completeUnimported = true,
           clangdFileStatus = true,
         },
-      }
+        settings = {
+          clangd = {
+            InlayHints = {
+              Enabled = true,
+              ParameterNames = true,
+              DeducedTypes = true,
+              Designators = true,
+              BlockEnd = true,
+            },
+          },
+        },
+      })
       vim.lsp.enable 'clangd'
 
-      -- Background indexing trigger:
-      -- If we're in a C/C++ project root, trigger clangd immediately to start background indexing
-      -- even if no C/C++ file is open yet.
-      local function trigger_background_indexing()
-        local root_files = { 'compile_commands.json', 'CMakeLists.txt', '.clangd', 'Makefile' }
-        local found = vim.fs.find(root_files, { upward = true, stop = vim.uv.os_homedir() })
-        if #found > 0 then
-          vim.schedule(function()
-            -- Check if clangd is already running
-            local clients = vim.lsp.get_clients { name = 'clangd' }
-            if #clients == 0 then
-              -- Create a hidden dummy buffer to trigger the FileType/LspAttach sequence.
-              -- We keep it alive until a real C/C++ file is opened to ensure the server stays running.
-              local indexing_buf = vim.api.nvim_create_buf(false, true)
-              vim.api.nvim_set_option_value('filetype', 'cpp', { buf = indexing_buf })
 
-              -- Clean up the dummy buffer when a real C file is opened
-              vim.api.nvim_create_autocmd('LspAttach', {
-                callback = function(args)
-                  local client = vim.lsp.get_client_by_id(args.data.client_id)
-                  if client and client.name == 'clangd' and args.buf ~= indexing_buf then
-                    if indexing_buf and vim.api.nvim_buf_is_valid(indexing_buf) then
-                      vim.api.nvim_buf_delete(indexing_buf, { force = true })
-                      indexing_buf = nil
-                    end
-                    return true -- stop autocmd
-                  end
-                end,
-              })
-            end
-          end)
-        end
-      end
-
-      trigger_background_indexing()
 
       -- Configure clangd_extensions (AST viewer, inlay hints, commands)
       require('clangd_extensions').setup {
@@ -116,6 +89,11 @@ return {
           map('<leader>cM', '<cmd>ClangdMemoryUsage<cr>', 'Memory Usage')
           map('<leader>cH', '<cmd>ClangdTypeHierarchy<cr>', 'Type Hierarchy')
           map('<leader>cS', '<cmd>ClangdSymbolInfo<cr>', 'Symbol Info')
+
+          -- Enable native inlay hints if supported by Neovim
+          if vim.lsp.inlay_hint then
+            vim.lsp.inlay_hint.enable(true, { bufnr = args.buf })
+          end
         end,
       })
     end,
