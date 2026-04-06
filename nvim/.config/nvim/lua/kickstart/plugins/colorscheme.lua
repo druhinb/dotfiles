@@ -82,7 +82,7 @@ return {
           TreesitterContext = { bg = '#1F1F1F' },
           TreesitterContextLineNumber = { bg = '#1F1F1F', fg = '#6E7681' },
           TreesitterContextBottom = { style = 'underline', sp = '#2B2B2B' }, -- Optional: small line to separate
-
+          LspInlayHint = { bg = '#2B2B2B', fg = '#888888', italic = false },
           Normal = { bg = '#1F1F1F', fg = '#CCCCCC' },
           NormalFloat = { bg = '#1F1F1F', fg = '#CCCCCC' },
           FloatBorder = { bg = '#1F1F1F', fg = '#0078d4' }, -- Blue border, transparent-looking bg
