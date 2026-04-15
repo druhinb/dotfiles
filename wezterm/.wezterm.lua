@@ -7,12 +7,13 @@ local config = wezterm.config_builder()
 
 config.color_scheme = "kanagawabones"
 
-config.font = wezterm.font("JetBrainsMono Nerd Font Mono")
+config.font = wezterm.font("JetBrainsMono Nerd Font")
 config.font_size = 19
 
 config.enable_tab_bar = false
 
 config.window_decorations = "RESIZE"
+config.term = "xterm-256color"
 config.window_background_opacity = 0.90
 config.macos_window_background_blur = 70
 
