@@ -89,34 +89,9 @@ local servers = {
   },
 
   -- ===========================================================================
-  -- Web Development (TypeScript/JavaScript)
+  -- Web Development
   -- ===========================================================================
-  ts_ls = {
-    settings = {
-      typescript = {
-        inlayHints = {
-          includeInlayParameterNameHints = 'literals',
-          includeInlayParameterNameHintsWhenArgumentMatchesName = false,
-          includeInlayFunctionParameterTypeHints = false,
-          includeInlayVariableTypeHints = false,
-          includeInlayPropertyDeclarationTypeHints = false,
-          includeInlayFunctionLikeReturnTypeHints = true,
-          includeInlayEnumMemberValueHints = false,
-        },
-      },
-      javascript = {
-        inlayHints = {
-          includeInlayParameterNameHints = 'literals',
-          includeInlayParameterNameHintsWhenArgumentMatchesName = false,
-          includeInlayFunctionParameterTypeHints = false,
-          includeInlayVariableTypeHints = false,
-          includeInlayPropertyDeclarationTypeHints = false,
-          includeInlayFunctionLikeReturnTypeHints = true,
-          includeInlayEnumMemberValueHints = false,
-        },
-      },
-    },
-  },
+  -- NOTE: TypeScript/JavaScript (vtsls) is configured in custom/plugins/lang-react.lua
 
   svelte = {
     settings = {
@@ -599,9 +574,14 @@ return {
           'clangd',
           -- Python
           'ruff',
-          -- TypeScript/JavaScript
+          -- TypeScript/JavaScript/React
+          'vtsls',
+          'tailwindcss-language-server',
           'prettier',
           'eslint_d',
+          -- C#/.NET
+          'csharpier',
+          'roslyn-language-server',
           -- HTML/CSS
           'prettierd',
           -- Shell

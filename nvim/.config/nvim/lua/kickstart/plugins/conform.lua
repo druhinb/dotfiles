@@ -51,6 +51,9 @@ return {
         scss = { 'prettierd', 'prettier', stop_after_first = true },
         less = { 'prettierd', 'prettier', stop_after_first = true },
 
+        -- C#
+        cs = { 'csharpier' },
+
         -- Rust - rustfmt is the standard
         rust = { 'rustfmt', lsp_format = 'fallback' },
 

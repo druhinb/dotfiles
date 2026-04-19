@@ -6,19 +6,24 @@ return {
     'antoinemadec/FixCursorHold.nvim',
     'nvim-treesitter/nvim-treesitter',
 
-    -- ADAPTERS: Add your language adapters here!
-    -- Examples:
-    -- "nvim-neotest/neotest-python",
-    -- "nvim-neotest/neotest-go",
-    'nvim-neotest/neotest-plenary', -- This is for testing Lua plugins
+    -- ADAPTERS
+    'nvim-neotest/neotest-plenary',
+    'marilari88/neotest-vitest',
+    'nvim-neotest/neotest-jest',
+    'Issafalcon/neotest-dotnet',
   },
   config = function()
     require('neotest').setup {
       adapters = {
-        -- Load your adapters here
         require 'neotest-plenary',
-        --require 'neotest-python',
-        -- require("neotest-go"),
+        require 'neotest-vitest',
+        require 'neotest-jest' {
+          jestCommand = 'npx jest',
+          cwd = function()
+            return vim.fn.getcwd()
+          end,
+        },
+        require 'neotest-dotnet',
       },
     }
 
