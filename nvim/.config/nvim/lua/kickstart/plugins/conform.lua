@@ -54,6 +54,9 @@ return {
         -- Rust - rustfmt is the standard
         rust = { 'rustfmt', lsp_format = 'fallback' },
 
+        -- Java
+        java = { 'google-java-format' },
+
         -- JSON/YAML/Markdown
         json = { 'prettierd', 'prettier', stop_after_first = true },
         jsonc = { 'prettierd', 'prettier', stop_after_first = true },
