@@ -153,27 +153,6 @@ local servers = {
   -- ===========================================================================
   -- Systems Programming
   -- ===========================================================================
-  clangd = {
-    cmd = {
-      'clangd',
-      '--background-index',
-      '--clang-tidy',
-      '--header-insertion=iwyu',
-      '--completion-style=detailed',
-      '--function-arg-placeholders',
-      '--fallback-style=llvm',
-    },
-    init_options = {
-      usePlaceholders = true,
-      completeUnimported = true,
-      clangdFileStatus = true,
-    },
-    -- clangd has its own completion ranking
-    capabilities = {
-      offsetEncoding = { 'utf-16' },
-    },
-  },
-
   rust_analyzer = {
     settings = {
       ['rust-analyzer'] = {
@@ -596,6 +575,8 @@ return {
           -- C/C++
           'clang-format',
           'cpplint',
+          -- C/C++ LSP (server managed separately in lang-cpp.lua)
+          'clangd',
           -- Python
           'ruff',
           -- TypeScript/JavaScript
@@ -616,6 +597,11 @@ return {
           'yamllint',
           -- SQL
           'sqlfluff',
+          -- Java (LSP managed separately in lang-java.lua)
+          'jdtls',
+          'java-debug-adapter',
+          'java-test',
+          'google-java-format',
         },
       }
     end,
