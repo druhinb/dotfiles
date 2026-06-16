@@ -11,8 +11,6 @@ ZSH_THEME=""
 plugins=(git zsh-autosuggestions zsh-syntax-highlighting fzf-tab you-should-use)
 export ZSH="$HOME/.oh-my-zsh"
 
-# Performance: keep autosuggestions from re-binding all ZLE widgets on every
-# prompt (the main cause of post-Enter lag), and skip work on very long lines.
 ZSH_AUTOSUGGEST_MANUAL_REBIND=1
 ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
 ZSH_HIGHLIGHT_MAXLENGTH=512
@@ -54,6 +52,18 @@ SAVEHIST=1000
 HISTSIZE=999
 setopt share_history hist_expire_dups_first hist_ignore_dups hist_verify
 
+# Clipboard: pipe anything to `y` to copy via OSC 52 (works over SSH, tmux, mosh)
+y() {
+  local data
+  if [[ -t 0 ]]; then
+    data="$*"
+  else
+    data=$(cat)
+  fi
+  local encoded=$(printf '%s' "$data" | base64 | tr -d '\n')
+  printf '\e]52;c;%s\a' "$encoded" > /dev/tty
+}
+
 # Aliases
 alias cat="bat"
 alias ls="eza --icons=always -a"
@@ -72,12 +82,6 @@ nvm() { _nvm_lazy_load; nvm "$@"; }
 node() { _nvm_lazy_load; node "$@"; }
 npm() { _nvm_lazy_load; npm "$@"; }
 npx() { _nvm_lazy_load; npx "$@"; }
-
-# TheFuck (single eval)
-if command -v thefuck >/dev/null 2>&1 && thefuck --version >/dev/null 2>&1; then
-  eval "$(thefuck --alias fk)"
-  alias oops='fk'
-fi
 
 # Local overrides
 [ -f ~/.zshrc.local ] && source ~/.zshrc.local
@@ -147,6 +151,12 @@ tmux-ssh() {
 }
 
 eval "$(fnm env --use-on-cd --shell zsh)"
+
+# fnm
+FNM_PATH="/home/coder/.local/share/fnm"
+if [ -d "$FNM_PATH" ]; then
+  eval "$(fnm env --shell zsh)"
+fi
 
 export _ZO_DOCTOR=0
 if command -v zoxide >/dev/null 2>&1; then

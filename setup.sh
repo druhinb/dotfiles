@@ -23,21 +23,21 @@ USAGE
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --dry-run)
-      DRY_RUN=1
-      ;;
-    --skip-neovim-tools)
-      SKIP_NEOVIM_TOOLS=1
-      ;;
-    -h|--help)
-      usage
-      exit 0
-      ;;
-    *)
-      echo "Unknown argument: $1" >&2
-      usage >&2
-      exit 2
-      ;;
+  --dry-run)
+    DRY_RUN=1
+    ;;
+  --skip-neovim-tools)
+    SKIP_NEOVIM_TOOLS=1
+    ;;
+  -h | --help)
+    usage
+    exit 0
+    ;;
+  *)
+    echo "Unknown argument: $1" >&2
+    usage >&2
+    exit 2
+    ;;
   esac
   shift
 done
@@ -70,8 +70,8 @@ prepend_path_if_exists() {
   [[ -d "$dir" ]] || return
 
   case ":$PATH:" in
-    *":$dir:"*) ;;
-    *) export PATH="$dir:$PATH" ;;
+  *":$dir:"*) ;;
+  *) export PATH="$dir:$PATH" ;;
   esac
 }
 
@@ -148,15 +148,15 @@ install_brew_packages() {
 
 install_system_packages() {
   case "$OS_NAME" in
-    Darwin)
-      install_brew_packages
-      ;;
-    Linux)
-      install_apt_packages
-      ;;
-    *)
-      warn "Unsupported OS '$OS_NAME'; skipping system package installation."
-      ;;
+  Darwin)
+    install_brew_packages
+    ;;
+  Linux)
+    install_apt_packages
+    ;;
+  *)
+    warn "Unsupported OS '$OS_NAME'; skipping system package installation."
+    ;;
   esac
 }
 
@@ -227,6 +227,10 @@ link_dotfiles() {
   link_file "$DOTFILES_DIR/atuin/.config/atuin" "$HOME/.config/atuin"
   link_file "$DOTFILES_DIR/karabiner/.config/karabiner" "$HOME/.config/karabiner"
   link_file "$DOTFILES_DIR/wezterm/.wezterm.lua" "$HOME/.wezterm.lua"
+  link_file "$DOTFILES_DIR/herdr/.config/herdr/config.toml" "$HOME/.config/herdr/config.toml"
+  link_file "$DOTFILES_DIR/.claude/settings.json" "$HOME/.claude/settings.json"
+  link_file "$DOTFILES_DIR/.claude/keybindings.json" "$HOME/.claude/keybindings.json"
+  link_file "$DOTFILES_DIR/.claude/statusline.sh" "$HOME/.claude/statusline.sh"
 
   # Ubuntu names these binaries differently than the aliases in .zshrc expect.
   have bat || { [[ -x /usr/bin/batcat ]] && link_file /usr/bin/batcat "$HOME/.local/bin/bat"; }

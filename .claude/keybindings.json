@@ -1,0 +1,55 @@
+{
+  "$schema": "https://www.schemastore.org/claude-code-keybindings.json",
+  "bindings": [
+    {
+      "context": "Chat",
+      "bindings": {
+        "ctrl+g": "chat:externalEditor",
+        "ctrl+x ctrl+k": "chat:killAgents",
+        "meta+m": "chat:modelPicker",
+        "meta+t": "chat:thinkingToggle",
+        "meta+f": "chat:fastMode",
+        "meta+e": "chat:cycleMode",
+        "meta+s": "chat:stash",
+        "meta+u": "chat:undo"
+      }
+    },
+    {
+      "context": "Scroll",
+      "bindings": {
+        "ctrl+d": "scroll:halfPageDown",
+        "ctrl+u": "scroll:halfPageUp",
+        "ctrl+f": "scroll:fullPageDown",
+        "ctrl+b": "scroll:fullPageUp"
+      }
+    },
+    {
+      "context": "Select",
+      "bindings": {
+        "ctrl+n": "select:next",
+        "ctrl+p": "select:previous"
+      }
+    },
+    {
+      "context": "MessageSelector",
+      "bindings": {
+        "ctrl+n": "messageSelector:down",
+        "ctrl+p": "messageSelector:up"
+      }
+    },
+    {
+      "context": "DiffDialog",
+      "bindings": {
+        "ctrl+d": "scroll:halfPageDown",
+        "ctrl+u": "scroll:halfPageUp"
+      }
+    },
+    {
+      "context": "Confirmation",
+      "bindings": {
+        "ctrl+n": "confirm:next",
+        "ctrl+p": "confirm:previous"
+      }
+    }
+  ]
+}

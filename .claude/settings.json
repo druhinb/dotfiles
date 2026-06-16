@@ -1,0 +1,49 @@
+{
+  "cleanupPeriodDays": 30,
+  "attribution": {
+    "commit": ""
+  },
+  "permissions": {
+    "allow": [
+      "mcp__mcp-gateway-sourcegraph",
+      "mcp__mcp-gateway-gdrive",
+      "mcp__mcp-gateway-figma"
+    ]
+  },
+  "model": "opus",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "HOOK=\"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/herdr-agent-state.sh\"; [ -f \"$HOOK\" ] && bash \"$HOOK\" session; true",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "bash \"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/statusline.sh\"",
+    "refreshInterval": 10,
+    "hideVimModeIndicator": true
+  },
+  "spinnerTipsEnabled": false,
+  "awaySummaryEnabled": true,
+  "showClearContextOnPlanAccept": true,
+  "tui": "fullscreen",
+  "autoMemoryEnabled": true,
+  "theme": "dark",
+  "editorMode": "vim",
+  "verbose": true,
+  "preferredNotifChannel": "terminal_bell",
+  "autoCompactEnabled": true,
+  "fileCheckpointingEnabled": true,
+  "showTurnDuration": true,
+  "showMessageTimestamps": true,
+  "terminalProgressBarEnabled": true,
+  "todoFeatureEnabled": true
+}

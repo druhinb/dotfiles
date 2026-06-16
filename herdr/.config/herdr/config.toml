@@ -1,0 +1,40 @@
+onboarding = false
+# herdr configuration — https://herdr.dev
+# Keybindings mirror the tmux muscle memory from dotfiles/tmux/.tmux.conf.
+
+[keys]
+# Prefix stays Ctrl-b, same as tmux (`set -g prefix C-b`).
+prefix = "ctrl+b"
+
+# tmux `bind r source-file ~/.tmux.conf` -> reload with lowercase prefix+r.
+# (herdr's default resize_mode lived on prefix+r, so it moves to prefix+shift+r below.)
+reload_config = "prefix+r"
+
+# Splits keep the tmux orientation:
+#   tmux `bind | split-window -h`  -> left/right panes -> herdr split_vertical
+#   tmux `bind - split-window -v`  -> top/bottom panes -> herdr split_horizontal
+split_vertical = "prefix+|"
+split_horizontal = "prefix+minus"
+
+# tmux `bind -r m resize-pane -Z` (toggle zoom/maximize).
+zoom = "prefix+m"
+
+# Resize mode relocated off prefix+r (now the reload key).
+# tmux resized with `prefix h/j/k/l`; in herdr enter resize mode, then use h/j/k/l.
+resize_mode = "prefix+shift+r"
+
+# tmux `bind c new-window` -> new tab (a herdr tab ≈ a tmux window).
+new_tab = "prefix+c"
+
+# Vim-style pane focus (tmux used Ctrl-h/j/k/l via vim-tmux-navigator; herdr
+# keeps these on the prefix so they don't clash with vim inside a pane).
+focus_pane_left = "prefix+h"
+focus_pane_down = "prefix+j"
+focus_pane_up = "prefix+k"
+focus_pane_right = "prefix+l"
+
+# tmux default `prefix x` kills a pane.
+close_pane = "prefix+x"
+
+[ui]
+agent_panel_sort = "spaces"
