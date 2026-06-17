@@ -1,20 +1,23 @@
-# Path to Oh My Zsh installation.
-export ZSH="$HOME/.oh-my-zsh"
-source ~/.zprofile
+# Path
+export PATH="$HOME/.local/bin:$HOME/opt/apache-ant-1.10.15/bin:/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"
+export HOMEBREW_PREFIX="/opt/homebrew"
+export HOMEBREW_CELLAR="/opt/homebrew/Cellar"
+export HOMEBREW_REPOSITORY="/opt/homebrew"
+export MANPATH="/opt/homebrew/share/man${MANPATH+:$MANPATH}:"
+export INFOPATH="/opt/homebrew/share/info:${INFOPATH:-}"
 
-# Set name of the theme to load --- if set to "random", it will
-# load a random theme each time oh-my-zsh is loaded, in which case,
-# to know which specific one was loaded, run: echo $RANDOM_THEME
-# See https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
-# We use starship, so we disable the OMZ theme (or leave it empty)
+# Oh My Zsh
 ZSH_THEME=""
+plugins=(git zsh-autosuggestions zsh-syntax-highlighting fzf-tab you-should-use)
+export ZSH="$HOME/.oh-my-zsh"
 
-# Plugins
-# git: standard
-# zsh-autosuggestions: custom
-# zsh-syntax-highlighting: custom
-# fzf-tab: custom
-plugins=(git zsh-autosuggestions zsh-syntax-highlighting fzf-tab you-should-use zsh-bat)
+# Performance: keep autosuggestions from re-binding all ZLE widgets on every
+# prompt (the main cause of post-Enter lag), and skip work on very long lines.
+ZSH_AUTOSUGGEST_MANUAL_REBIND=1
+ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
+ZSH_HIGHLIGHT_MAXLENGTH=512
+
+source $ZSH/oh-my-zsh.sh
 
 # Auto-install plugins if missing
 if [[ ! -d ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions ]]; then
@@ -27,22 +30,14 @@ if [[ ! -d ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/fzf-tab ]]; then
     git clone https://github.com/Aloxaf/fzf-tab ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/fzf-tab
 fi
 if [[ ! -d ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/you-should-use ]]; then
-    echo "Installing you-should-use..."
     git clone https://github.com/MichaelAquilina/zsh-you-should-use ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/you-should-use
 fi
-if [[ ! -d ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-bat ]]; then
-    echo "Installing zsh-bat..."
-       git clone https://github.com/fdellwing/zsh-bat.git $ZSH_CUSTOM/plugins/zsh-bat
-fi
-
-source $ZSH/oh-my-zsh.sh
 
 # Conda / Mamba initialization (portable)
 __conda_setup="$(command -v conda >/dev/null && conda 'shell.zsh' 'hook' 2> /dev/null || true)"
 if [ -n "$__conda_setup" ]; then
   eval "$__conda_setup"
 else
-  # fallback to reading from known install paths
   for _m in "$HOME/mambaforge" "$HOME/miniforge3" "$HOME/miniconda3"; do
     if [ -f "$_m/etc/profile.d/conda.sh" ]; then
       source "$_m/etc/profile.d/conda.sh"
@@ -52,7 +47,7 @@ else
 fi
 unset __conda_setup
 
-# History setup (Preserve user's custom location)
+# History
 HISTFILE=${XDG_STATE_HOME:-$HOME/.local/state}/zsh/history
 mkdir -p "$(dirname "$HISTFILE")"
 SAVEHIST=1000
@@ -65,46 +60,34 @@ alias ls="eza --icons=always -a"
 alias gs="git status"
 alias download='f(){aria2c -x16 -s16 $1};f'
 alias lg='lazygit'
-# cd is handled by zoxide below
 
-# Zoxide
-eval "$(zoxide init zsh)"
-alias cd="z"
-
-# NVM
+# NVM (lazy-loaded)
 export NVM_DIR="$HOME/.nvm"
-if [ -s "/opt/homebrew/opt/nvm/nvm.sh" ]; then
-  . "/opt/homebrew/opt/nvm/nvm.sh"
-fi
-if [ -s "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm" ]; then
-  . "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"
-fi
+_nvm_lazy_load() {
+  unset -f nvm node npm npx
+  [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+  [ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && . "/opt/homebrew/opt/nvm/nvm.sh"
+}
+nvm() { _nvm_lazy_load; nvm "$@"; }
+node() { _nvm_lazy_load; node "$@"; }
+npm() { _nvm_lazy_load; npm "$@"; }
+npx() { _nvm_lazy_load; npx "$@"; }
 
-# TheFuck
+# TheFuck (single eval)
 eval "$(thefuck --alias fk)"
-eval "$(thefuck --alias oops)"
-
-# Ant
-export ANT_HOME="$HOME/opt/apache-ant-1.10.15"
-export PATH="$ANT_HOME/bin:$PATH"
+alias oops='fk'
 
 # Local overrides
 [ -f ~/.zshrc.local ] && source ~/.zshrc.local
 
-
-# Starship (Must be at the end to override OMZ prompt)
+# Starship prompt (must be near end to override OMZ prompt)
 eval "$(starship init zsh)"
 
 # FZF Tab Configuration
-# disable sort when completing `git checkout`
 zstyle ':completion:*:git-checkout:*' sort false
-# set descriptions format to enable group support
 zstyle ':completion:*:descriptions' format '[%d]'
-# set list-colors to enable filename colorizing
 zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
-# preview directory's content with eza when completing cd
 zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -1 --color=always $realpath'
-# switch group using < and >
 zstyle ':fzf-tab:*' switch-group '<' '>'
 
 # Makefile completion
@@ -115,19 +98,23 @@ function _makefile_targets {
 }
 compdef _makefile_targets make
 
-bindkey -v
-export keytimeout=1
-
 # Atuin
 eval "$(atuin init zsh)"
+
+# Vi mode + keybindings (after plugin widgets are defined)
+bindkey -v
+KEYTIMEOUT=1
+
 bindkey '^n' atuin-search
 bindkey '^p' atuin-search
 bindkey -M viins '^n' atuin-search
 bindkey -M viins '^p' atuin-search
-
 bindkey -M viins '^Y' autosuggest-accept
 bindkey '^Y' autosuggest-accept
 
-
-
-export PATH="$HOME/.local/bin:$PATH"
+# Zoxide (last so its chpwd hook registers cleanly).
+# _ZO_DOCTOR=0 silences a false-positive warning caused by atuin appending a
+# precmd hook after zoxide — zoxide's own chpwd hook is still correctly last.
+export _ZO_DOCTOR=0
+eval "$(zoxide init zsh)"
+alias cd="z"
