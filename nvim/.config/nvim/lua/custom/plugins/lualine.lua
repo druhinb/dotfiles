@@ -136,7 +136,11 @@ return {
       end
 
       -- Your Git Function
+      local is_ssh = vim.env.SSH_CLIENT ~= nil or vim.env.SSH_TTY ~= nil or vim.env.SSH_CONNECTION ~= nil
       local function git_sync_status()
+        if is_ssh then
+          return ''
+        end
         local handle = io.popen 'git rev-list --count --left-right @{u}...HEAD 2>/dev/null'
         if not handle then
           return ''

@@ -85,7 +85,6 @@ return {
       -- ===========================================================================
       cmdline = {
         enabled = true,
-        min_keyword_length = 2,
         sources = function()
           local type = vim.fn.getcmdtype()
           -- Search forward and backward (/, ?)
@@ -131,6 +130,9 @@ return {
         default = { 'lsp', 'path', 'snippets', 'lazydev', 'buffer' },
         providers = {
           lazydev = { module = 'lazydev.integrations.blink', score_offset = 100 },
+          cmdline = {
+            min_keyword_length = 2,
+          },
         },
       },
 
@@ -146,7 +148,12 @@ return {
       fuzzy = { implementation = 'prefer_rust_with_warning' },
 
       -- Shows a signature help window while you type arguments for a function
-      signature = { enabled = true },
+      signature = {
+        enabled = true,
+        window = {
+          border = 'rounded',
+        },
+      },
     },
   },
 }

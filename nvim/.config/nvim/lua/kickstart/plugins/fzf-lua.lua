@@ -7,6 +7,10 @@ return {
     'ibhagwan/fzf-lua',
     dependencies = { 'nvim-tree/nvim-web-devicons' },
     cmd = 'FzfLua',
+    enabled = function()
+      local is_ssh = vim.env.SSH_CLIENT ~= nil or vim.env.SSH_TTY ~= nil or vim.env.SSH_CONNECTION ~= nil
+      return not is_ssh and vim.fn.executable('fzf') == 1
+    end,
     -- stylua: ignore
     keys = {
       -- ════════════════════════════════════════════════════════════════════
@@ -73,10 +77,10 @@ return {
           width = 0.80,
           row = 0.35,
           col = 0.50,
-          border = { '╭', '─', '╮', '│', '╯', '─', '╰', '│' },
+          border = 'rounded',
           preview = {
             default = 'builtin',
-            border = { '╭', '─', '╮', '│', '╯', '─', '╰', '│' },
+            border = 'rounded',
             wrap = 'nowrap',
             hidden = 'nohidden',
             vertical = 'down:45%',
@@ -478,12 +482,12 @@ return {
             limit_b = 1024 * 1024 * 10,
             treesitter = { enabled = true, disabled = {} },
             extensions = {
-              ['png'] = { '/opt/homebrew/bin/chafa', '{file}' },
-              ['jpg'] = { '/opt/homebrew/bin/chafa', '{file}' },
-              ['jpeg'] = { '/opt/homebrew/bin/chafa', '{file}' },
-              ['gif'] = { '/opt/homebrew/bin/chafa', '{file}' },
-              ['webp'] = { '/opt/homebrew/bin/chafa', '{file}' },
-              ['svg'] = { '/opt/homebrew/bin/chafa', '{file}' },
+              ['png'] = { 'chafa', '{file}' },
+              ['jpg'] = { 'chafa', '{file}' },
+              ['jpeg'] = { 'chafa', '{file}' },
+              ['gif'] = { 'chafa', '{file}' },
+              ['webp'] = { 'chafa', '{file}' },
+              ['svg'] = { 'chafa', '{file}' },
             },
           },
         },

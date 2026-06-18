@@ -17,6 +17,21 @@ map('n', '<Esc>', '<cmd>nohlsearch<CR>', { desc = 'Clear highlights' })
 map('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
 map('t', '<C-/>', '<cmd>close<cr>', { desc = 'Hide Terminal' })
 
+-- Instantly pass Escape to remote/interactive terminal buffers (remote-nvim, SSH, standard terminal)
+-- without capturing or waiting for exit terminal key sequences locally.
+vim.api.nvim_create_autocmd('TermOpen', {
+  group = vim.api.nvim_create_augroup('remote-terminal-escape', { clear = true }),
+  pattern = 'term://*',
+  callback = function(event)
+    local bufname = vim.api.nvim_buf_get_name(event.buf)
+    -- Keep toggleterm's local window-closing escape behavior, but for all other terminal
+    -- buffers (ssh, remote-nvim, etc.), route Esc instantly to prevent local capture delays.
+    if not bufname:find('toggleterm') then
+      vim.keymap.set('t', '<Esc>', '<Esc>', { buffer = event.buf, nowait = true })
+    end
+  end,
+})
+
 -- Disable Space in normal/visual (leader key)
 map({ 'n', 'v' }, '<Space>', '<Nop>', { silent = true })
 

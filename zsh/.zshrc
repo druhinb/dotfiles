@@ -112,9 +112,30 @@ bindkey -M viins '^p' atuin-search
 bindkey -M viins '^Y' autosuggest-accept
 bindkey '^Y' autosuggest-accept
 
-# Zoxide (last so its chpwd hook registers cleanly).
-# _ZO_DOCTOR=0 silences a false-positive warning caused by atuin appending a
-# precmd hook after zoxide — zoxide's own chpwd hook is still correctly last.
+
+
+export PATH="$HOME/.local/bin:$PATH"
+export PATH="$HOME/.local/share/nvim/mason/bin:$PATH"
+
+tmux-ssh() {
+    if [ -z "$1" ]; then
+        echo "Error: Target host missing. Usage: tmux-ssh user@host"
+        return 1
+    fi
+
+    local HOST="$1"
+    local SESSION_NAME="ssh-${HOST//./-}" # Replaces dots with dashes for valid session name
+
+    # 1. Create a detached session where the initial window runs SSH
+    tmux new-session -d -s "$SESSION_NAME" "ssh $HOST"
+
+    # 2. Force all future windows/splits in THIS session to run SSH automatically
+    tmux set-option -t "$SESSION_NAME" default-command "ssh $HOST"
+
+    # 3. Attach to the newly constructed session
+    tmux attach-session -t "$SESSION_NAME"
+}
+
 export _ZO_DOCTOR=0
 eval "$(zoxide init zsh)"
 alias cd="z"

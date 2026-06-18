@@ -1,6 +1,5 @@
 return {
   'johmsalas/text-case.nvim',
-  dependencies = { 'ibhagwan/fzf-lua' },
   config = function()
     require('textcase').setup {
       default_keymappings_enabled = false,
@@ -38,9 +37,6 @@ return {
       end, { desc = 'Text Case Visual: ' .. method })
     end
 
-    -- Custom Fzf-lua integration
-    local fzf = require 'fzf-lua'
-
     local methods = {
       ['Snake Case (snake_case)'] = 'gas',
       ['Pascal Case (PascalCase)'] = 'gap',
@@ -58,19 +54,18 @@ return {
     table.sort(options)
 
     vim.keymap.set('n', 'ga.', function()
-      fzf.fzf_exec(options, {
+      vim.ui.select(options, {
         prompt = 'Text Case> ',
-        actions = {
-          ['default'] = function(selected)
-            local keys = methods[selected[1]]
-            if keys then
-              -- Execute the operator on the current word (iw)
-              local keys_to_feed = vim.api.nvim_replace_termcodes(keys .. 'iw', true, false, true)
-              vim.api.nvim_feedkeys(keys_to_feed, 'm', false)
-            end
-          end,
-        },
-      })
-    end, { desc = 'Text Case Menu (Fzf)' })
+      }, function(selected)
+        if selected then
+          local keys = methods[selected]
+          if keys then
+            -- Execute the operator on the current word (iw)
+            local keys_to_feed = vim.api.nvim_replace_termcodes(keys .. 'iw', true, false, true)
+            vim.api.nvim_feedkeys(keys_to_feed, 'm', false)
+          end
+        end
+      end)
+    end, { desc = 'Text Case Menu' })
   end,
 }

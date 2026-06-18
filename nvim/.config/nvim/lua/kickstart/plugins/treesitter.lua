@@ -1,40 +1,62 @@
+local is_ssh = vim.env.SSH_CLIENT ~= nil or vim.env.SSH_TTY ~= nil or vim.env.SSH_CONNECTION ~= nil
+
 return {
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
+    branch = 'main',
     build = ':TSUpdate',
     dependencies = {
-      'nvim-treesitter/nvim-treesitter-textobjects',
-      branch = 'main',
+      {
+        'nvim-treesitter/nvim-treesitter-textobjects',
+        branch = 'main',
+      },
     },
-    main = 'nvim-treesitter.config', -- Sets main module to use for opts
-    -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
-    opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'java', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc', 'python', 'rust', 'toml' },
-      -- Autoinstall languages that are not installed
-      auto_install = true,
-      highlight = {
-        enable = true,
-        -- Some languages depend on vim's regex highlighting system (such as Ruby) for indent rules.
-        --  If you are experiencing weird indenting issues, add the language to
-        --  the list of additional_vim_regex_highlighting and disabled languages for indent.
-        additional_vim_regex_highlighting = { 'ruby' },
-      },
-      indent = { enable = true, disable = { 'ruby' } },
+    config = function()
+      -- 1. Initialize the plugin
+      require('nvim-treesitter').setup()
 
-      -- Incremental selection based on treesitter nodes
-      incremental_selection = {
-        enable = true,
-        keymaps = {
-          init_selection = '<C-space>',
-          node_incremental = '<C-space>',
-          scope_incremental = false,
-          node_decremental = '<bs>',
-        },
-      },
+      -- 2. Install / update parsers programmatically
+      local ensure_installed = {
+        'bash', 'c', 'cpp', 'diff', 'doxygen', 'html', 'java', 'lua',
+        'luadoc', 'markdown', 'markdown_inline', 'query', 'vim',
+        'vimdoc', 'python', 'rust', 'toml'
+      }
 
-      -- Treesitter textobjects configuration
-      textobjects = {
-        -- Selection textobjects (use with v, d, c, y, etc.)
+      local installed = require('nvim-treesitter.config').get_installed()
+      local to_install = vim.tbl_filter(function(parser)
+        return not vim.tbl_contains(installed, parser)
+      end, ensure_installed)
+
+      if #to_install > 0 then
+        require('nvim-treesitter').install(to_install)
+      end
+
+      -- Enable Tree-sitter highlighting natively for all buffers with installed parsers.
+      -- This fixes missing Doxygen syntax highlighting in code buffers and the LSP hover floating window.
+      vim.api.nvim_create_autocmd('FileType', {
+        desc = 'Start Tree-sitter highlight for buffer',
+        group = vim.api.nvim_create_augroup('treesitter-highlight', { clear = true }),
+        pattern = '*',
+        callback = function(args)
+          local buf = args.buf
+          if not vim.api.nvim_buf_is_valid(buf) then
+            return
+          end
+          pcall(vim.treesitter.start, buf)
+        end,
+      })
+
+      -- 2. Configure incremental selection (native keymaps)
+      -- In Neovim 0.12+, native incremental selection is built-in.
+      -- v -> enters visual mode
+      -- C-space in visual mode -> expands selection to parent node (native 'an')
+      -- Backspace in visual mode -> shrinks selection to child node (native 'in')
+      vim.keymap.set('n', '<C-space>', 'v', { desc = 'Visual Mode / Init Selection' })
+      vim.keymap.set('v', '<C-space>', 'an', { desc = 'Increment Selection' })
+      vim.keymap.set('v', '<bs>', 'in', { desc = 'Decrement Selection' })
+
+      -- 3. Configure textobjects (new standalone configuration)
+      require('nvim-treesitter-textobjects').setup {
         select = {
           enable = true,
           lookahead = true, -- Automatically jump forward to textobj
@@ -115,8 +137,8 @@ return {
             ['<leader>pk'] = '@class.outer',
           },
         },
-      },
-    },
+      }
+    end,
   },
 }
 -- vim: ts=2 sts=2 sw=2 et

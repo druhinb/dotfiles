@@ -2,6 +2,8 @@
 -- Noice.nvim - Complete UI Replacement (LazyVim Style)
 -- Replaces: messages, cmdline, popupmenu, notifications
 -- ============================================================================
+local is_ssh = vim.env.SSH_CLIENT ~= nil or vim.env.SSH_TTY ~= nil or vim.env.SSH_CONNECTION ~= nil
+
 return {
   'folke/noice.nvim',
   event = 'VeryLazy',
@@ -12,7 +14,7 @@ return {
       'rcarriga/nvim-notify',
       opts = {
         -- Top-right notification bubbles (LazyVim style)
-        stages = 'fade_in_slide_out',
+        stages = is_ssh and 'static' or 'fade_in_slide_out',
         timeout = 3000,
         max_height = function()
           return math.floor(vim.o.lines * 0.75)
@@ -26,6 +28,10 @@ return {
         background_colour = '#000000',
         on_open = function(win)
           vim.api.nvim_win_set_config(win, { zindex = 100 })
+          if is_ssh then
+            -- Disable winblend inside the terminal on SSH for better rendering performance
+            pcall(vim.api.nvim_win_set_option, win, 'winblend', 0)
+          end
         end,
       },
       init = function()
@@ -206,6 +212,7 @@ return {
           padding = { 0, 1 },
         },
         win_options = {
+          winblend = is_ssh and 0 or 10,
           winhighlight = {
             Normal = 'NormalFloat',
             FloatBorder = 'FloatBorder',
@@ -228,6 +235,7 @@ return {
           padding = { 0, 1 },
         },
         win_options = {
+          winblend = is_ssh and 0 or 10,
           winhighlight = {
             Normal = 'NormalFloat',
             FloatBorder = 'FloatBorder',
@@ -250,16 +258,43 @@ return {
           style = 'rounded',
         },
         position = { row = 2, col = 2 },
+        win_options = {
+          winblend = is_ssh and 0 or 10,
+          winhighlight = {
+            Normal = 'NormalFloat',
+            FloatBorder = 'FloatBorder',
+          },
+        },
       },
     },
     -- Route configuration for different message types
     routes = {
-      -- Skip "written" messages
+      -- Skip standard, spammy editing, undo, search wrap, and status messages from popping up
       {
         filter = {
           event = 'msg_show',
-          kind = '',
-          find = 'written',
+          any = {
+            -- File saves
+            { find = 'written' },
+            -- Undo/Redo state changes
+            { find = '; before #' },
+            { find = '; after #' },
+            { find = 'already at oldest change' },
+            { find = 'already at newest change' },
+            -- Line edits, deletions, pastes, and indentation changes
+            { find = 'line less' },
+            { find = 'lines less' },
+            { find = 'more line' },
+            { find = 'more lines' },
+            { find = 'change;' },
+            { find = 'changes;' },
+            { find = 'indent' },
+            { find = 'indented' },
+            -- Search wrapping and alerts
+            { find = 'search hit BOTTOM' },
+            { find = 'search hit TOP' },
+            { find = 'Pattern not found' },
+          },
         },
         opts = { skip = true },
       },
@@ -287,5 +322,121 @@ return {
       vim.cmd [[messages clear]]
     end
     require('noice').setup(opts)
+
+    -- =========================================================================
+    -- LSP Hover Doxygen Cleaner Hook for Noice
+    -- =========================================================================
+
+    -- Custom hover formatter to clean up Doxygen comments
+    local function clean_doxygen(text)
+      if type(text) ~= 'string' then
+        return text
+      end
+
+      local lines = {}
+      local in_params = false
+
+      for line in text:gmatch("[^\r\n]+") do
+        line = line:gsub("\r$", "")
+
+        -- 1. Check for @brief or \brief
+        if line:match("^%s*[@\\]brief") then
+          line = line:gsub("^%s*[@\\]brief%s*", "")
+        end
+
+        -- 2. Check for @param or \param
+        local p_in_out, p_name, p_desc = line:match("^%s*[@\\]param%s*%[([^%]]+)%]%s+([^%s]+)%s+(.*)$")
+        if p_name then
+          if not in_params then
+            table.insert(lines, "")
+            table.insert(lines, "**Parameters:**")
+            in_params = true
+          end
+          line = string.format("* **%s** *(%s)*: %s", p_name, p_in_out, p_desc)
+        else
+          local p_name2, p_desc2 = line:match("^%s*[@\\]param%s+([^%s]+)%s+(.*)$")
+          if p_name2 then
+            if not in_params then
+              table.insert(lines, "")
+              table.insert(lines, "**Parameters:**")
+              in_params = true
+            end
+            line = string.format("* **%s**: %s", p_name2, p_desc2)
+          else
+            if in_params and not line:match("^%s") and line ~= "" then
+              in_params = false
+            end
+          end
+        end
+
+        -- 3. Check for @return / \return
+        local ret_match = line:match("^%s*[@\\]returns?%s*(.*)$")
+        if ret_match then
+          table.insert(lines, "")
+          line = "**Returns:** " .. ret_match
+        end
+
+        -- 4. Check for @note / \note
+        local note_match = line:match("^%s*[@\\]note%s*(.*)$")
+        if note_match then
+          line = "> **Note:** " .. note_match
+        end
+
+        -- 5. Check for @warning / \warning
+        local warn_match = line:match("^%s*[@\\]warning%s*(.*)$")
+        if warn_match then
+          line = "> **Warning:** " .. warn_match
+        end
+
+        -- 6. Check for @see / \see
+        local see_match = line:match("^%s*[@\\]see%s*(.*)$")
+        if see_match then
+          line = "*See also:* " .. see_match
+        end
+
+        -- 7. Check for @tparam / \tparam
+        local tp_name, tp_desc = line:match("^%s*[@\\]tparam%s+([^%s]+)%s+(.*)$")
+        if tp_name then
+          line = string.format("* **%s** *(template parameter)*: %s", tp_name, tp_desc)
+        end
+
+        table.insert(lines, line)
+      end
+
+      return table.concat(lines, "\n")
+    end
+
+    local function process_contents(contents)
+      if type(contents) == 'string' then
+        return clean_doxygen(contents)
+      elseif type(contents) == 'table' then
+        if contents.kind == 'markdown' or contents.kind == 'plaintext' then
+          if type(contents.value) == 'string' then
+            contents.value = clean_doxygen(contents.value)
+          end
+        elseif contents.value and type(contents.value) == 'string' then
+          -- Always clean markdown/plain language blocks
+          local lang = contents.language
+          if not lang or lang == 'markdown' or lang == 'plaintext' or lang == 'plain' then
+            contents.value = clean_doxygen(contents.value)
+          end
+        else
+          for i, item in ipairs(contents) do
+            contents[i] = process_contents(item)
+          end
+        end
+      end
+      return contents
+    end
+
+    -- Wrap Noice hover callback to process and clean up Doxygen comments
+    local noice_hover = require('noice.lsp.hover')
+    local original_on_hover = noice_hover.on_hover
+    noice_hover.on_hover = function(err, result, ctx)
+      if result and result.contents then
+        result.contents = process_contents(result.contents)
+      end
+      return original_on_hover(err, result, ctx)
+    end
   end,
 }

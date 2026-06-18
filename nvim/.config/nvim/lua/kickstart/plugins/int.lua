@@ -18,27 +18,41 @@ return {
         end
       end, { desc = 'Toggle cpplint' })
 
-      lint.linters_by_ft = {
-        -- C/C++ - cpplint is a Google style guide checker
+      local function is_linter_runnable(linter)
+        if vim.fn.executable(linter) ~= 1 then
+          return false
+        end
+        -- Special check for python/node linters on SSH/remote environments where
+        -- the binary might exist (e.g. copied or in mason) but the interpreter is missing.
+        if linter == 'cpplint' then
+          return vim.fn.executable('python3') == 1 or vim.fn.executable('python') == 1
+        elseif linter == 'eslint_d' then
+          return vim.fn.executable('node') == 1
+        end
+        return true
+      end
+
+      local configured_linters = {
         c = { 'cpplint' },
         cpp = { 'cpplint' },
-        
-        -- Python - Ruff LSP handles linting, but can add mypy for type checking
-        -- python = { 'mypy' }, -- Uncomment if you want strict type checking
-        
-        -- TypeScript/JavaScript - ESLint is the standard
         javascript = { 'eslint_d' },
         typescript = { 'eslint_d' },
         javascriptreact = { 'eslint_d' },
         typescriptreact = { 'eslint_d' },
-        
-        -- HTML/CSS - Linting handled by LSPs
-        -- html = {},  -- htmlhint available if needed
-        -- css = {},   -- stylelint available if needed
-        
-        -- Rust - Clippy is run via rust-analyzer LSP
-        -- rust = {},  -- No additional linter needed
       }
+
+      lint.linters_by_ft = {}
+      for ft, ft_linters in pairs(configured_linters) do
+        local active_linters = {}
+        for _, linter in ipairs(ft_linters) do
+          if is_linter_runnable(linter) then
+            table.insert(active_linters, linter)
+          end
+        end
+        if #active_linters > 0 then
+          lint.linters_by_ft[ft] = active_linters
+        end
+      end
 
       -- To allow other plugins to add linters to require('lint').linters_by_ft,
       -- instead set linters_by_ft like this:

@@ -1,116 +1,180 @@
 return {
   {
-    'nvim-java/nvim-java',
-    event = 'VeryLazy',
+    'mfussenegger/nvim-jdtls',
+    ft = 'java',
     dependencies = {
-      'MunifTanjim/nui.nvim',
+      'mason-org/mason.nvim',
       'mfussenegger/nvim-dap',
-      'nvim-lua/plenary.nvim',
       'saghen/blink.cmp',
     },
     config = function()
-      require('java').setup {
-        checks = {
-          nvim_jdtls_conflict = false,
-        },
-        spring_boot_tools = {
-          enable = false,
-        },
-        jdk = {
-          auto_install = false,
-        },
-        log = {
-          use_console = false,
-          level = 'warn',
-        },
-        lombok = {
-          enable = true,
-        },
-        java_test = {
-          enable = true,
-        },
-        java_debug_adapter = {
-          enable = true,
-        },
-      }
+      local function get_jdtls_config()
+        local mason_registry = require 'mason-registry'
 
-      vim.lsp.config('jdtls', {
-        capabilities = require('blink.cmp').get_lsp_capabilities(),
-        settings = {
-          java = {
-            configuration = {
-              updateBuildConfiguration = 'interactive',
-            },
-            inlayHints = {
-              parameterNames = {
-                enabled = 'all',
+        if not mason_registry.is_installed 'jdtls' then
+          vim.notify('jdtls not installed — run :MasonInstall jdtls', vim.log.levels.WARN)
+          return nil
+        end
+
+        local jdtls_path = mason_registry.get_package('jdtls'):get_install_path()
+
+        -- Launcher jar (glob since version is in the filename)
+        local launcher_jars = vim.fn.glob(jdtls_path .. '/plugins/org.eclipse.equinox.launcher_*.jar', true, true)
+        if #launcher_jars == 0 then
+          vim.notify('jdtls launcher jar not found in ' .. jdtls_path, vim.log.levels.ERROR)
+          return nil
+        end
+        local launcher_jar = launcher_jars[1]
+
+        -- OS-specific configuration directory
+        local config_dir = jdtls_path .. '/config_mac'
+        if vim.fn.isdirectory(jdtls_path .. '/config_mac_arm') == 1 then
+          -- Check if we are running on Apple Silicon
+          local handle = io.popen("uname -m")
+          local result = handle:read("*a")
+          handle:close()
+          if result:match("arm64") then
+            config_dir = jdtls_path .. '/config_mac_arm'
+          end
+        end
+
+        -- Project root: use jdtls's own finder so it searches upward from the
+        -- current buffer file, not from cwd
+        local root_dir = require('jdtls.setup').find_root {
+          'pom.xml',
+          'build.gradle',
+          'build.gradle.kts',
+          'mvnw',
+          'gradlew',
+          '.git',
+          'build.xml',
+        }
+        if not root_dir then
+          root_dir = vim.fn.getcwd()
+        end
+
+        -- Unique workspace per project: name + short hash prevents collisions
+        local project_name = vim.fn.fnamemodify(root_dir, ':t')
+        local project_hash = string.sub(vim.fn.sha256(root_dir), 1, 8)
+        local workspace_dir = vim.fn.stdpath 'cache' .. '/jdtls/workspaces/' .. project_name .. '-' .. project_hash
+
+        -- JVM flags tuned for large codebases and agent configurations
+        local jvm_args = {
+          '-XX:+UseParallelGC',
+          '-XX:GCTimeRatio=4',
+          '-XX:AdaptiveSizePolicyWeight=90',
+          '-Dsun.zip.disableMemoryMapping=true',
+          '-Xmx2G',
+          '-Xms256m',
+        }
+
+        -- Lombok agent: point directly to the Mason-provided lombok.jar
+        local lombok_path = jdtls_path .. '/lombok.jar'
+        if vim.fn.filereadable(lombok_path) == 1 then
+          table.insert(jvm_args, '-javaagent:' .. lombok_path)
+        else
+          vim.notify('Lombok jar not found in ' .. lombok_path, vim.log.levels.WARN)
+        end
+
+        -- Java executable: prefer JAVA_HOME, fall back to PATH
+        local java_home = os.getenv 'JAVA_HOME'
+        local java_cmd = java_home and (java_home .. '/bin/java') or 'java'
+
+        -- Build the full command array
+        local cmd = {
+          java_cmd,
+          '-Declipse.application=org.eclipse.jdt.ls.core.id1',
+          '-Dosgi.bundles.defaultStartLevel=4',
+          '-Declipse.product=org.eclipse.jdt.ls.core.product',
+          '-Dlog.protocol=true',
+          '-Dlog.level=ALL',
+        }
+        vim.list_extend(cmd, jvm_args)
+        vim.list_extend(cmd, {
+          '-jar',
+          launcher_jar,
+          '-configuration',
+          config_dir,
+          '-data',
+          workspace_dir,
+        })
+
+        local capabilities = require('blink.cmp').get_lsp_capabilities()
+
+        return {
+          cmd = cmd,
+          root_dir = root_dir,
+          capabilities = capabilities,
+          settings = {
+            java = {
+              project = {
+                referencedLibraries = {
+                  'lib/**/*.jar',
+                  'libs/**/*.jar',
+                  '*.jar',
+                },
               },
-            },
-            format = {
-              enabled = true,
-              settings = {
-                profile = 'GoogleStyle',
+              inlayHints = {
+                parameterNames = { enabled = 'all' },
               },
-            },
-            completion = {
-              favoriteStaticMembers = {
-                'org.junit.Assert.*',
-                'org.junit.jupiter.api.Assertions.*',
-                'org.mockito.Mockito.*',
-                'org.mockito.ArgumentMatchers.*',
+              format = {
+                enabled = true,
+                settings = { profile = 'GoogleStyle' },
               },
-              importOrder = {
-                'java',
-                'javax',
-                'com',
-                'org',
+              completion = {
+                favoriteStaticMembers = {
+                  'org.junit.Assert.*',
+                  'org.junit.jupiter.api.Assertions.*',
+                  'org.mockito.Mockito.*',
+                  'org.mockito.ArgumentMatchers.*',
+                },
+                importOrder = { 'java', 'javax', 'com', 'org' },
               },
-            },
-            sources = {
-              organizeImports = {
-                starThreshold = 9999,
-                staticStarThreshold = 9999,
+              sources = {
+                organizeImports = {
+                  starThreshold = 9999,
+                  staticStarThreshold = 9999,
+                },
               },
-            },
-            codeGeneration = {
-              toString = {
-                template = '${object.className}{${member.name()}=${member.value}, ${otherMembers}}',
+              codeGeneration = {
+                toString = {
+                  template = '${object.className}{${member.name()}=${member.value}, ${otherMembers}}',
+                },
+                useBlocks = true,
               },
-              useBlocks = true,
             },
           },
-        },
-        on_attach = function(_, bufnr)
-          local map = function(keys, func, desc, mode)
-            mode = mode or 'n'
-            vim.keymap.set(mode, keys, func, { buffer = bufnr, desc = 'Java: ' .. desc })
-          end
+          on_attach = function(client, bufnr)
+            local map = function(keys, func, desc, mode)
+              mode = mode or 'n'
+              vim.keymap.set(mode, keys, func, { buffer = bufnr, desc = 'Java: ' .. desc })
+            end
 
-          map('<leader>co', function()
-            vim.lsp.buf.code_action {
-              apply = true,
-              context = {
-                only = { 'source.organizeImports' },
-                diagnostics = {},
-              },
-            }
-          end, 'Organize Imports')
-          map('<leader>cv', function() require('java').refactor.extract_variable() end, 'Extract Variable')
-          map(
-            '<leader>cV',
-            function() require('java').refactor.extract_variable_all_occurrence() end,
-            'Extract Variable (all occurrences)'
-          )
-          map('<leader>cm', function() require('java').refactor.extract_method() end, 'Extract Method')
-          map('<leader>cm', function() require('java').refactor.extract_method() end, 'Extract Method', 'v')
-          map('<leader>cC', function() require('java').refactor.extract_constant() end, 'Extract Constant')
-          map('<leader>cF', function() require('java').refactor.extract_field() end, 'Extract Field')
-          map('<leader>ct', function() require('java').test.run_current_method() end, 'Run Nearest Test')
-          map('<leader>cT', function() require('java').test.run_current_class() end, 'Run Test Class')
-        end,
+            map('<leader>co', function() require('jdtls').organize_imports() end, 'Organize Imports')
+            map('<leader>cv', function() require('jdtls').extract_variable() end, 'Extract Variable')
+            map('<leader>cV', function() require('jdtls').extract_variable(true) end, 'Extract Variable (all occurrences)')
+            map('<leader>cm', function() require('jdtls').extract_method() end, 'Extract Method', { 'n', 'v' })
+            map('<leader>cC', function() require('jdtls').extract_constant() end, 'Extract Constant')
+            map('<leader>cu', function() require('jdtls').update_project_config() end, 'Update Project Config')
+          end,
+        }
+      end
+
+      local function start_jdtls()
+        local cfg = get_jdtls_config()
+        if cfg then
+          require('jdtls').start_or_attach(cfg)
+        end
+      end
+
+      -- Handle the buffer that triggered this plugin load
+      vim.schedule(start_jdtls)
+
+      -- Handle all future Java buffers
+      vim.api.nvim_create_autocmd('FileType', {
+        pattern = 'java',
+        callback = start_jdtls,
       })
-
-      vim.lsp.enable 'jdtls'
     end,
   },
 }
