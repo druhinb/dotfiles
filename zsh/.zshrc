@@ -74,14 +74,18 @@ npm() { _nvm_lazy_load; npm "$@"; }
 npx() { _nvm_lazy_load; npx "$@"; }
 
 # TheFuck (single eval)
-eval "$(thefuck --alias fk)"
-alias oops='fk'
+if command -v thefuck >/dev/null 2>&1 && thefuck --version >/dev/null 2>&1; then
+  eval "$(thefuck --alias fk)"
+  alias oops='fk'
+fi
 
 # Local overrides
 [ -f ~/.zshrc.local ] && source ~/.zshrc.local
 
 # Starship prompt (must be near end to override OMZ prompt)
-eval "$(starship init zsh)"
+if command -v starship >/dev/null 2>&1 && [[ ${TERM:-dumb} != dumb ]]; then
+  eval "$(starship init zsh)"
+fi
 
 # FZF Tab Configuration
 zstyle ':completion:*:git-checkout:*' sort false
@@ -99,18 +103,24 @@ function _makefile_targets {
 compdef _makefile_targets make
 
 # Atuin
-eval "$(atuin init zsh)"
+if command -v atuin >/dev/null 2>&1; then
+  eval "$(atuin init zsh)"
+fi
 
 # Vi mode + keybindings (after plugin widgets are defined)
 bindkey -v
 KEYTIMEOUT=1
 
-bindkey '^n' atuin-search
-bindkey '^p' atuin-search
-bindkey -M viins '^n' atuin-search
-bindkey -M viins '^p' atuin-search
-bindkey -M viins '^Y' autosuggest-accept
-bindkey '^Y' autosuggest-accept
+if (( $+widgets[atuin-search] )); then
+  bindkey '^n' atuin-search
+  bindkey '^p' atuin-search
+  bindkey -M viins '^n' atuin-search
+  bindkey -M viins '^p' atuin-search
+fi
+if (( $+widgets[autosuggest-accept] )); then
+  bindkey -M viins '^Y' autosuggest-accept
+  bindkey '^Y' autosuggest-accept
+fi
 
 
 
@@ -137,5 +147,7 @@ tmux-ssh() {
 }
 
 export _ZO_DOCTOR=0
-eval "$(zoxide init zsh)"
-alias cd="z"
+if command -v zoxide >/dev/null 2>&1; then
+  eval "$(zoxide init zsh)"
+  alias cd="z"
+fi

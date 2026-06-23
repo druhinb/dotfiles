@@ -85,8 +85,12 @@ return {
       -- See `:help telescope.builtin`
       local builtin = require 'telescope.builtin'
 
-      -- Only bind these generic fuzzy finding keymaps if fzf is not present
-      if vim.fn.executable('fzf') == 0 then
+      local is_ssh = vim.env.SSH_CLIENT ~= nil or vim.env.SSH_TTY ~= nil or vim.env.SSH_CONNECTION ~= nil
+
+      -- fzf-lua owns these mappings locally, but is disabled over SSH.
+      -- In devspaces SSH env vars are present even though fzf is installed, so
+      -- Telescope needs to provide the fallback mappings in that case too.
+      if is_ssh or vim.fn.executable('fzf') == 0 then
         -- File/Find
         vim.keymap.set('n', '<leader><space>', builtin.find_files, { desc = 'Find Files (Root)' })
         vim.keymap.set('n', '<leader>ff', builtin.find_files, { desc = 'Find Files (Root)' })
