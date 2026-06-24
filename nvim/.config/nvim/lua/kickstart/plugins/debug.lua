@@ -104,6 +104,7 @@ return {
         'debugpy',          -- Python
         'codelldb',         -- C/C++/Rust
         'js-debug-adapter', -- JavaScript/TypeScript
+        'netcoredbg',       -- C#/.NET
       },
     }
 
@@ -476,6 +477,37 @@ return {
         cwd = '${workspaceFolder}',
         sourceMaps = true,
         skipFiles = { '<node_internals>/**', 'node_modules/**' },
+      },
+    }
+
+    -- C#/.NET (netcoredbg)
+    dap.adapters.coreclr = {
+      type = 'executable',
+      command = vim.fn.stdpath 'data' .. '/mason/bin/netcoredbg',
+      args = { '--interpreter=vscode' },
+    }
+
+    dap.configurations.cs = {
+      {
+        type = 'coreclr',
+        request = 'launch',
+        name = 'Launch (dotnet run)',
+        program = function()
+          local cwd = vim.fn.getcwd()
+          local dll = vim.fn.glob(cwd .. '/bin/Debug/**/**.dll', false, true)
+          if #dll > 0 then
+            return dll[1]
+          end
+          return vim.fn.input('Path to dll: ', cwd .. '/bin/Debug/', 'file')
+        end,
+        cwd = '${workspaceFolder}',
+        stopAtEntry = false,
+      },
+      {
+        type = 'coreclr',
+        request = 'attach',
+        name = 'Attach to process',
+        processId = require('dap.utils').pick_process,
       },
     }
 

@@ -146,8 +146,11 @@ tmux-ssh() {
     tmux attach-session -t "$SESSION_NAME"
 }
 
+eval "$(fnm env --use-on-cd --shell zsh)"
+
 export _ZO_DOCTOR=0
 if command -v zoxide >/dev/null 2>&1; then
   eval "$(zoxide init zsh)"
   alias cd="z"
 fi
+

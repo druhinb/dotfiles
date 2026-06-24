@@ -17,8 +17,8 @@ return {
 
       -- 2. Install / update parsers programmatically
       local ensure_installed = {
-        'bash', 'c', 'cpp', 'diff', 'doxygen', 'html', 'java', 'lua',
-        'luadoc', 'markdown', 'markdown_inline', 'query', 'vim',
+        'bash', 'c', 'c_sharp', 'cpp', 'diff', 'doxygen', 'html', 'java',
+        'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim',
         'vimdoc', 'python', 'rust', 'toml'
       }
 
