@@ -4,7 +4,6 @@ return {
     ft = 'java',
     dependencies = {
       'mason-org/mason.nvim',
-      'mfussenegger/nvim-dap',
       'saghen/blink.cmp',
     },
     config = function()
@@ -26,17 +25,12 @@ return {
         end
         local launcher_jar = launcher_jars[1]
 
-        -- OS-specific configuration directory
-        local config_dir = jdtls_path .. '/config_mac'
-        if vim.fn.isdirectory(jdtls_path .. '/config_mac_arm') == 1 then
-          -- Check if we are running on Apple Silicon
-          local handle = io.popen("uname -m")
-          local result = handle:read("*a")
-          handle:close()
-          if result:match("arm64") then
-            config_dir = jdtls_path .. '/config_mac_arm'
-          end
+        local uname = vim.uv.os_uname()
+        local config_name = uname.sysname == 'Darwin' and 'config_mac' or (uname.sysname == 'Windows_NT' and 'config_win' or 'config_linux')
+        if uname.sysname == 'Darwin' and uname.machine == 'arm64' and vim.fn.isdirectory(jdtls_path .. '/config_mac_arm') == 1 then
+          config_name = 'config_mac_arm'
         end
+        local config_dir = jdtls_path .. '/' .. config_name
 
         -- Project root: use jdtls's own finder so it searches upward from the
         -- current buffer file, not from cwd
@@ -100,11 +94,33 @@ return {
         })
 
         local capabilities = require('blink.cmp').get_lsp_capabilities()
+        local bundles = {}
+
+        if mason_registry.is_installed 'java-debug-adapter' then
+          vim.list_extend(
+            bundles,
+            vim.fn.glob(
+              mason_registry.get_package('java-debug-adapter'):get_install_path() .. '/extension/server/com.microsoft.java.debug.plugin-*.jar',
+              true,
+              true
+            )
+          )
+        end
+        if mason_registry.is_installed 'java-test' then
+          for _, jar in ipairs(vim.fn.glob(mason_registry.get_package('java-test'):get_install_path() .. '/extension/server/*.jar', true, true)) do
+            if not jar:match 'com%.microsoft%.java%.test%.runner%-jar%-with%-dependencies%.jar$' and not jar:match 'jacocoagent%.jar$' then
+              table.insert(bundles, jar)
+            end
+          end
+        end
 
         return {
           cmd = cmd,
           root_dir = root_dir,
           capabilities = capabilities,
+          init_options = {
+            bundles = bundles,
+          },
           settings = {
             java = {
               project = {
@@ -149,13 +165,45 @@ return {
               mode = mode or 'n'
               vim.keymap.set(mode, keys, func, { buffer = bufnr, desc = 'Java: ' .. desc })
             end
+            local function with_dap(callback)
+              require('lazy').load { plugins = { 'nvim-dap' } }
+              require('jdtls.dap').setup_dap { hotcodereplace = 'auto' }
+              callback()
+            end
 
-            map('<leader>co', function() require('jdtls').organize_imports() end, 'Organize Imports')
-            map('<leader>cv', function() require('jdtls').extract_variable() end, 'Extract Variable')
-            map('<leader>cV', function() require('jdtls').extract_variable(true) end, 'Extract Variable (all occurrences)')
-            map('<leader>cm', function() require('jdtls').extract_method() end, 'Extract Method', { 'n', 'v' })
-            map('<leader>cC', function() require('jdtls').extract_constant() end, 'Extract Constant')
-            map('<leader>cu', function() require('jdtls').update_project_config() end, 'Update Project Config')
+            map('<leader>co', function()
+              require('jdtls').organize_imports()
+            end, 'Organize Imports')
+            map('<leader>cv', function()
+              require('jdtls').extract_variable()
+            end, 'Extract Variable')
+            map('<leader>cV', function()
+              require('jdtls').extract_variable(true)
+            end, 'Extract Variable (all occurrences)')
+            map('<leader>cm', function()
+              require('jdtls').extract_method()
+            end, 'Extract Method', { 'n', 'v' })
+            map('<leader>cC', function()
+              require('jdtls').extract_constant()
+            end, 'Extract Constant')
+            map('<leader>cu', function()
+              require('jdtls').update_project_config()
+            end, 'Update Project Config')
+            map('<leader>Tn', function()
+              with_dap(function()
+                require('jdtls.dap').test_nearest_method { config_overrides = { noDebug = true } }
+              end)
+            end, 'Run Nearest Test')
+            map('<leader>Tf', function()
+              with_dap(function()
+                require('jdtls.dap').test_class { config_overrides = { noDebug = true } }
+              end)
+            end, 'Run Test Class')
+            map('<leader>Td', function()
+              with_dap(function()
+                require('jdtls.dap').test_nearest_method()
+              end)
+            end, 'Debug Nearest Test')
           end,
         }
       end

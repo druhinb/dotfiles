@@ -1,10 +1,31 @@
+local function workspaces()
+  return require('remote-nvim').session_provider:get_config_provider():get_workspace_config()
+end
+
+local function connect_existing()
+  local hosts = vim.tbl_keys(workspaces())
+  table.sort(hosts)
+  vim.ui.select(hosts, { prompt = 'Remote workspace' }, function(host)
+    if host then
+      require('remote-nvim.command').RemoteStart { args = host }
+    end
+  end)
+end
+
 return {
   'amitds1997/remote-nvim.nvim',
   version = '*',
   dependencies = {
     'nvim-lua/plenary.nvim',
     'MunifTanjim/nui.nvim',
-    'nvim-telescope/telescope.nvim',
+  },
+  cmd = { 'RemoteStart', 'RemoteStop', 'RemoteInfo', 'RemoteLog', 'RemoteCleanup', 'RemoteConfigDel' },
+  keys = {
+    {
+      '<leader>Rc',
+      connect_existing,
+      desc = 'Connect remote workspace',
+    },
   },
   config = function()
     -- Inject remote paths locally so Neovim can locate the binaries immediately upon launch
@@ -14,15 +35,15 @@ return {
     end
 
     -- Automatically align remote Neovim versions with local version (e.g. v0.12.2)
-    local config_dir = vim.fn.stdpath("data") .. "/remote-nvim.nvim"
-    local config_file = config_dir .. "/workspace.json"
-    local local_version = "v" .. vim.version().major .. "." .. vim.version().minor .. "." .. vim.version().patch
-    local f = io.open(config_file, "r")
+    local config_dir = vim.fn.stdpath 'data' .. '/remote-nvim.nvim'
+    local config_file = config_dir .. '/workspace.json'
+    local local_version = 'v' .. vim.version().major .. '.' .. vim.version().minor .. '.' .. vim.version().patch
+    local f = io.open(config_file, 'r')
     if f then
-      local content = f:read("*a")
+      local content = f:read '*a'
       f:close()
       local ok, data = pcall(vim.json.decode, content)
-      if ok and type(data) == "table" then
+      if ok and type(data) == 'table' then
         local changed = false
         for _, cfg in pairs(data) do
           if cfg.neovim_version ~= local_version then
@@ -31,7 +52,7 @@ return {
           end
         end
         if changed then
-          local out = io.open(config_file, "w")
+          local out = io.open(config_file, 'w')
           if out then
             out:write(vim.json.encode(data))
             out:close()
@@ -119,5 +140,22 @@ return {
         end,
       },
     }
+
+    local remote_command = require 'remote-nvim.command'
+    pcall(vim.api.nvim_del_user_command, 'RemoteStart')
+    vim.api.nvim_create_user_command('RemoteStart', function(opts)
+      if opts.args == '' then
+        connect_existing()
+      else
+        remote_command.RemoteStart(opts)
+      end
+    end, {
+      nargs = '?',
+      desc = 'Start Neovim on an existing remote workspace',
+      complete = function(_, line)
+        local query = vim.trim(line):match '^RemoteStart%s*(.*)$' or ''
+        return vim.fn.matchfuzzy(vim.tbl_keys(workspaces()), query)
+      end,
+    })
   end,
 }

@@ -2,6 +2,13 @@ local have_nerd = vim.g.have_nerd_font
 
 return {
   'MeanderingProgrammer/render-markdown.nvim',
+  ft = { 'markdown', 'Avante', 'codecompanion' },
+  cmd = 'RenderMarkdown',
+  keys = {
+    { '<leader>Mr', '<cmd>RenderMarkdown toggle<cr>', desc = 'Toggle Markdown rendering' },
+    { '<leader>Me', '<cmd>RenderMarkdown enable<cr>', desc = 'Enable Markdown rendering' },
+    { '<leader>Md', '<cmd>RenderMarkdown disable<cr>', desc = 'Disable Markdown rendering' },
+  },
   dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-mini/mini.nvim' },
   ---@module 'render-markdown'
   ---@type render.md.UserConfig
@@ -12,18 +19,18 @@ return {
     max_file_size = 5.0,
     -- Debounce time for rendering updates
     debounce = 100,
-    
+
     -- Preset styling (obsidian-like)
     preset = 'obsidian',
-    
+
     -- Rendering options
     render_modes = { 'n', 'c', 'i' }, -- Render in normal, command, and insert modes
-    
+
     -- Anti-conceal settings: never show source in these contexts
     anti_conceal = {
       enabled = true,
     },
-    
+
     -- Heading configuration (Obsidian-style)
     heading = {
       enabled = true,
@@ -48,7 +55,7 @@ return {
         'RenderMarkdownH6',
       },
     },
-    
+
     -- Code block rendering
     code = {
       enabled = true,
@@ -65,7 +72,7 @@ return {
       highlight = 'RenderMarkdownCode',
       highlight_inline = 'RenderMarkdownCodeInline',
     },
-    
+
     -- Dash/bullet rendering
     bullet = {
       enabled = true,
@@ -73,7 +80,7 @@ return {
       right_pad = 1,
       highlight = 'RenderMarkdownBullet',
     },
-    
+
     -- Checkbox rendering
     checkbox = {
       enabled = true,
@@ -93,7 +100,7 @@ return {
         question = { raw = '[?]', rendered = have_nerd and ' ' or '[?] ', highlight = 'DiagnosticInfo' },
       },
     },
-    
+
     -- Quote block rendering
     quote = {
       enabled = true,
@@ -101,23 +108,30 @@ return {
       repeat_linebreak = false,
       highlight = 'RenderMarkdownQuote',
     },
-    
+
     -- Pipe table rendering
     pipe_table = {
       enabled = true,
       style = 'full',
       cell = 'padded',
       border = {
-        '┌', '┬', '┐',
-        '├', '┼', '┤',
-        '└', '┴', '┘',
-        '│', '─',
+        '┌',
+        '┬',
+        '┐',
+        '├',
+        '┼',
+        '┤',
+        '└',
+        '┴',
+        '┘',
+        '│',
+        '─',
       },
       alignment_indicator = '━',
       head = 'RenderMarkdownTableHead',
       row = 'RenderMarkdownTableRow',
     },
-    
+
     -- Callout rendering (Obsidian-style)
     callout = {
       note = { raw = '[!NOTE]', rendered = '󰋽 Note', highlight = 'RenderMarkdownInfo' },
@@ -148,7 +162,7 @@ return {
       quote = { raw = '[!QUOTE]', rendered = '󱆨 Quote', highlight = 'RenderMarkdownQuote' },
       cite = { raw = '[!CITE]', rendered = '󱆨 Cite', highlight = 'RenderMarkdownQuote' },
     },
-    
+
     -- Link rendering
     link = {
       enabled = true,
@@ -159,13 +173,13 @@ return {
         web = { pattern = '^http[s]?://', icon = have_nerd and '󰖟 ' or 'WEB ', highlight = 'RenderMarkdownLink' },
       },
     },
-    
+
     -- Sign column rendering
     sign = {
       enabled = true,
       highlight = 'RenderMarkdownSign',
     },
-    
+
     -- Win options to set when rendering
     win_options = {
       conceallevel = {
@@ -178,21 +192,8 @@ return {
       },
     },
   },
-  
+
   config = function(_, opts)
     require('render-markdown').setup(opts)
-    
-    -- Keymaps for toggling between reading and source mode
-    vim.keymap.set('n', '<leader>mr', '<cmd>RenderMarkdown toggle<cr>', {
-      desc = 'Toggle Markdown Rendering (Reading/Source Mode)',
-    })
-    
-    vim.keymap.set('n', '<leader>me', '<cmd>RenderMarkdown enable<cr>', {
-      desc = 'Enable Markdown Rendering (Reading Mode)',
-    })
-    
-    vim.keymap.set('n', '<leader>md', '<cmd>RenderMarkdown disable<cr>', {
-      desc = 'Disable Markdown Rendering (Source Mode)',
-    })
   end,
 }

@@ -1,6 +1,7 @@
 return {
   {
     'goolord/alpha-nvim',
+    event = 'VimEnter',
     dependencies = { 'nvim-tree/nvim-web-devicons' },
     config = function()
       local dashboard = require 'alpha.themes.dashboard'
@@ -23,8 +24,16 @@ return {
 
       dashboard.section.buttons.val = {
         dashboard.button('e', '  > New File', ':ene <BAR> startinsert <CR>'),
-        dashboard.button('f', '  > Find File', ':FzfLua files<CR>'),
-        dashboard.button('r', '  > Recent', ':FzfLua oldfiles<CR>'),
+        dashboard.button(
+          'f',
+          '  > Find File',
+          [[:lua if require("search").has_fzf() then require("fzf-lua").files() else require("search").files() end<CR>]]
+        ),
+        dashboard.button(
+          'r',
+          '  > Recent',
+          [[:lua if require("search").has_fzf() then require("fzf-lua").oldfiles() else require("search").oldfiles() end<CR>]]
+        ),
         dashboard.button('s', '  > Restore Session', [[:lua require("persistence").load() <cr>]]),
         dashboard.button('l', '󰒲  > Lazy', ':Lazy<CR>'),
         dashboard.button('q', '  > Quit', ':qa<CR>'),
@@ -86,10 +95,5 @@ return {
 
       require('alpha').setup(dashboard.config)
     end,
-  },
-  {
-    'folke/persistence.nvim',
-    event = 'BufReadPre',
-    opts = {},
   },
 }

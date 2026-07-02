@@ -1,19 +1,19 @@
 return {
-  "stevearc/dressing.nvim",
-  event = "VeryLazy",
+  'stevearc/dressing.nvim',
+  event = 'VeryLazy',
   opts = {
     input = {
-      border = "rounded",
+      border = 'rounded',
       win_options = {
-        winhighlight = "Normal:NormalFloat,FloatBorder:FloatBorder",
+        winhighlight = 'Normal:NormalFloat,FloatBorder:FloatBorder',
       },
     },
     select = {
-      backend = { "fzf_lua", "builtin" },
+      backend = { 'fzf_lua', 'builtin' },
       builtin = {
-        border = "rounded",
+        border = 'rounded',
         win_options = {
-          winhighlight = "Normal:NormalFloat,FloatBorder:FloatBorder",
+          winhighlight = 'Normal:NormalFloat,FloatBorder:FloatBorder',
         },
       },
     },

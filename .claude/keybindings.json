@@ -17,7 +17,6 @@
     {
       "context": "Scroll",
       "bindings": {
-        "ctrl+d": "scroll:halfPageDown",
         "ctrl+u": "scroll:halfPageUp",
         "ctrl+f": "scroll:fullPageDown",
         "ctrl+b": "scroll:fullPageUp"
@@ -40,7 +39,6 @@
     {
       "context": "DiffDialog",
       "bindings": {
-        "ctrl+d": "scroll:halfPageDown",
         "ctrl+u": "scroll:halfPageUp"
       }
     },

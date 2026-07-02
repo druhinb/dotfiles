@@ -3,7 +3,7 @@ return {
   'mikavilpas/yazi.nvim',
   event = 'VeryLazy',
   enabled = function()
-    return vim.fn.executable('yazi') == 1
+    return vim.fn.executable 'yazi' == 1
   end,
   keys = {
     -- 👇 in this section, choose your own keymappings!

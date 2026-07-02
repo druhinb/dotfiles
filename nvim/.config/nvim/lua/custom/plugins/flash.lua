@@ -127,10 +127,7 @@ return {
           -- Autohide flash when in operator-pending mode
           opts.autohide = opts.autohide or (vim.fn.mode(true):find 'no' and vim.v.operator == 'y')
           -- Disable jump labels when not enabled, using a count, or in operator-pending mode
-          opts.jump_labels = opts.jump_labels
-            and vim.v.count == 0
-            and vim.fn.reg_executing() == ''
-            and vim.fn.reg_recording() == ''
+          opts.jump_labels = opts.jump_labels and vim.v.count == 0 and vim.fn.reg_executing() == '' and vim.fn.reg_recording() == ''
         end,
         -- Show jump labels
         autohide = false,

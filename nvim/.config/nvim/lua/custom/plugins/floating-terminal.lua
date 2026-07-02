@@ -4,6 +4,10 @@
 return {
   'akinsho/toggleterm.nvim',
   version = '*',
+  cmd = { 'ToggleTerm', 'TermExec', 'FloatTerm' },
+  keys = {
+    { '<C-t>', '<cmd>ToggleTerm direction=float<cr>', mode = { 'n', 'i', 't' }, desc = 'Toggle floating terminal' },
+  },
   config = function()
     require('toggleterm').setup {
       size = 20,
@@ -31,8 +35,6 @@ return {
     vim.api.nvim_create_user_command('FloatTerm', function()
       vim.cmd 'ToggleTerm direction=float'
     end, {})
-
-    vim.keymap.set({ 'n', 'i', 't' }, '<C-t>', '<cmd>ToggleTerm direction=float<CR>', { desc = 'Toggle floating terminal', noremap = true, silent = true })
 
     -- Keymaps for easy closing
     -- In terminal mode, press <Esc><Esc> to close

@@ -3,7 +3,7 @@ return {
     'echasnovski/mini.files',
     version = '*',
     enabled = function()
-      return vim.fn.executable('yazi') == 0
+      return vim.fn.executable 'yazi' == 0
     end,
     opts = {
       windows = {

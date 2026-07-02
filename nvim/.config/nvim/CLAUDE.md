@@ -1,110 +1,83 @@
-# CLAUDE.md
-
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
-## Common Commands
-
-**Formatting Lua files:**
-```bash
-stylua lua/          # Format all Lua files (uses .stylua.toml: 160-char line width)
-stylua path/to/file.lua
-```
-
-**Health check (run inside Neovim):**
-```
-:checkhealth
-:Lazy          -- Plugin manager UI
-:Lazy update   -- Update all plugins
-:Lazy clean    -- Remove unused plugins
-:Mason         -- LSP/DAP/formatter installer
-```
+# Neovim configuration guidance
 
 ## Architecture
 
-Built on **kickstart.nvim** with custom extensions. Plugin manager is **lazy.nvim**.
+This is a modular Kickstart configuration managed by lazy.nvim. It is not LazyVim.
 
-```
-init.lua                        -- Entry point: sets leader, loads options/keymaps/plugins
-lua/
-  options.lua                   -- vim.opt settings
-  keymaps.lua                   -- Global keybindings (~365 lines)
-  lazy-bootstrap.lua            -- Installs lazy.nvim if missing
-  lazy-plugins.lua              -- Plugin spec: imports kickstart + auto-scans custom/plugins/
-  kickstart/plugins/            -- Base plugins (LSP, treesitter, completion, fzf, dap, etc.)
-    lsp/                        -- Per-language LSP configs (14 languages)
-  custom/plugins/               -- Auto-discovered; drop a file here to add a plugin
+```text
+init.lua                         leader, options, keymaps, lazy bootstrap, plugins, autoread
+lua/lazy-plugins.lua             lazy.nvim setup and explicit core specs
+lua/tooling.lua                  shared LSP/format/lint/DAP/test/parser inventory
+lua/search.lua                   built-in search and quickfix fallbacks
+lua/kickstart/plugins/           core LSP, completion, format, lint, DAP, treesitter, UI specs
+lua/custom/plugins/              auto-imported personal and language-bundle specs
 ```
 
-**The split between `kickstart/` and `custom/`:** `kickstart/plugins/` holds the stable base (lspconfig, treesitter, blink-cmp, conform, fzf-lua, dap). `custom/plugins/` is where all personal additions live — lazy.nvim auto-imports every file in that directory.
+`lua/lazy-plugins.lua` imports selected core specs directly and auto-imports every spec under `lua/custom/plugins/`. Core behavior belongs in `kickstart/plugins`; optional integrations and filetype-specific bundles belong in `custom/plugins`.
 
-## Adding/Modifying Plugins
+Neovim autoread is enabled in `init.lua`. External edits made by Claude are picked up on focus, buffer entry, and cursor-hold checks. Claude Code remains in tmux; do not add an in-editor agent plugin.
 
-**New plugin** — create `lua/custom/plugins/<name>.lua` returning a spec table:
+## Tool ownership
+
+`lua/tooling.lua` is the authoritative inventory for:
+
+- native LSP server to Mason package mappings;
+- formatters and `formatters_by_ft`;
+- linters and `linters_by_ft`;
+- DAP packages and adapter names;
+- Java debug/test support;
+- Tree-sitter parsers;
+- the documented language capability matrix.
+
+`lua/kickstart/plugins/lspconfig.lua`, `conform.lua`, `int.lua`, `debug.lua`, and `treesitter.lua` consume that inventory. Add tools there rather than creating a second install list.
+
+Most servers use Neovim 0.11+ `vim.lsp.config` and `vim.lsp.enable` in `lspconfig.lua`. clangd, vtsls/Tailwind, jdtls, and Roslyn are owned by filetype-triggered bundles under `custom/plugins/lang-*.lua`; keep those server names in `tooling.bundle_servers` to avoid duplicate clients.
+
+Mason installation is explicit. `mason-tool-installer.nvim` has `run_on_start = false`; `setup.sh` invokes `:MasonToolsInstallSync`. Tree-sitter parser installation is exposed through `:ToolingInstallTreesitter`, not normal startup.
+
+## Plugin conventions
+
+Return a lazy.nvim spec table and choose the narrowest appropriate trigger:
+
 ```lua
 return {
   'owner/repo',
-  event = 'VeryLazy',   -- or: cmd, ft, keys for lazy loading
-  opts = { ... },       -- passed to require('plugin').setup(opts)
-}
-```
-
-**Override a kickstart plugin** — edit the file in `lua/kickstart/plugins/` directly, or shadow specific keys in a custom file.
-
-**LSP server** — add server config to the `servers` table in `lua/kickstart/plugins/lspconfig.lua`, then add a per-language file under `lua/kickstart/plugins/lsp/` if it needs custom setup.
-
-**Formatter** — extend the `formatters_by_ft` table in `lua/kickstart/plugins/conform.lua`.
-
-## Key Conventions
-
-**Lazy loading patterns used throughout:**
-- `event = 'VeryLazy'` — defer until after UI is ready
-- `event = 'LazyFile'` — load on first file open
-- `keys = { { '<leader>x', ..., desc = '...' } }` — load on keypress; always include `desc` for which-key
-- `ft = 'python'` — filetype-triggered
-- `cmd = 'CommandName'` — command-triggered
-
-**Which-key group registration** — new `<leader>` prefixes should be registered in `lua/kickstart/plugins/which-key.lua` under the `spec` table.
-
-**Plugin spec shape:**
-```lua
-return {
-  'owner/repo',
-  dependencies = { 'nvim-lua/plenary.nvim' },
+  ft = 'python',
   keys = {
-    { '<leader>xy', function() require('plugin').action() end, desc = 'Short description' },
+    { '<leader>xy', function() require('plugin').action() end, desc = 'Action' },
   },
-  opts = function()            -- use a function when opts depend on runtime state
-    return { ... }
-  end,
+  opts = {},
 }
 ```
 
-## Plugin Landscape
+- Use `ft` for language bundles, `cmd` for command workflows, `keys` for user actions, and a real event only when needed.
+- Include `desc` on user-facing keymaps. Register new leader groups in `lua/kickstart/plugins/which-key.lua`.
+- Do not install packages, parsers, or tools during ordinary startup.
+- Prefer native Neovim APIs and the existing focused plugin over another overlapping subsystem.
+- fzf-lua is the preferred picker. Keep `lua/search.lua` fallbacks working when `fzf` is unavailable over SSH.
+- Preserve capability-aware, buffer-local LSP mappings and native document highlighting.
 
-| Category | Plugin |
-|---|---|
-| Fuzzy finder | fzf-lua (`<leader>f*`, `<leader>s*`) |
-| LSP | nvim-lspconfig + Mason + blink-cmp |
-| Formatting | conform.nvim (`:Format` or on save) |
-| Linting | nvim-lint (`kickstart/plugins/int.lua` — toggle via `<leader>tl`) |
-| Git | gitsigns, neogit, diffview, lazygit (via snacks) |
-| Git conflicts | git-conflict.nvim (inline conflict markers UI) |
-| Diagnostics | trouble.nvim (`<leader>x*`) |
-| Debug | nvim-dap + dap-ui (`lua/kickstart/plugins/debug.lua`) |
-| File marks | harpoon2 (`<leader>a` add, `<leader>1-6` jump) |
-| Find & replace | grug-far.nvim (`<leader>rr`) |
-| Session restore | persistence.nvim (`<leader>qs` restore, `<leader>ql` last) |
-| Undo history | undotree (`<leader>uu`) |
-| Markdown preview | render-markdown.nvim (`<leader>mr` toggle) |
-| Doc generation | neogen (`<leader>nf` generate annotation) |
-| UI | noice (cmdline/messages), snacks, lualine, dashboard |
-| UI extras | mini-indentscope, satellite (scrollbar), smear-cursor, illuminate |
-| Navigation | flash.nvim, yazi, tmux.nvim (seamless pane navigation) |
-| Testing | neotest |
-| Editing helpers | hardtime.nvim (habit enforcement), text-case.nvim, rip-substitute |
+## Language bundles
 
-## Non-obvious Files
+The first-class bundles are Python, TypeScript/JavaScript/React, C/C++, Rust, Go, Java, and C#. Config/infra support is centralized in the core LSP, conform, lint, and tooling files.
 
-- `kickstart/plugins/int.lua` — this is the **linting** plugin (`nvim-lint`), not "integration"; the name is a kickstart artifact
-- `kickstart/plugins/telescope.lua` — telescope is installed but **fzf-lua is preferred**; reach for fzf-lua keymaps (`<leader>f*`) when adding new pickers
-- `custom/plugins/lang-cpp.lua`, `lang-java.lua` — **language bundles**: each file groups LSP extras + DAP + test runner + formatter for one language; follow this pattern when adding full language support
+- Python and Go bundle files currently provide filetype-triggered neotest adapters; core LSP/DAP/format/lint setup is centralized.
+- React/TypeScript owns vtsls, Tailwind, and TS autotag behavior.
+- C/C++ owns clangd extensions and CMake commands.
+- Java owns jdtls startup, Java debug/test bundles, and Java-specific actions.
+- C# owns Roslyn; shared DAP and neotest provide .NET debugging/testing.
+- `lua/custom/plugins/neotest.lua` defines the common test mappings and adapter setup.
+
+## Focused checks
+
+From `nvim/.config/nvim`:
+
+```bash
+stylua --check init.lua lua
+nvim --headless "+qa"
+nvim --headless "+lua require('tooling').mason_packages()" +qa
+```
+
+Useful interactive diagnostics are `:checkhealth`, `:Lazy`, `:Mason`, `:ConformInfo`, `:LspInfo`, and the DAP/neotest UIs. Do not run `:Lazy update`, `:Lazy clean`, Mason installation, or every-language checks unless the task calls for integration testing.
+
+`kickstart/plugins/int.lua` is the nvim-lint spec despite its historical filename. Formatting uses `:Format`/`:FormatToggle`; linting uses `:Lint`/`:LintToggle`.

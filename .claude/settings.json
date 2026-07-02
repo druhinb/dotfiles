@@ -1,4 +1,5 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "cleanupPeriodDays": 30,
   "attribution": {
     "commit": ""
@@ -7,19 +8,58 @@
     "allow": [
       "mcp__mcp-gateway-sourcegraph",
       "mcp__mcp-gateway-gdrive",
-      "mcp__mcp-gateway-figma"
+      "mcp__mcp-gateway-figma",
+      "Bash(git status)",
+      "Bash(git status *)",
+      "Bash(git diff)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git branch --show-current)",
+      "Bash(jq empty *)",
+      "Bash(bash -n *)",
+      "Bash(zsh -n *)",
+      "Bash(shfmt -d *)",
+      "Bash(stylua --check *)",
+      "Bash(shellcheck *)"
+    ],
+    "deny": [
+      "Bash(git commit)",
+      "Bash(git commit *)",
+      "Bash(git push)",
+      "Bash(git push *)",
+      "Bash(git reset --hard)",
+      "Bash(git reset --hard *)",
+      "Bash(git clean *)",
+      "Bash(git checkout -- *)",
+      "Bash(git restore *)",
+      "Bash(rm -rf *)",
+      "Bash(rm -fr *)",
+      "Bash(sudo *)",
+      "Bash(chown *)"
     ]
   },
-  "model": "opus",
+  "model": "claude-sonnet-5",
   "hooks": {
-    "SessionStart": [
+    "PostToolUse": [
       {
-        "matcher": "*",
+        "matcher": "Edit|Write",
         "hooks": [
           {
             "type": "command",
-            "command": "HOOK=\"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/herdr-agent-state.sh\"; [ -f \"$HOOK\" ] && bash \"$HOOK\" session; true",
-            "timeout": 10
+            "command": "bash \"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/format-config.sh\"",
+            "timeout": 20
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/compact-context.sh\"",
+            "timeout": 5
           }
         ]
       }
@@ -30,6 +70,10 @@
     "command": "bash \"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/statusline.sh\"",
     "refreshInterval": 10,
     "hideVimModeIndicator": true
+  },
+  "subagentStatusLine": {
+    "type": "command",
+    "command": "bash \"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/subagent-statusline.sh\""
   },
   "spinnerTipsEnabled": false,
   "awaySummaryEnabled": true,

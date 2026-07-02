@@ -1,11 +1,12 @@
 return {
   'johmsalas/text-case.nvim',
+  keys = { 'ga' },
   config = function()
     require('textcase').setup {
       default_keymappings_enabled = false,
     }
 
-    local tc = require('textcase')
+    local tc = require 'textcase'
 
     -- Map keys manually to be operators
     local keys = {

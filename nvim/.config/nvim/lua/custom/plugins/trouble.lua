@@ -215,24 +215,7 @@ return {
           end
         end
       end,
-      '<cmd>Trouble lsp toggle focus=false win.position=right<cr>',
-      desc = 'LSP Definitions/References (Trouble)',
+      desc = 'Next Trouble/Quickfix Item',
     },
   },
-  -- ===========================================================================
-  -- Override LSP handlers to use Trouble
-  -- ===========================================================================
-  init = function()
-    -- Override the default LSP references handler to open in Trouble
-    -- This makes `gr` (when using vim.lsp.buf.references) use Trouble
-    local original_references = vim.lsp.handlers['textDocument/references']
-    vim.lsp.handlers['textDocument/references'] = function(err, result, ctx, config)
-      if not result or vim.tbl_isempty(result) then
-        vim.notify('No references found', vim.log.levels.INFO)
-        return
-      end
-      -- Open references in Trouble instead of quickfix
-      require('trouble').open { mode = 'lsp_references', focus = true }
-    end
-  end,
 }

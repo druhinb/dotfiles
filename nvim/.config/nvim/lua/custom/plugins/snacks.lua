@@ -7,7 +7,7 @@ return {
     bigfile = { enabled = true }, -- Handle big files properly
     quickfile = { enabled = true }, -- Faster file opening
     statuscolumn = { enabled = true }, -- Better status column (git signs, folds)
-    words = { enabled = true }, -- Auto-highlight word references (like vim-illuminate)
+    words = { enabled = false }, -- Native LSP document highlighting owns this.
 
     -- "Tools" - Useful tools to have on hand
     lazygit = { enabled = true }, -- Best lazygit integration
@@ -56,6 +56,13 @@ return {
         Snacks.bufdelete()
       end,
       desc = 'Delete Buffer',
+    },
+    {
+      '<leader>bD',
+      function()
+        Snacks.bufdelete { force = true }
+      end,
+      desc = 'Delete Buffer (force)',
     },
   },
 }

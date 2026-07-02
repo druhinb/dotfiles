@@ -5,7 +5,7 @@ return {
   -- ===========================================================================
   {
     'yioneko/nvim-vtsls',
-    lazy = false,
+    ft = { 'javascript', 'javascriptreact', 'typescript', 'typescriptreact', 'html', 'css', 'scss', 'svelte' },
     dependencies = {
       'saghen/blink.cmp',
     },
@@ -173,7 +173,6 @@ return {
   -- ===========================================================================
   {
     'windwp/nvim-ts-autotag',
-    event = { 'BufReadPre', 'BufNewFile' },
     ft = { 'html', 'javascript', 'javascriptreact', 'typescript', 'typescriptreact', 'svelte', 'xml' },
     opts = {
       opts = {
@@ -182,17 +181,5 @@ return {
         enable_close_on_slash = true,
       },
     },
-  },
-
-  -- ===========================================================================
-  -- Test runner adapters (loaded by neotest)
-  -- ===========================================================================
-  {
-    'marilari88/neotest-vitest',
-    lazy = true,
-  },
-  {
-    'nvim-neotest/neotest-jest',
-    lazy = true,
   },
 }

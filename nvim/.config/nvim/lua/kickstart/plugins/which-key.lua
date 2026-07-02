@@ -66,7 +66,10 @@ return {
         -- ════════════════════════════════════════════════════════════════════
         -- Leader Groups (Top-Level Categories)
         -- ════════════════════════════════════════════════════════════════════
-        { '<leader>a', group = 'argument swap', icon = { icon = '󰌶', color = 'cyan' } },
+        { '<leader>M', group = 'markdown', icon = { icon = '󰍔', color = 'blue' } },
+        { '<leader>R', group = 'remote', icon = { icon = '󰒋', color = 'cyan' } },
+        { '<leader>T', group = 'test', icon = { icon = '󰙨', color = 'green' } },
+        { '<leader>W', group = 'layout', icon = { icon = '󰕮', color = 'blue' } },
         { '<leader>b', group = 'buffer', icon = { icon = '󰈔', color = 'blue' } },
         { '<leader>c', group = 'code', icon = { icon = '', color = 'orange' } },
         { '<leader>d', group = 'debug/diagnostics', icon = { icon = '', color = 'red' } },
@@ -91,7 +94,6 @@ return {
         { '<leader>u', group = 'ui/undo', icon = { icon = '󰙵', color = 'cyan' } },
         { '<leader>w', group = 'windows/write', icon = { icon = '', color = 'blue' } },
         { '<leader>x', group = 'trouble/quickfix', icon = { icon = '󱖫', color = 'red' } },
-        { '<leader>xn', group = 'neotest', icon = { icon = '󰙨', color = 'green' } },
         -- ════════════════════════════════════════════════════════════════════
         -- Vim Motion Groups (Built-in Keys)
         -- ════════════════════════════════════════════════════════════════════
@@ -129,13 +131,9 @@ return {
         { ']e', desc = 'Next Error' },
         { '[w', desc = 'Prev Warning' },
         { ']w', desc = 'Next Warning' },
-        -- Treesitter/Code navigation
-        { '[f', desc = 'Prev Function' },
-        { ']f', desc = 'Next Function' },
-        { '[c', desc = 'Prev Class/Change' },
-        { ']c', desc = 'Next Class/Change' },
-        { '[a', desc = 'Prev Argument' },
-        { ']a', desc = 'Next Argument' },
+        -- Code/Git navigation
+        { '[c', desc = 'Prev Change' },
+        { ']c', desc = 'Next Change' },
         -- Git navigation
         { '[h', desc = 'Prev Hunk' },
         { ']h', desc = 'Next Hunk' },

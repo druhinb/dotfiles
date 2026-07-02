@@ -1,2 +1,12 @@
 GEMINI.md
 *.patch
+*.orig
+*.rej
+*.swp
+*.swo
+*~
+.DS_Store
+**/.DS_Store
+**/.claude/settings.local.json
+**/.antigravitycli/
+/tmux/.tmux/plugins/

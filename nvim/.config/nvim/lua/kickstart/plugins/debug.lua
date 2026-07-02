@@ -3,6 +3,8 @@
 -- DAP (Debug Adapter Protocol) configuration for multiple languages:
 -- Go, Python, C/C++, Rust, JavaScript/TypeScript
 
+local tooling = require 'tooling'
+
 return {
   'mfussenegger/nvim-dap',
   dependencies = {
@@ -16,96 +18,314 @@ return {
   },
   keys = {
     -- Breakpoints
-    { '<leader>db', function() require('dap').toggle_breakpoint() end,                                          desc = 'Debug: Toggle Breakpoint' },
-    { '<leader>dB', function() require('dap').set_breakpoint(vim.fn.input 'Breakpoint condition: ') end,        desc = 'Debug: Conditional Breakpoint' },
-    { '<leader>dl', function() require('dap').set_breakpoint(nil, nil, vim.fn.input 'Log point message: ') end, desc = 'Debug: Log Point' },
+    {
+      '<leader>db',
+      function()
+        require('dap').toggle_breakpoint()
+      end,
+      desc = 'Debug: Toggle Breakpoint',
+    },
+    {
+      '<leader>dB',
+      function()
+        require('dap').set_breakpoint(vim.fn.input 'Breakpoint condition: ')
+      end,
+      desc = 'Debug: Conditional Breakpoint',
+    },
+    {
+      '<leader>dl',
+      function()
+        require('dap').set_breakpoint(nil, nil, vim.fn.input 'Log point message: ')
+      end,
+      desc = 'Debug: Log Point',
+    },
     {
       '<leader>dL',
       function()
         require('dap').list_breakpoints()
-        vim.cmd('copen')
+        vim.cmd 'copen'
       end,
-      desc = 'Debug: List Breakpoints'
+      desc = 'Debug: List Breakpoints',
     },
-    { '<leader>dx', function() require('dap').clear_breakpoints() end,                      desc = 'Debug: Clear All Breakpoints' },
+    {
+      '<leader>dx',
+      function()
+        require('dap').clear_breakpoints()
+      end,
+      desc = 'Debug: Clear All Breakpoints',
+    },
     -- Session control
-    { '<leader>dc', function() require('dap').continue() end,                               desc = 'Debug: Continue/Start' },
-    { '<leader>dr', function() require('dap').run_last() end,                               desc = 'Debug: Run Last' },
-    { '<leader>dC', function() require('dap').run_to_cursor() end,                          desc = 'Debug: Run to Cursor' },
-    { '<leader>dp', function() require('dap').pause() end,                                  desc = 'Debug: Pause' },
-    { '<leader>dt', function() require('dap').terminate() end,                              desc = 'Debug: Terminate' },
-    { '<leader>dq', function() require('dap').close() end,                                  desc = 'Debug: Quit Session' },
-    { '<leader>dD', function() require('dap').disconnect({ terminateDebuggee = true }) end, desc = 'Debug: Disconnect' },
+    {
+      '<leader>dc',
+      function()
+        require('dap').continue()
+      end,
+      desc = 'Debug: Continue/Start',
+    },
+    {
+      '<leader>dr',
+      function()
+        require('dap').run_last()
+      end,
+      desc = 'Debug: Run Last',
+    },
+    {
+      '<leader>dC',
+      function()
+        require('dap').run_to_cursor()
+      end,
+      desc = 'Debug: Run to Cursor',
+    },
+    {
+      '<leader>dp',
+      function()
+        require('dap').pause()
+      end,
+      desc = 'Debug: Pause',
+    },
+    {
+      '<leader>dt',
+      function()
+        require('dap').terminate()
+      end,
+      desc = 'Debug: Terminate',
+    },
+    {
+      '<leader>dq',
+      function()
+        require('dap').close()
+      end,
+      desc = 'Debug: Quit Session',
+    },
+    {
+      '<leader>dD',
+      function()
+        require('dap').disconnect { terminateDebuggee = true }
+      end,
+      desc = 'Debug: Disconnect',
+    },
     -- Stepping
-    { '<leader>di', function() require('dap').step_into() end,                              desc = 'Debug: Step Into' },
-    { '<leader>do', function() require('dap').step_over() end,                              desc = 'Debug: Step Over' },
-    { '<leader>dO', function() require('dap').step_out() end,                               desc = 'Debug: Step Out' },
-    { '<leader>dI', function() require('dap').step_into({ askForTargets = true }) end,      desc = 'Debug: Force Step Into' },
+    {
+      '<leader>di',
+      function()
+        require('dap').step_into()
+      end,
+      desc = 'Debug: Step Into',
+    },
+    {
+      '<leader>do',
+      function()
+        require('dap').step_over()
+      end,
+      desc = 'Debug: Step Over',
+    },
+    {
+      '<leader>dO',
+      function()
+        require('dap').step_out()
+      end,
+      desc = 'Debug: Step Out',
+    },
+    {
+      '<leader>dI',
+      function()
+        require('dap').step_into { askForTargets = true }
+      end,
+      desc = 'Debug: Force Step Into',
+    },
     -- Stack frame navigation
-    { '<leader>dj', function() require('dap').down() end,                                   desc = 'Debug: Down Stack Frame' },
-    { '<leader>dk', function() require('dap').up() end,                                     desc = 'Debug: Up Stack Frame' },
-    { '<leader>df', function() require('dap').focus_frame() end,                            desc = 'Debug: Focus Current Frame' },
+    {
+      '<leader>dj',
+      function()
+        require('dap').down()
+      end,
+      desc = 'Debug: Down Stack Frame',
+    },
+    {
+      '<leader>dk',
+      function()
+        require('dap').up()
+      end,
+      desc = 'Debug: Up Stack Frame',
+    },
+    {
+      '<leader>df',
+      function()
+        require('dap').focus_frame()
+      end,
+      desc = 'Debug: Focus Current Frame',
+    },
     {
       '<leader>ds',
       function()
-        local w = require('dap.ui.widgets')
+        local w = require 'dap.ui.widgets'
         w.centered_float(w.scopes)
       end,
-      desc = 'Debug: Show Scopes (float)'
+      desc = 'Debug: Show Scopes (float)',
     },
     {
       '<leader>dS',
       function()
-        local w = require('dap.ui.widgets')
+        local w = require 'dap.ui.widgets'
         w.centered_float(w.frames)
       end,
-      desc = 'Debug: Show Stack Frames (float)'
+      desc = 'Debug: Show Stack Frames (float)',
     },
     {
       '<leader>dT',
       function()
-        local w = require('dap.ui.widgets')
+        local w = require 'dap.ui.widgets'
         w.centered_float(w.threads)
       end,
-      desc = 'Debug: Show Threads (float)'
+      desc = 'Debug: Show Threads (float)',
     },
     -- UI
-    { '<leader>du', function() require('dapui').toggle() end,                                   desc = 'Debug: Toggle UI' },
-    { '<leader>de', function() require('dapui').eval() end,                                     mode = { 'n', 'v' },                   desc = 'Debug: Eval Expression' },
-    { '<leader>dE', function() require('dapui').eval(vim.fn.input('Expression: ')) end,         desc = 'Debug: Eval Input' },
-    { '<leader>dh', function() require('dap.ui.widgets').hover() end,                           mode = { 'n', 'v' },                   desc = 'Debug: Hover Variables' },
-    { '<leader>dw', function() require('dapui').float_element('watches', { enter = true }) end, desc = 'Debug: Watches' },
-    { '<leader>dR', function() require('dap').repl.toggle() end,                                desc = 'Debug: Toggle REPL' },
+    {
+      '<leader>du',
+      function()
+        require('dapui').toggle()
+      end,
+      desc = 'Debug: Toggle UI',
+    },
+    {
+      '<leader>de',
+      function()
+        require('dapui').eval()
+      end,
+      mode = { 'n', 'v' },
+      desc = 'Debug: Eval Expression',
+    },
+    {
+      '<leader>dE',
+      function()
+        require('dapui').eval(vim.fn.input 'Expression: ')
+      end,
+      desc = 'Debug: Eval Input',
+    },
+    {
+      '<leader>dh',
+      function()
+        require('dap.ui.widgets').hover()
+      end,
+      mode = { 'n', 'v' },
+      desc = 'Debug: Hover Variables',
+    },
+    {
+      '<leader>dw',
+      function()
+        require('dapui').float_element('watches', { enter = true })
+      end,
+      desc = 'Debug: Watches',
+    },
+    {
+      '<leader>dR',
+      function()
+        require('dap').repl.toggle()
+      end,
+      desc = 'Debug: Toggle REPL',
+    },
     -- Function keys (JetBrains-style)
-    { '<F5>',       function() require('dap').continue() end,                                   desc = 'Debug: Continue' },
-    { '<S-F5>',     function() require('dap').terminate() end,                                  desc = 'Debug: Stop' },
-    { '<C-F5>',     function() require('dap').run_last() end,                                   desc = 'Debug: Restart' },
-    { '<F7>',       function() require('dap').step_into() end,                                  desc = 'Debug: Step Into' },
-    { '<S-F7>',     function() require('dap').step_into({ askForTargets = true }) end,          desc = 'Debug: Smart Step Into' },
-    { '<F8>',       function() require('dap').step_over() end,                                  desc = 'Debug: Step Over' },
-    { '<S-F8>',     function() require('dap').step_out() end,                                   desc = 'Debug: Step Out' },
-    { '<F9>',       function() require('dap').toggle_breakpoint() end,                          desc = 'Debug: Toggle Breakpoint' },
-    { '<C-F8>',     function() require('dap').set_breakpoint(vim.fn.input 'Condition: ') end,   desc = 'Debug: Conditional Breakpoint' },
-    { '<A-F9>',     function() require('dap').run_to_cursor() end,                              desc = 'Debug: Run to Cursor' },
+    {
+      '<F5>',
+      function()
+        require('dap').continue()
+      end,
+      desc = 'Debug: Continue',
+    },
+    {
+      '<S-F5>',
+      function()
+        require('dap').terminate()
+      end,
+      desc = 'Debug: Stop',
+    },
+    {
+      '<C-F5>',
+      function()
+        require('dap').run_last()
+      end,
+      desc = 'Debug: Restart',
+    },
+    {
+      '<F7>',
+      function()
+        require('dap').step_into()
+      end,
+      desc = 'Debug: Step Into',
+    },
+    {
+      '<S-F7>',
+      function()
+        require('dap').step_into { askForTargets = true }
+      end,
+      desc = 'Debug: Smart Step Into',
+    },
+    {
+      '<F8>',
+      function()
+        require('dap').step_over()
+      end,
+      desc = 'Debug: Step Over',
+    },
+    {
+      '<S-F8>',
+      function()
+        require('dap').step_out()
+      end,
+      desc = 'Debug: Step Out',
+    },
+    {
+      '<F9>',
+      function()
+        require('dap').toggle_breakpoint()
+      end,
+      desc = 'Debug: Toggle Breakpoint',
+    },
+    {
+      '<C-F8>',
+      function()
+        require('dap').set_breakpoint(vim.fn.input 'Condition: ')
+      end,
+      desc = 'Debug: Conditional Breakpoint',
+    },
+    {
+      '<A-F9>',
+      function()
+        require('dap').run_to_cursor()
+      end,
+      desc = 'Debug: Run to Cursor',
+    },
     -- VS Code / legacy function keys
-    { '<F10>',      function() require('dap').step_over() end,                                  desc = 'Debug: Step Over' },
-    { '<F11>',      function() require('dap').step_into() end,                                  desc = 'Debug: Step Into' },
-    { '<F12>',      function() require('dap').step_out() end,                                   desc = 'Debug: Step Out' },
+    {
+      '<F10>',
+      function()
+        require('dap').step_over()
+      end,
+      desc = 'Debug: Step Over',
+    },
+    {
+      '<F11>',
+      function()
+        require('dap').step_into()
+      end,
+      desc = 'Debug: Step Into',
+    },
+    {
+      '<F12>',
+      function()
+        require('dap').step_out()
+      end,
+      desc = 'Debug: Step Out',
+    },
   },
   config = function()
     local dap = require 'dap'
     local dapui = require 'dapui'
 
     require('mason-nvim-dap').setup {
-      automatic_installation = true,
+      automatic_installation = false,
       handlers = {},
-      ensure_installed = {
-        'delve',            -- Go
-        'debugpy',          -- Python
-        'codelldb',         -- C/C++/Rust
-        'js-debug-adapter', -- JavaScript/TypeScript
-        'netcoredbg',       -- C#/.NET
-      },
+      ensure_installed = tooling.dap_adapters,
     }
 
     -- DAP UI setup (JetBrains-inspired layout)
@@ -152,9 +372,9 @@ return {
         -- Left sidebar (like JetBrains Debug tool window)
         {
           elements = {
-            { id = 'scopes',      size = 0.35 },
-            { id = 'watches',     size = 0.25 },
-            { id = 'stacks',      size = 0.25 },
+            { id = 'scopes', size = 0.35 },
+            { id = 'watches', size = 0.25 },
+            { id = 'stacks', size = 0.25 },
             { id = 'breakpoints', size = 0.15 },
           },
           size = 50,
@@ -164,7 +384,7 @@ return {
         {
           elements = {
             { id = 'console', size = 0.6 },
-            { id = 'repl',    size = 0.4 },
+            { id = 'repl', size = 0.4 },
           },
           size = 12,
           position = 'bottom',
@@ -199,9 +419,8 @@ return {
     -- Breakpoint icons
     vim.api.nvim_set_hl(0, 'DapBreak', { fg = '#e51400' })
     vim.api.nvim_set_hl(0, 'DapStop', { fg = '#ffcc00' })
-    local icons = vim.g.have_nerd_font
-        and { Breakpoint = '', BreakpointCondition = '', BreakpointRejected = '', LogPoint = '', Stopped = '' }
-        or { Breakpoint = '●', BreakpointCondition = '⊜', BreakpointRejected = '⊘', LogPoint = '◆', Stopped = '⭔' }
+    local icons = vim.g.have_nerd_font and { Breakpoint = '', BreakpointCondition = '', BreakpointRejected = '', LogPoint = '', Stopped = '' }
+      or { Breakpoint = '●', BreakpointCondition = '⊜', BreakpointRejected = '⊘', LogPoint = '◆', Stopped = '⭔' }
     for type, icon in pairs(icons) do
       local hl = (type == 'Stopped') and 'DapStop' or 'DapBreak'
       vim.fn.sign_define('Dap' .. type, { text = icon, texthl = hl, numhl = hl })
@@ -248,15 +467,15 @@ return {
     end, { nargs = '?', desc = 'Evaluate expression' })
 
     vim.api.nvim_create_user_command('DapCondition', function()
-      require('dap').set_breakpoint(vim.fn.input('Breakpoint condition: '))
+      require('dap').set_breakpoint(vim.fn.input 'Breakpoint condition: ')
     end, { desc = 'Set conditional breakpoint' })
 
     vim.api.nvim_create_user_command('DapLogPoint', function()
-      require('dap').set_breakpoint(nil, nil, vim.fn.input('Log message: '))
+      require('dap').set_breakpoint(nil, nil, vim.fn.input 'Log message: ')
     end, { desc = 'Set log point' })
 
     vim.api.nvim_create_user_command('DapHitCondition', function()
-      require('dap').set_breakpoint(nil, vim.fn.input('Hit condition (e.g., >5, ==10): '))
+      require('dap').set_breakpoint(nil, vim.fn.input 'Hit condition (e.g., >5, ==10): ')
     end, { desc = 'Set hit count breakpoint' })
 
     -------------------------
@@ -269,7 +488,13 @@ return {
     }
 
     -- Python
-    require('dap-python').setup 'python'
+    local debugpy_python = vim.fn.exepath 'python3'
+    local debugpy_package = vim.fn.stdpath 'data' .. '/mason/packages/debugpy'
+    local mason_debugpy = debugpy_package .. (vim.fn.has 'win32' == 1 and '/venv/Scripts/python.exe' or '/venv/bin/python')
+    if vim.fn.executable(mason_debugpy) == 1 then
+      debugpy_python = mason_debugpy
+    end
+    require('dap-python').setup(debugpy_python ~= '' and debugpy_python or 'python')
 
     table.insert(dap.configurations.python, {
       type = 'python',
@@ -277,7 +502,7 @@ return {
       name = 'Launch with arguments',
       program = '${file}',
       args = function()
-        return vim.split(vim.fn.input('Arguments: '), ' ')
+        return vim.split(vim.fn.input 'Arguments: ', ' ')
       end,
       console = 'integratedTerminal',
     })

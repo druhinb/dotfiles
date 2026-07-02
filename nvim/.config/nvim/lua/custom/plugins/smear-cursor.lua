@@ -3,6 +3,7 @@ local is_ssh = vim.env.SSH_CLIENT ~= nil or vim.env.SSH_TTY ~= nil or vim.env.SS
 return {
   'sphamba/smear-cursor.nvim',
   enabled = not is_ssh,
+  event = 'VeryLazy',
   opts = {
     -- Physics: High damping prevents the "bounce"
     stiffness = 0.55,

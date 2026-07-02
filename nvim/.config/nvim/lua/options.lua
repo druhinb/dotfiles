@@ -29,15 +29,19 @@ vim.schedule(function()
       vim.g.clipboard = {
         name = 'OSC 52',
         copy = {
-          ['+'] = osc52.copy('+'),
-          ['*'] = osc52.copy('*'),
+          ['+'] = osc52.copy '+',
+          ['*'] = osc52.copy '*',
         },
         -- paste queries the terminal and blocks waiting for stdin, which causes Neovim to hang
         -- indefinitely if the terminal blocks clipboard reads for security.
         -- We fall back to Neovim's internal register instead, completely avoiding network query hangs!
         paste = {
-          ['+'] = function() return vim.fn.getreg('"', 1, true), vim.fn.getregtype('"') end,
-          ['*'] = function() return vim.fn.getreg('"', 1, true), vim.fn.getregtype('"') end,
+          ['+'] = function()
+            return vim.fn.getreg('"', 1, true), vim.fn.getregtype '"'
+          end,
+          ['*'] = function()
+            return vim.fn.getreg('"', 1, true), vim.fn.getregtype '"'
+          end,
         },
       }
     else
@@ -50,12 +54,20 @@ vim.schedule(function()
       vim.g.clipboard = {
         name = 'OSC 52 Fallback',
         copy = {
-          ['+'] = function(lines) osc52_copy(table.concat(lines, '\n')) end,
-          ['*'] = function(lines) osc52_copy(table.concat(lines, '\n')) end,
+          ['+'] = function(lines)
+            osc52_copy(table.concat(lines, '\n'))
+          end,
+          ['*'] = function(lines)
+            osc52_copy(table.concat(lines, '\n'))
+          end,
         },
         paste = {
-          ['+'] = function() return vim.fn.getreg('"', 1, true), vim.fn.getregtype('"') end,
-          ['*'] = function() return vim.fn.getreg('"', 1, true), vim.fn.getregtype('"') end,
+          ['+'] = function()
+            return vim.fn.getreg('"', 1, true), vim.fn.getregtype '"'
+          end,
+          ['*'] = function()
+            return vim.fn.getreg('"', 1, true), vim.fn.getregtype '"'
+          end,
         },
       }
     end
@@ -67,7 +79,7 @@ end)
 vim.o.breakindent = true
 
 -- Set internal shell to zsh if available
-if vim.fn.executable('/bin/zsh') == 1 then
+if vim.fn.executable '/bin/zsh' == 1 then
   vim.o.shell = '/bin/zsh'
 end
 

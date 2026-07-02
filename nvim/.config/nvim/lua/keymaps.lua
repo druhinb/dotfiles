@@ -6,6 +6,10 @@
 
 local map = vim.keymap.set
 
+-- fzf-lua replaces these mappings when available; native UI/quickfix commands
+-- remain usable over SSH and on minimal hosts.
+require('search').setup_fallback_keymaps()
+
 -- ════════════════════════════════════════════════════════════════════════════
 -- General Editor
 -- ════════════════════════════════════════════════════════════════════════════
@@ -26,7 +30,7 @@ vim.api.nvim_create_autocmd('TermOpen', {
     local bufname = vim.api.nvim_buf_get_name(event.buf)
     -- Keep toggleterm's local window-closing escape behavior, but for all other terminal
     -- buffers (ssh, remote-nvim, etc.), route Esc instantly to prevent local capture delays.
-    if not bufname:find('toggleterm') then
+    if not bufname:find 'toggleterm' then
       vim.keymap.set('t', '<Esc>', '<Esc>', { buffer = event.buf, nowait = true })
     end
   end,
@@ -80,12 +84,6 @@ map('n', '<leader>|', '<cmd>vsplit<cr>', { desc = 'Split vertical' })
 map('n', '<leader>-', '<cmd>split<cr>', { desc = 'Split horizontal' })
 map('n', '<leader>wd', '<cmd>close<cr>', { desc = 'Close window' })
 
--- Navigate windows with Ctrl+hjkl
-map('n', '<C-h>', '<C-w>h', { desc = 'Go to left window', remap = true })
-map('n', '<C-j>', '<C-w>j', { desc = 'Go to lower window', remap = true })
-map('n', '<C-k>', '<C-w>k', { desc = 'Go to upper window', remap = true })
-map('n', '<C-l>', '<C-w>l', { desc = 'Go to right window', remap = true })
-
 -- Smart window resize (relative to direction)
 local function smart_resize(direction)
   local current_win = vim.api.nvim_get_current_win()
@@ -130,10 +128,18 @@ local function smart_resize(direction)
   end
 end
 
-map('n', '<leader>h', function() smart_resize 'h' end, { desc = 'Resize left' })
-map('n', '<leader>j', function() smart_resize 'j' end, { desc = 'Resize down' })
-map('n', '<leader>k', function() smart_resize 'k' end, { desc = 'Resize up' })
-map('n', '<leader>l', function() smart_resize 'l' end, { desc = 'Resize right' })
+map('n', '<leader>h', function()
+  smart_resize 'h'
+end, { desc = 'Resize left' })
+map('n', '<leader>j', function()
+  smart_resize 'j'
+end, { desc = 'Resize down' })
+map('n', '<leader>k', function()
+  smart_resize 'k'
+end, { desc = 'Resize up' })
+map('n', '<leader>l', function()
+  smart_resize 'l'
+end, { desc = 'Resize right' })
 
 -- ════════════════════════════════════════════════════════════════════════════
 -- Buffers
@@ -162,15 +168,21 @@ local function buffer_navigate(direction)
   end
 end
 
-map('n', '<S-h>', function() buffer_navigate 'prev' end, { desc = 'Prev buffer' })
-map('n', '<S-l>', function() buffer_navigate 'next' end, { desc = 'Next buffer' })
-map('n', '[b', function() buffer_navigate 'prev' end, { desc = 'Prev buffer' })
-map('n', ']b', function() buffer_navigate 'next' end, { desc = 'Next buffer' })
+map('n', '<S-h>', function()
+  buffer_navigate 'prev'
+end, { desc = 'Prev buffer' })
+map('n', '<S-l>', function()
+  buffer_navigate 'next'
+end, { desc = 'Next buffer' })
+map('n', '[b', function()
+  buffer_navigate 'prev'
+end, { desc = 'Prev buffer' })
+map('n', ']b', function()
+  buffer_navigate 'next'
+end, { desc = 'Next buffer' })
 
 -- Buffer operations
 map('n', '<leader>bb', '<cmd>e #<cr>', { desc = 'Switch to other buffer' })
-map('n', '<leader>bd', '<cmd>bdelete<cr>', { desc = 'Delete buffer' })
-map('n', '<leader>bD', '<cmd>bdelete!<cr>', { desc = 'Delete buffer (force)' })
 map('n', '<leader>bn', '<cmd>bnext<cr>', { desc = 'Next buffer' })
 map('n', '<leader>bp', '<cmd>bprevious<cr>', { desc = 'Prev buffer' })
 
@@ -265,13 +277,6 @@ map('n', '<leader>ud', function()
   end
 end, { desc = 'Toggle diagnostics' })
 
--- Toggle inlay hints (if available)
-if vim.lsp.inlay_hint then
-  map('n', '<leader>uh', function()
-    vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
-  end, { desc = 'Toggle inlay hints' })
-end
-
 -- ════════════════════════════════════════════════════════════════════════════
 -- Miscellaneous
 -- ════════════════════════════════════════════════════════════════════════════
@@ -288,10 +293,6 @@ map('n', '<C-a>', 'gg<S-v>G', { desc = 'Select all' })
 
 -- Lazy plugin manager
 map('n', '<leader>L', '<cmd>Lazy<cr>', { desc = 'Lazy' })
-
--- Section navigation (built-in)
-map('n', '[[', '[[', { desc = 'Prev section start' })
-map('n', ']]', ']]', { desc = 'Next section start' })
 
 -- ════════════════════════════════════════════════════════════════════════════
 -- Autocommands

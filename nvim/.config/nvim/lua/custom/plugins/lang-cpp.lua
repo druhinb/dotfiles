@@ -3,7 +3,7 @@ return {
   -- Provides: AST viewer, inlay type hints, header<->source switch, type hierarchy, symbol info
   {
     'p00f/clangd_extensions.nvim',
-    lazy = false, -- Load immediately to allow background indexing detection
+    ft = { 'c', 'cpp', 'objc', 'objcpp', 'cuda' },
     dependencies = {
       'saghen/blink.cmp',
     },
@@ -44,8 +44,6 @@ return {
         },
       })
       vim.lsp.enable 'clangd'
-
-
 
       -- Configure clangd_extensions (AST viewer, inlay hints, commands)
       require('clangd_extensions').setup {
@@ -105,7 +103,16 @@ return {
   -- Stays dormant on non-CMake projects (Make, Bazel, plain compile_commands.json).
   {
     'Civitasv/cmake-tools.nvim',
-    lazy = false,
+    cmd = {
+      'CMakeGenerate',
+      'CMakeBuild',
+      'CMakeRun',
+      'CMakeDebug',
+      'CMakeSelectBuildType',
+      'CMakeSelectBuildTarget',
+      'CMakeClose',
+      'CMakeClean',
+    },
     dependencies = { 'nvim-lua/plenary.nvim' },
     opts = {
       cmake_command = 'cmake',

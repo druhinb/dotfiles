@@ -5,7 +5,7 @@ return {
   -- ===========================================================================
   {
     'seblj/roslyn.nvim',
-    lazy = false,
+    ft = 'cs',
     dependencies = {
       'saghen/blink.cmp',
       {
@@ -110,13 +110,5 @@ return {
         end,
       })
     end,
-  },
-
-  -- ===========================================================================
-  -- neotest-dotnet: .NET test runner adapter
-  -- ===========================================================================
-  {
-    'Issafalcon/neotest-dotnet',
-    lazy = true,
   },
 }

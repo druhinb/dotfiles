@@ -47,7 +47,7 @@ return {
     { '<leader>snh', function() require('noice').cmd 'history' end, desc = 'Noice History' },
     { '<leader>sna', function() require('noice').cmd 'all' end, desc = 'Noice All' },
     { '<leader>snd', function() require('noice').cmd 'dismiss' end, desc = 'Dismiss All' },
-    { '<leader>snt', function() require('noice').cmd 'pick' end, desc = 'Noice Picker (Telescope/Fzf)' },
+    { '<leader>snt', function() require('noice').cmd 'pick' end, desc = 'Noice picker' },
     { '<c-f>', function() if not require('noice.lsp').scroll(4) then return '<c-f>' end end, silent = true, expr = true, desc = 'Scroll Forward', mode = { 'i', 'n', 's' } },
     { '<c-b>', function() if not require('noice.lsp').scroll(-4) then return '<c-b>' end end, silent = true, expr = true, desc = 'Scroll Backward', mode = { 'i', 'n', 's' } },
   },
@@ -336,74 +336,74 @@ return {
       local lines = {}
       local in_params = false
 
-      for line in text:gmatch("[^\r\n]+") do
-        line = line:gsub("\r$", "")
+      for line in text:gmatch '[^\r\n]+' do
+        line = line:gsub('\r$', '')
 
         -- 1. Check for @brief or \brief
-        if line:match("^%s*[@\\]brief") then
-          line = line:gsub("^%s*[@\\]brief%s*", "")
+        if line:match '^%s*[@\\]brief' then
+          line = line:gsub('^%s*[@\\]brief%s*', '')
         end
 
         -- 2. Check for @param or \param
-        local p_in_out, p_name, p_desc = line:match("^%s*[@\\]param%s*%[([^%]]+)%]%s+([^%s]+)%s+(.*)$")
+        local p_in_out, p_name, p_desc = line:match '^%s*[@\\]param%s*%[([^%]]+)%]%s+([^%s]+)%s+(.*)$'
         if p_name then
           if not in_params then
-            table.insert(lines, "")
-            table.insert(lines, "**Parameters:**")
+            table.insert(lines, '')
+            table.insert(lines, '**Parameters:**')
             in_params = true
           end
-          line = string.format("* **%s** *(%s)*: %s", p_name, p_in_out, p_desc)
+          line = string.format('* **%s** *(%s)*: %s', p_name, p_in_out, p_desc)
         else
-          local p_name2, p_desc2 = line:match("^%s*[@\\]param%s+([^%s]+)%s+(.*)$")
+          local p_name2, p_desc2 = line:match '^%s*[@\\]param%s+([^%s]+)%s+(.*)$'
           if p_name2 then
             if not in_params then
-              table.insert(lines, "")
-              table.insert(lines, "**Parameters:**")
+              table.insert(lines, '')
+              table.insert(lines, '**Parameters:**')
               in_params = true
             end
-            line = string.format("* **%s**: %s", p_name2, p_desc2)
+            line = string.format('* **%s**: %s', p_name2, p_desc2)
           else
-            if in_params and not line:match("^%s") and line ~= "" then
+            if in_params and not line:match '^%s' and line ~= '' then
               in_params = false
             end
           end
         end
 
         -- 3. Check for @return / \return
-        local ret_match = line:match("^%s*[@\\]returns?%s*(.*)$")
+        local ret_match = line:match '^%s*[@\\]returns?%s*(.*)$'
         if ret_match then
-          table.insert(lines, "")
-          line = "**Returns:** " .. ret_match
+          table.insert(lines, '')
+          line = '**Returns:** ' .. ret_match
         end
 
         -- 4. Check for @note / \note
-        local note_match = line:match("^%s*[@\\]note%s*(.*)$")
+        local note_match = line:match '^%s*[@\\]note%s*(.*)$'
         if note_match then
-          line = "> **Note:** " .. note_match
+          line = '> **Note:** ' .. note_match
         end
 
         -- 5. Check for @warning / \warning
-        local warn_match = line:match("^%s*[@\\]warning%s*(.*)$")
+        local warn_match = line:match '^%s*[@\\]warning%s*(.*)$'
         if warn_match then
-          line = "> **Warning:** " .. warn_match
+          line = '> **Warning:** ' .. warn_match
         end
 
         -- 6. Check for @see / \see
-        local see_match = line:match("^%s*[@\\]see%s*(.*)$")
+        local see_match = line:match '^%s*[@\\]see%s*(.*)$'
         if see_match then
-          line = "*See also:* " .. see_match
+          line = '*See also:* ' .. see_match
         end
 
         -- 7. Check for @tparam / \tparam
-        local tp_name, tp_desc = line:match("^%s*[@\\]tparam%s+([^%s]+)%s+(.*)$")
+        local tp_name, tp_desc = line:match '^%s*[@\\]tparam%s+([^%s]+)%s+(.*)$'
         if tp_name then
-          line = string.format("* **%s** *(template parameter)*: %s", tp_name, tp_desc)
+          line = string.format('* **%s** *(template parameter)*: %s', tp_name, tp_desc)
         end
 
         table.insert(lines, line)
       end
 
-      return table.concat(lines, "\n")
+      return table.concat(lines, '\n')
     end
 
     local function process_contents(contents)
@@ -430,7 +430,7 @@ return {
     end
 
     -- Wrap Noice hover callback to process and clean up Doxygen comments
-    local noice_hover = require('noice.lsp.hover')
+    local noice_hover = require 'noice.lsp.hover'
     local original_on_hover = noice_hover.on_hover
     noice_hover.on_hover = function(err, result, ctx)
       if result and result.contents then

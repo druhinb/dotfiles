@@ -9,7 +9,7 @@
 --   5. Deep integration with trouble.nvim for diagnostics/references
 -- =============================================================================
 
-local is_ssh = vim.env.SSH_CLIENT ~= nil or vim.env.SSH_TTY ~= nil or vim.env.SSH_CONNECTION ~= nil
+local tooling = require 'tooling'
 
 -- =============================================================================
 -- Server Configurations Table
@@ -131,6 +131,9 @@ local servers = {
   -- Systems Programming
   -- ===========================================================================
   rust_analyzer = {
+    -- nvim-lspconfig's default root detector invokes rustc. Keep Rust buffers
+    -- usable on hosts where the Rust toolchain has not been installed yet.
+    root_dir = vim.fn.executable 'rustc' == 1 and nil or function() end,
     settings = {
       ['rust-analyzer'] = {
         cargo = {
@@ -264,12 +267,6 @@ local servers = {
         format = { enable = true },
       },
     },
-    on_attach = function(client, bufnr)
-      local ok, schemastore = pcall(require, 'schemastore')
-      if ok and client.config and client.config.settings then
-        client.config.settings.json.schemas = schemastore.json.schemas()
-      end
-    end,
   },
 
   taplo = {
@@ -330,18 +327,19 @@ local function setup_keymaps(event)
   map('K', vim.lsp.buf.hover, 'Hover Documentation')
   map('gK', vim.lsp.buf.signature_help, 'Signature Help')
 
-  -- References → Opens in Trouble window (LazyVim workflow)
   map('gr', function()
     require('trouble').open { mode = 'lsp_references', focus = true }
   end, 'References (Trouble)')
 
-  -- Also keep fzf-lua references on gR for quick fuzzy finding (or Telescope if fzf is absent or we are over SSH)
   map('gR', function()
-    if not is_ssh and vim.fn.executable('fzf') == 1 then
-      require('fzf-lua').lsp_references()
-    else
-      require('telescope.builtin').lsp_references()
+    if require('search').has_fzf() then
+      local ok, fzf = pcall(require, 'fzf-lua')
+      if ok then
+        fzf.lsp_references()
+        return
+      end
     end
+    require('search').lsp_references()
   end, 'References')
 
   -- ===========================================================================
@@ -366,38 +364,26 @@ local function setup_keymaps(event)
   -- ===========================================================================
   -- Document/Workspace Operations
   -- ===========================================================================
-  map('<leader>ds', function()
-    if not is_ssh and vim.fn.executable('fzf') == 1 then
-      require('fzf-lua').lsp_document_symbols()
-    else
-      require('telescope.builtin').lsp_document_symbols()
+  map('<leader>cs', function()
+    if require('search').has_fzf() then
+      local ok, fzf = pcall(require, 'fzf-lua')
+      if ok then
+        fzf.lsp_document_symbols()
+        return
+      end
     end
+    require('search').lsp_document_symbols()
   end, 'Document Symbols')
-  map('<leader>ws', function()
-    if not is_ssh and vim.fn.executable('fzf') == 1 then
-      require('fzf-lua').lsp_live_workspace_symbols()
-    else
-      require('telescope.builtin').lsp_workspace_symbols()
+  map('<leader>cW', function()
+    if require('search').has_fzf() then
+      local ok, fzf = pcall(require, 'fzf-lua')
+      if ok then
+        fzf.lsp_live_workspace_symbols()
+        return
+      end
     end
+    require('search').lsp_workspace_symbols()
   end, 'Workspace Symbols')
-
-  -- ===========================================================================
-  -- Diagnostics Navigation
-  -- ===========================================================================
-  map(']d', vim.diagnostic.goto_next, 'Next Diagnostic')
-  map('[d', vim.diagnostic.goto_prev, 'Prev Diagnostic')
-  map(']e', function()
-    vim.diagnostic.goto_next { severity = vim.diagnostic.severity.ERROR }
-  end, 'Next Error')
-  map('[e', function()
-    vim.diagnostic.goto_prev { severity = vim.diagnostic.severity.ERROR }
-  end, 'Prev Error')
-  map(']w', function()
-    vim.diagnostic.goto_next { severity = vim.diagnostic.severity.WARN }
-  end, 'Next Warning')
-  map('[w', function()
-    vim.diagnostic.goto_prev { severity = vim.diagnostic.severity.WARN }
-  end, 'Prev Warning')
 
   -- ===========================================================================
   -- Code Organization
@@ -405,16 +391,7 @@ local function setup_keymaps(event)
   map('<leader>oi', function()
     vim.lsp.buf.code_action { context = { only = { 'source.organizeImports' } }, apply = true }
   end, 'Organize Imports')
-
-  -- ===========================================================================
-  -- Toggles
-  -- ===========================================================================
-  map('<leader>td', function()
-    vim.diagnostic.enable(not vim.diagnostic.is_enabled())
-  end, 'Toggle Diagnostics')
 end
-
-
 
 -- =============================================================================
 -- On Attach Handler
@@ -425,12 +402,8 @@ local function on_attach(event)
     return
   end
 
-  -- Setup keymaps
   setup_keymaps(event)
 
-  -- ===========================================================================
-  -- Capability-based features
-  -- ===========================================================================
   local function client_supports_method(c, method, bufnr)
     if vim.fn.has 'nvim-0.11' == 1 then
       return c:supports_method(method, bufnr)
@@ -439,9 +412,8 @@ local function on_attach(event)
     end
   end
 
-  -- Inlay hints toggle
   if client_supports_method(client, vim.lsp.protocol.Methods.textDocument_inlayHint, event.buf) then
-    vim.keymap.set('n', '<leader>th', function()
+    vim.keymap.set('n', '<leader>uh', function()
       vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled { bufnr = event.buf })
     end, { buffer = event.buf, desc = 'LSP: Toggle Inlay Hints' })
   end
@@ -506,9 +478,22 @@ return {
     event = { 'BufReadPre', 'BufNewFile' },
     dependencies = {
       -- Mason orchestration (order matters)
-      { 'mason-org/mason.nvim', opts = {} },
+      {
+        'mason-org/mason.nvim',
+        cmd = { 'Mason', 'MasonInstall', 'MasonUninstall', 'MasonUpdate' },
+        opts = {},
+      },
       'mason-org/mason-lspconfig.nvim',
-      'WhoIsSethDaniel/mason-tool-installer.nvim',
+      {
+        'WhoIsSethDaniel/mason-tool-installer.nvim',
+        cmd = { 'MasonToolsInstall', 'MasonToolsInstallSync', 'MasonToolsUpdate', 'MasonToolsUpdateSync' },
+        opts = function()
+          return {
+            ensure_installed = tooling.mason_packages(),
+            run_on_start = false,
+          }
+        end,
+      },
 
       -- LSP progress
       { 'j-hui/fidget.nvim', opts = {} },
@@ -560,50 +545,9 @@ return {
         -- Server Configurations
         -- ===========================================================================
         servers = servers,
-
-        -- ===========================================================================
-        -- Mason Tools (formatters, linters)
-        -- ===========================================================================
-        ensure_installed = {
-          -- Lua
-          'stylua',
-          -- C/C++
-          'clang-format',
-          'cpplint',
-          -- C/C++ LSP (server managed separately in lang-cpp.lua)
-          'clangd',
-          -- Python
-          'ruff',
-          -- TypeScript/JavaScript/React
-          'vtsls',
-          'tailwindcss-language-server',
-          'prettier',
-          'eslint_d',
-          -- C#/.NET
-          'csharpier',
-          'roslyn-language-server',
-          -- HTML/CSS
-          'prettierd',
-          -- Shell
-          'shellcheck',
-          'shfmt',
-          -- Go
-          'gofumpt',
-          'goimports',
-          'golangci-lint',
-          -- Markdown
-          'markdownlint',
-          -- YAML/JSON
-          'yamllint',
-          -- SQL
-          'sqlfluff',
-          -- Java (managed by nvim-java in lang-java.lua)
-          'google-java-format',
-        },
       }
     end,
     config = function(_, opts)
-
       -- ===========================================================================
       -- Setup LspAttach autocmd
       -- ===========================================================================
@@ -622,14 +566,24 @@ return {
       -- Configure LSP Handlers (Borders for hover and signatureHelp)
       -- ===========================================================================
       vim.lsp.handlers['textDocument/hover'] = function(err, result, ctx, config)
-        return vim.lsp.handlers.hover(err, result, ctx, vim.tbl_deep_extend('force', {
-          border = 'rounded',
-        }, config or {}))
+        return vim.lsp.handlers.hover(
+          err,
+          result,
+          ctx,
+          vim.tbl_deep_extend('force', {
+            border = 'rounded',
+          }, config or {})
+        )
       end
       vim.lsp.handlers['textDocument/signatureHelp'] = function(err, result, ctx, config)
-        return vim.lsp.handlers.signatureHelp(err, result, ctx, vim.tbl_deep_extend('force', {
-          border = 'rounded',
-        }, config or {}))
+        return vim.lsp.handlers.signatureHelp(
+          err,
+          result,
+          ctx,
+          vim.tbl_deep_extend('force', {
+            border = 'rounded',
+          }, config or {})
+        )
       end
 
       -- ===========================================================================
@@ -643,14 +597,11 @@ return {
       -- Setup Capabilities (blink.cmp)
       -- ===========================================================================
       local capabilities = require('blink.cmp').get_lsp_capabilities()
-
-      -- ===========================================================================
-      -- Mason Tool Installer (formatters, linters)
-      -- ===========================================================================
-      if not is_ssh then
-        local ensure_installed = vim.tbl_keys(opts.servers or {})
-        vim.list_extend(ensure_installed, opts.ensure_installed or {})
-        require('mason-tool-installer').setup { ensure_installed = ensure_installed }
+      local has_schemastore, schemastore = pcall(require, 'schemastore')
+      if has_schemastore then
+        opts.servers.jsonls.settings.json.schemas = schemastore.json.schemas()
+        opts.servers.yamlls.settings.yaml.schemaStore = { enable = false, url = '' }
+        opts.servers.yamlls.settings.yaml.schemas = schemastore.yaml.schemas()
       end
 
       -- ===========================================================================
@@ -684,7 +635,7 @@ return {
         ensure_installed = {},
         automatic_installation = false,
         automatic_enable = {
-          exclude = { 'jdtls' },
+          exclude = tooling.bundle_servers,
         },
       }
     end,

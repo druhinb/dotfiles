@@ -1,73 +1,108 @@
 #!/usr/bin/env bash
-# Minimal statusline for Claude Code — Catppuccin Mocha palette.
-# Receives session JSON on stdin; outputs one ANSI-colored line.
+# Claude Code main status line using one jq parse and a lightweight git query.
 
-input=$(cat)
+set -u
 
-model=$(echo "$input" | jq -r '.model.display_name // "unknown"')
-ctx_pct=$(echo "$input" | jq -r '.context_window.used_percentage // 0')
-cost_usd=$(echo "$input" | jq -r '.cost.total_cost_usd // 0')
-vim_mode=$(echo "$input" | jq -r '.vim.mode // empty')
-repo_name=$(echo "$input" | jq -r '.workspace.repo.name // empty')
+if ! command -v jq >/dev/null 2>&1; then
+	printf 'Claude status line requires jq\n' >&2
+	exit 1
+fi
 
-# Git branch from cwd
-git_branch=$(git -C "$(echo "$input" | jq -r '.cwd // "."')" rev-parse --abbrev-ref HEAD 2>/dev/null)
+input=$(command cat)
+model=""
+vim_mode=""
+output_style=""
+cwd="."
+project_dir="."
+repo_name=""
+ctx_pct="0"
+cost_usd="0"
+session_name=""
+session_id=""
+agent_name=""
+worktree_name=""
+if ! parsed=$(
+	printf '%s' "$input" | jq -er '
+    def clean: tostring | gsub("[\u0000-\u001f]"; " ");
+    "model=" + ((.model.display_name // "unknown" | clean) | @sh),
+    "vim_mode=" + ((.vim.mode // "" | clean) | @sh),
+    "output_style=" + ((.output_style.name // "" | clean) | @sh),
+    "cwd=" + ((.workspace.current_dir // .cwd // "." | clean) | @sh),
+    "project_dir=" + ((.workspace.project_dir // .cwd // "." | clean) | @sh),
+    "repo_name=" + ((.workspace.repo.name // "" | clean) | @sh),
+    "ctx_pct=" + (((.context_window.used_percentage // 0 | tonumber? // 0) | floor | tostring) | @sh),
+    "cost_usd=" + (((.cost.total_cost_usd // 0 | tonumber? // 0) | tostring) | @sh),
+    "session_name=" + ((.session_name // "" | clean) | @sh),
+    "session_id=" + ((.session_id // "" | clean) | @sh),
+    "agent_name=" + ((.agent.name // "" | clean) | @sh),
+    "worktree_name=" + ((.worktree.name // .workspace.git_worktree // "" | clean) | @sh)
+  '
+); then
+	printf 'Claude status line received invalid JSON\n' >&2
+	exit 1
+fi
+eval "$parsed"
 
-# Catppuccin Mocha colors (truecolor)
+git_branch=$(git -C "$cwd" rev-parse --abbrev-ref HEAD 2>/dev/null || true)
+[[ "$git_branch" == "HEAD" ]] && git_branch=$(git -C "$cwd" rev-parse --short HEAD 2>/dev/null || true)
+
+workspace_name="${cwd##*/}"
+project_name="${project_dir##*/}"
+if [[ -n "$repo_name" ]]; then
+	workspace="$repo_name"
+	[[ -n "$workspace_name" && "$workspace_name" != "$repo_name" ]] && workspace+="/$workspace_name"
+elif [[ -n "$workspace_name" ]]; then
+	workspace="$workspace_name"
+else
+	workspace="${project_name:-workspace}"
+fi
+
+mode="${vim_mode:-$output_style}"
+state=""
+if [[ -n "$agent_name" ]]; then
+	state="agent:$agent_name"
+elif [[ -n "$worktree_name" ]]; then
+	state="wt:$worktree_name"
+elif [[ -n "$session_name" ]]; then
+	state="$session_name"
+elif [[ -n "$session_id" ]]; then
+	state="#${session_id:0:8}"
+fi
+
 reset=$'\e[0m'
-blue=$'\e[38;2;137;180;250m'    # sapphire
-mauve=$'\e[38;2;203;166;247m'   # mauve
-green=$'\e[38;2;166;227;161m'   # green
-peach=$'\e[38;2;250;179;135m'   # peach
-red=$'\e[38;2;243;139;168m'     # red
-yellow=$'\e[38;2;249;226;175m'  # yellow
-teal=$'\e[38;2;148;226;213m'    # teal
-dim=$'\e[38;2;108;112;134m'     # overlay0
 bold=$'\e[1m'
-sep="${dim} │${reset}"
+blue=$'\e[38;2;137;180;250m'
+mauve=$'\e[38;2;203;166;247m'
+green=$'\e[38;2;166;227;161m'
+peach=$'\e[38;2;250;179;135m'
+red=$'\e[38;2;243;139;168m'
+teal=$'\e[38;2;148;226;213m'
+dim=$'\e[38;2;108;112;134m'
+sep="${dim} │ ${reset}"
 
-# Context color based on usage
-if [[ "$ctx_pct" -ge 80 ]]; then
-  ctx_color="$red"
-elif [[ "$ctx_pct" -ge 60 ]]; then
-  ctx_color="$peach"
+if ((ctx_pct >= 80)); then
+	ctx_color="$red"
+elif ((ctx_pct >= 60)); then
+	ctx_color="$peach"
 else
-  ctx_color="$green"
+	ctx_color="$green"
 fi
 
-# Format cost (strip trailing zeros)
-if [[ "$cost_usd" != "0" && -n "$cost_usd" ]]; then
-  cost_fmt=$(printf '%.2f' "$cost_usd")
-  cost="${peach}\$${cost_fmt}${reset}"
-else
-  cost=""
-fi
+LC_NUMERIC=C printf -v cost '%.2f' "$cost_usd"
 
-# Git branch
-if [[ -n "$git_branch" ]]; then
-  branch="${mauve} ${git_branch}${reset}"
-else
-  branch=""
-fi
+case "$mode" in
+NORMAL) mode_color="$blue" ;;
+INSERT) mode_color="$green" ;;
+VISUAL | "VISUAL LINE") mode_color="$mauve" ;;
+*) mode_color="$dim" ;;
+esac
 
-# Vim mode indicator
-if [[ -n "$vim_mode" ]]; then
-  case "$vim_mode" in
-    INSERT)  vim_indicator="${green}${bold}INSERT${reset}" ;;
-    NORMAL)  vim_indicator="${blue}${bold}NORMAL${reset}" ;;
-    VISUAL)  vim_indicator="${mauve}${bold}VISUAL${reset}" ;;
-    *)       vim_indicator="${dim}${vim_mode}${reset}" ;;
-  esac
-else
-  vim_indicator=""
-fi
+parts="${blue}${bold}${model}${reset}"
+[[ -n "$mode" ]] && parts+="${sep}${mode_color}${mode}${reset}"
+parts+="${sep}${teal}${workspace}${reset}"
+[[ -n "$git_branch" ]] && parts+="${sep}${mauve}${git_branch}${reset}"
+parts+="${sep}${ctx_color}ctx ${ctx_pct}%${reset}"
+parts+="${sep}${peach}\$${cost}${reset}"
+[[ -n "$state" ]] && parts+="${sep}${dim}${state}${reset}"
 
-# Assemble
-parts=""
-[[ -n "$vim_indicator" ]] && parts+="${vim_indicator}${sep} "
-parts+="${blue}${bold}${model}${reset}"
-parts+="${sep} ${ctx_color}${ctx_pct}%${reset}"
-[[ -n "$branch" ]] && parts+="${sep}${branch}"
-[[ -n "$cost" ]] && parts+="${sep} ${cost}"
-
-echo -e "$parts"
+printf '%b\n' "$parts"

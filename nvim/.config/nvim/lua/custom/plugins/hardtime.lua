@@ -5,7 +5,7 @@ local is_ssh = vim.env.SSH_CLIENT ~= nil or vim.env.SSH_TTY ~= nil or vim.env.SS
 
 return {
   'm4xshen/hardtime.nvim',
-  lazy = false,
+  event = 'VeryLazy',
   enabled = not is_ssh,
   dependencies = { 'MunifTanjim/nui.nvim' },
   opts = {},
