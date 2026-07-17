@@ -18,12 +18,18 @@ return {
         },
       },
     },
-    config = function()
-      local capabilities = require('blink.cmp').get_lsp_capabilities()
-
+    -- roslyn.nvim enables its LSP from plugin/roslyn.lua before lazy.nvim runs
+    -- `config`, so register overrides during `init` to affect the first client.
+    init = function()
       vim.lsp.config('roslyn', {
-        capabilities = capabilities,
+        before_init = function(_, config)
+          config.capabilities = require('blink.cmp').get_lsp_capabilities(config.capabilities, true)
+        end,
         settings = {
+          ['csharp|background_analysis'] = {
+            dotnet_analyzer_diagnostics_scope = 'openFiles',
+            dotnet_compiler_diagnostics_scope = 'openFiles',
+          },
           ['csharp|inlay_hints'] = {
             csharp_enable_inlay_hints_for_implicit_object_creation = true,
             csharp_enable_inlay_hints_for_implicit_variable_types = true,
@@ -39,8 +45,8 @@ return {
             dotnet_suppress_inlay_hints_for_parameters_that_match_method_intent = true,
           },
           ['csharp|code_lens'] = {
-            dotnet_enable_references_code_lens = true,
-            dotnet_enable_tests_code_lens = true,
+            dotnet_enable_references_code_lens = false,
+            dotnet_enable_tests_code_lens = false,
           },
           ['csharp|completion'] = {
             dotnet_provide_regex_completions = true,
@@ -56,9 +62,11 @@ return {
           client.server_capabilities.documentRangeFormattingProvider = false
         end,
       })
+    end,
 
+    config = function()
       require('roslyn').setup {
-        filewatching = 'auto',
+        filewatching = 'roslyn',
         broad_search = true,
         lock_target = true,
       }

@@ -133,6 +133,9 @@ M.bundle_servers = {
   'clangd',
   'jdtls',
   'roslyn',
+  -- mason-lspconfig maps roslyn-language-server to nvim-lspconfig's
+  -- `roslyn_ls`; roslyn.nvim owns the separate `roslyn` config.
+  'roslyn_ls',
   'tailwindcss',
   'vtsls',
 }

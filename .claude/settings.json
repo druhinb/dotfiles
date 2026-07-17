@@ -38,7 +38,7 @@
       "Bash(chown *)"
     ]
   },
-  "model": "claude-sonnet-5",
+  "model": "opus",
   "hooks": {
     "PostToolUse": [
       {

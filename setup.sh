@@ -3,13 +3,14 @@
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BACKUP_DIR="${BACKUP_DIR:-$HOME/.dotfiles-backup-$(date +%Y%m%d%H%M%S)}"
 DRY_RUN=0
+LINK_ONLY=0
 SKIP_NEOVIM_TOOLS=0
 OS_NAME="${OS_NAME:-$(uname -s)}"
 BREW_MANAGES_RUST_TOOLS=0
 
 usage() {
 	cat <<'USAGE'
-Usage: ./setup.sh [--dry-run] [--skip-neovim-tools]
+Usage: ./setup.sh [--dry-run] [--link-only] [--skip-neovim-tools]
 
 Installs tools used by this dotfiles repo on Linux or macOS, links configs
 into place, installs shell/tmux/Vim/Neovim plugins, and switches the default
@@ -17,6 +18,7 @@ shell to zsh. macOS setup assumes Homebrew is already installed.
 
 Options:
   --dry-run            Print actions without changing files.
+  --link-only          Create or refresh configuration symlinks only.
   --skip-neovim-tools  Skip Mason LSP/formatter/debugger installation.
 USAGE
 }
@@ -25,6 +27,9 @@ while [[ $# -gt 0 ]]; do
 	case "$1" in
 	--dry-run)
 		DRY_RUN=1
+		;;
+	--link-only)
+		LINK_ONLY=1
 		;;
 	--skip-neovim-tools)
 		SKIP_NEOVIM_TOOLS=1
@@ -209,23 +214,34 @@ install_rust_tools() {
 link_file() {
 	local source="$1"
 	local target="$2"
+	local backup_target backup_index
 
 	if [[ ! -e "$source" && ! -L "$source" ]]; then
 		warn "Missing source: $source"
 		return
 	fi
 
-	if [[ -L "$target" && "$(readlink "$target")" == "$source" ]]; then
+	if [[ -L "$target" && "$(command -p readlink "$target")" == "$source" ]]; then
 		return
 	fi
 
 	if [[ -e "$target" || -L "$target" ]]; then
 		run mkdir -p "$BACKUP_DIR"
-		run mv "$target" "$BACKUP_DIR/$(basename "$target")"
+		backup_target="$BACKUP_DIR/$(basename "$target")"
+		backup_index=1
+		while [[ -e "$backup_target" || -L "$backup_target" ]]; do
+			backup_target="$BACKUP_DIR/$(basename "$target").$backup_index"
+			((backup_index++))
+		done
+
+		if ! run mv "$target" "$backup_target"; then
+			warn "Could not back up $target; leaving it unchanged."
+			return 1
+		fi
 	fi
 
 	run mkdir -p "$(dirname "$target")"
-	run ln -sfn "$source" "$target"
+	run ln -s "$source" "$target"
 }
 
 link_dotfiles() {
@@ -248,6 +264,42 @@ link_dotfiles() {
 	link_file "$DOTFILES_DIR/.claude/subagent-statusline.sh" "$HOME/.claude/subagent-statusline.sh"
 	link_file "$DOTFILES_DIR/.claude/hooks/compact-context.sh" "$HOME/.claude/hooks/compact-context.sh"
 	link_file "$DOTFILES_DIR/.claude/hooks/format-config.sh" "$HOME/.claude/hooks/format-config.sh"
+	link_file "$DOTFILES_DIR/codex/.codex/AGENTS.md" "$HOME/.codex/AGENTS.md"
+	link_file "$DOTFILES_DIR/codex/.codex/agents/plan.toml" "$HOME/.codex/agents/plan.toml"
+	link_file "$DOTFILES_DIR/codex/.codex/agents/review.toml" "$HOME/.codex/agents/review.toml"
+	link_file "$DOTFILES_DIR/codex/.codex/agents/debug.toml" "$HOME/.codex/agents/debug.toml"
+	link_file "$DOTFILES_DIR/codex/.codex/agents/docs.toml" "$HOME/.codex/agents/docs.toml"
+	link_file "$DOTFILES_DIR/codex/.codex/agents/test-writer.toml" "$HOME/.codex/agents/test-writer.toml"
+	link_file "$DOTFILES_DIR/codex/.codex/agents/commit.toml" "$HOME/.codex/agents/commit.toml"
+
+	link_file "$DOTFILES_DIR/opencode/.config/opencode/opencode.json" "$HOME/.config/opencode/opencode.json"
+	link_file "$DOTFILES_DIR/opencode/.config/opencode/tui.json" "$HOME/.config/opencode/tui.json"
+	link_file "$DOTFILES_DIR/opencode/.config/opencode/agents/build.md" "$HOME/.config/opencode/agents/build.md"
+	link_file "$DOTFILES_DIR/opencode/.config/opencode/agents/plan.md" "$HOME/.config/opencode/agents/plan.md"
+	link_file "$DOTFILES_DIR/opencode/.config/opencode/agents/review.md" "$HOME/.config/opencode/agents/review.md"
+	link_file "$DOTFILES_DIR/opencode/.config/opencode/agents/debug.md" "$HOME/.config/opencode/agents/debug.md"
+	link_file "$DOTFILES_DIR/opencode/.config/opencode/agents/commit.md" "$HOME/.config/opencode/agents/commit.md"
+	link_file "$DOTFILES_DIR/opencode/.config/opencode/agents/docs.md" "$HOME/.config/opencode/agents/docs.md"
+	link_file "$DOTFILES_DIR/opencode/.config/opencode/agents/test-writer.md" "$HOME/.config/opencode/agents/test-writer.md"
+	link_file "$DOTFILES_DIR/opencode/.config/opencode/commands/review.md" "$HOME/.config/opencode/commands/review.md"
+	link_file "$DOTFILES_DIR/opencode/.config/opencode/commands/tests.md" "$HOME/.config/opencode/commands/tests.md"
+	link_file "$DOTFILES_DIR/opencode/.config/opencode/commands/explain.md" "$HOME/.config/opencode/commands/explain.md"
+	link_file "$DOTFILES_DIR/opencode/.config/opencode/commands/goal.md" "$HOME/.config/opencode/commands/goal.md"
+	link_file "$DOTFILES_DIR/opencode/.config/opencode/commands/commit.md" "$HOME/.config/opencode/commands/commit.md"
+	link_file "$DOTFILES_DIR/opencode/.config/opencode/commands/pr.md" "$HOME/.config/opencode/commands/pr.md"
+	link_file "$DOTFILES_DIR/opencode/.config/opencode/commands/debug.md" "$HOME/.config/opencode/commands/debug.md"
+	link_file "$DOTFILES_DIR/opencode/.config/opencode/commands/tdd.md" "$HOME/.config/opencode/commands/tdd.md"
+
+	# One versioned skill source serves all three agent clients. Link entries
+	# individually so Codex's bundled .system directory remains untouched.
+	local skill skill_name
+	for skill in "$DOTFILES_DIR"/agents/skills/*; do
+		[[ -d "$skill" ]] || continue
+		skill_name="$(basename "$skill")"
+		link_file "$skill" "$HOME/.claude/skills/$skill_name"
+		link_file "$skill" "$HOME/.codex/skills/$skill_name"
+		link_file "$skill" "$HOME/.config/opencode/skills/$skill_name"
+	done
 
 	# Ubuntu names these binaries differently than the aliases in .zshrc expect.
 	have bat || { [[ -x /usr/bin/batcat ]] && link_file /usr/bin/batcat "$HOME/.local/bin/bat"; }
@@ -286,7 +338,7 @@ install_tmux_plugins() {
 
 	# Older revisions linked the repository's plugin gitlinks into ~/.tmux.
 	# Migrate that link once, then let TPM exclusively own the plugin directory.
-	if [[ -L "$HOME/.tmux" && "$(readlink "$HOME/.tmux")" == "$DOTFILES_DIR/tmux/.tmux" ]]; then
+	if [[ -L "$HOME/.tmux" && "$(command -p readlink "$HOME/.tmux")" == "$DOTFILES_DIR/tmux/.tmux" ]]; then
 		run rm "$HOME/.tmux"
 	fi
 	run mkdir -p "$HOME/.tmux/plugins"
@@ -411,6 +463,16 @@ smoke_test() {
 }
 
 main() {
+	if [[ "$LINK_ONLY" == 1 ]]; then
+		link_dotfiles
+
+		log "Done"
+		if [[ -d "$BACKUP_DIR" ]]; then
+			echo "Backups: $BACKUP_DIR"
+		fi
+		return
+	fi
+
 	install_system_packages
 	install_rust_tools
 	link_dotfiles

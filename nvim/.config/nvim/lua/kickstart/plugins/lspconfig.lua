@@ -396,7 +396,7 @@ end
 -- =============================================================================
 -- On Attach Handler
 -- =============================================================================
-local function on_attach(event)
+local function on_attach(event, opts)
   local client = vim.lsp.get_client_by_id(event.data.client_id)
   if not client then
     return
@@ -443,18 +443,23 @@ local function on_attach(event)
   -- Code lens
   if client_supports_method(client, vim.lsp.protocol.Methods.textDocument_codeLens, event.buf) then
     vim.keymap.set('n', '<leader>cL', vim.lsp.codelens.run, { buffer = event.buf, desc = 'LSP: Run Code Lens' })
-    if vim.lsp.codelens.enable then
-      vim.lsp.codelens.enable(true, { bufnr = event.buf })
-    else
-      vim.api.nvim_create_autocmd({ 'BufEnter', 'CursorHold', 'InsertLeave' }, {
-        buffer = event.buf,
-        callback = vim.lsp.codelens.refresh,
-      })
+    if opts.codelens.enabled then
+      if vim.lsp.codelens.enable then
+        vim.lsp.codelens.enable(true, { bufnr = event.buf })
+      else
+        vim.api.nvim_create_autocmd({ 'BufEnter', 'CursorHold', 'InsertLeave' }, {
+          buffer = event.buf,
+          callback = vim.lsp.codelens.refresh,
+        })
+      end
     end
   end
 
   if client.server_capabilities.documentSymbolProvider then
-    require('nvim-navic').attach(client, event.buf)
+    local navic = require 'nvim-navic'
+    if not navic.is_available(event.buf) then
+      navic.attach(client, event.buf)
+    end
   end
 end
 
@@ -553,7 +558,9 @@ return {
       -- ===========================================================================
       vim.api.nvim_create_autocmd('LspAttach', {
         group = vim.api.nvim_create_augroup('kickstart-lsp-attach', { clear = true }),
-        callback = on_attach,
+        callback = function(event)
+          on_attach(event, opts)
+        end,
       })
 
       -- ===========================================================================
