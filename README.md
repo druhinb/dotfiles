@@ -30,6 +30,20 @@ Machine-specific shell paths and environment setup belong in the untracked
 - lazy.nvim owns Neovim plugins; `lazy-lock.json` pins them.
 - `nvim/.config/nvim/lua/tooling.lua` is the single inventory for Mason
   packages, formatters, linters, debuggers, tests, and Tree-sitter parsers.
+- `agents/skills/` is the single versioned source for shared agent skills.
+  `setup.sh` links each skill to Claude Code, Codex, and OpenCode while
+  preserving Codex's bundled `.system` skills. `codex/.codex/` supplies global
+  Codex guidance and custom `plan`, `review`, `debug`, `docs`, `test-writer`,
+  and `commit` subagent profiles; `.codex/config.toml` sets bounded,
+  repository-level multi-agent defaults without replacing deCLAWd-managed
+  authentication, provider, or sandbox settings.
+- `opencode/` is the source for the global opencode config (`opencode.json`,
+  `tui.json`), custom agents (`build`, `plan`, `review`, `debug`, `commit`,
+  `docs`, `test-writer`), and commands (`/review`, `/tests`, `/explain`,
+  `/goal`, `/commit`, `/pr`, `/debug`, `/tdd`, `/validate`); `setup.sh` links
+  them into `~/.config/opencode/`. Its `small_model` is
+  `llm-gateway/kimi-k2.6`, as confirmed by OpenCode's gateway logs. A repo-root
+  `opencode.json` scopes rules and a `/validate` command to this dotfiles repo.
 
 ## Language support
 
@@ -75,7 +89,7 @@ binaries.
 Focused repository checks:
 
 ```bash
-jq empty .claude/settings.json .claude/keybindings.json
+jq empty .claude/settings.json .claude/keybindings.json opencode/.config/opencode/opencode.json opencode/.config/opencode/tui.json opencode.json
 bash -n setup.sh .claude/statusline.sh .claude/subagent-statusline.sh .claude/hooks/*.sh
 zsh -n zsh/.zshenv zsh/.zprofile zsh/.zshrc
 shfmt -d setup.sh .claude/*.sh .claude/hooks/*.sh

@@ -1,0 +1,12 @@
+{
+  "date": "YYYY-MM-DD",
+  "requester": "Full Name (email) — Team",
+  "agent": "environment — framework",
+  "application_endpoint": "...",
+  "datastore": "instance — database/tables — access mode",
+  "mcp": "hosting — launch command — url/transport",
+  "justification": "business workflow and data flows",
+  "data_classification": "...",
+  "blast_radius": "...",
+  "duration": "..."
+}

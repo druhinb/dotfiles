@@ -16,7 +16,18 @@ return {
     zen = { enabled = false }, -- Zen mode
 
     dashboard = { enabled = false },
-    indent = { enabled = false },
+    indent = {
+      enabled = true,
+      indent = {
+        enabled = true,
+        char = '┊',
+        only_scope = false,
+      },
+      -- mini.indentscope remains the stronger current-scope indicator.
+      scope = { enabled = false },
+      chunk = { enabled = false },
+      animate = { enabled = false },
+    },
     notifier = { enabled = false },
     picker = { enabled = false },
     input = { enabled = false },

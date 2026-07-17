@@ -1,0 +1,18 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": [".claude/rules/*.md"],
+  "permission": {
+    "external_directory": {
+      "~/.config/opencode/**": "allow",
+      "~/.config/nvim/**": "allow",
+      "~/.claude/**": "allow",
+      "~/**": "ask"
+    }
+  },
+  "command": {
+    "validate": {
+      "description": "Run focused dotfiles validation checks for changed files",
+      "template": "Run the focused validation checks for this dotfiles repo, executing only the checks relevant to the changed files.\n\nFirst run `git status` and `git diff` to see what changed, then run the relevant checks from CLAUDE.md's \"Focused validation\" section:\n\n- JSON files: `jq empty <file>` (settings, keybindings, opencode configs)\n- Shell syntax: `bash -n <file>` for Bash, `zsh -n <file>` for zsh\n- Shell format and lint: `shfmt -d <file>` (Bash/POSIX only, not zsh-specific files) and `shellcheck <file>`\n- Lua format: `stylua --check <path>`\n- Setup dry run: `./setup.sh --dry-run --skip-neovim-tools`\n- Whitespace/conflict markers: `git diff --check`\n\nReport each result clearly. Do not fix anything unless asked."
+    }
+  }
+}

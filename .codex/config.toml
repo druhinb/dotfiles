@@ -1,0 +1,11 @@
+# Repository-level Codex defaults. Authentication, providers, and sandboxing
+# remain in the deCLAWd-managed user configuration.
+
+[agents]
+max_threads = 4
+max_depth = 1
+job_max_runtime_seconds = 1800
+interrupt_message = true
+
+[features]
+multi_agent = true

@@ -5,7 +5,8 @@
 export ZSH="${ZSH:-$HOME/.oh-my-zsh}"
 ZSH_THEME=""
 plugins=(git zsh-autosuggestions fzf-tab)
-ZSH_COMPDUMP="$XDG_CACHE_HOME/zsh/zcompdump"
+# Compiled completion dumps are not portable across zsh versions.
+ZSH_COMPDUMP="$XDG_CACHE_HOME/zsh/zcompdump-$ZSH_VERSION"
 [[ -d "${ZSH_COMPDUMP:h}" ]] || mkdir -p "${ZSH_COMPDUMP:h}"
 
 ZSH_AUTOSUGGEST_MANUAL_REBIND=1
@@ -125,10 +126,10 @@ if [[ -n "$_conda_init" ]]; then
   mamba() { _run_conda_command mamba "$@" }
 fi
 
-# Keep zoxide explicit (`z`/`zi`) without replacing shell-native `cd`.
+# let `cd` fall back to zoxide when a direct path does not exist.
 export _ZO_DOCTOR=0
 if (( $+commands[zoxide] )); then
-  eval "$(zoxide init zsh)"
+  eval "$(zoxide init zsh --cmd cd)"
 fi
 
 # Atuin
@@ -188,3 +189,11 @@ fi
 _zsh_highlighting="${ZSH_CUSTOM:-$ZSH/custom}/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
 [[ -r "$_zsh_highlighting" ]] && source "$_zsh_highlighting"
 unset _zsh_highlighting
+
+# pnpm
+export PNPM_HOME="/Users/dbhowal/.local/share/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME/bin:"*) ;;
+  *) export PATH="$PNPM_HOME/bin:$PATH" ;;
+esac
+# pnpm end
