@@ -19,3 +19,16 @@ the scope.
 
 Keep responses concise, state assumptions and verification clearly, and cite
 `file_path:line_number` when referring to code.
+
+## Ship loop
+
+The `ship-planner`, `ship-builder`, and `ship-critic` agents form an
+adversarial plan-build-critique loop. To ship a feature slice:
+
+1. Ask `ship-planner` with the PRD/feature request to produce a plan and rubric.
+2. Ask `ship-builder` with that plan to implement it.
+3. Ask `ship-critic` with ONLY the PRD, rubric, and `git diff` (never the builder's reasoning).
+4. If the critic returns VERDICT: FAIL, send blockers back to `ship-builder` and re-critique. Up to 3 rounds.
+
+The critic is adversarial: it refuses to pass work with open blockers, and
+operates with fresh context (no access to the builder's plan-following logic).

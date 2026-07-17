@@ -63,6 +63,18 @@
           }
         ]
       }
+    ],
+    "SubagentStop": [
+      {
+        "matcher": "ship-builder",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/ship-gate.sh\"",
+            "timeout": 30
+          }
+        ]
+      }
     ]
   },
   "statusLine": {

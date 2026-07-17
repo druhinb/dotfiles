@@ -264,6 +264,11 @@ link_dotfiles() {
 	link_file "$DOTFILES_DIR/.claude/subagent-statusline.sh" "$HOME/.claude/subagent-statusline.sh"
 	link_file "$DOTFILES_DIR/.claude/hooks/compact-context.sh" "$HOME/.claude/hooks/compact-context.sh"
 	link_file "$DOTFILES_DIR/.claude/hooks/format-config.sh" "$HOME/.claude/hooks/format-config.sh"
+	link_file "$DOTFILES_DIR/.claude/hooks/ship-gate.sh" "$HOME/.claude/hooks/ship-gate.sh"
+	link_file "$DOTFILES_DIR/.claude/agents/ship-planner.md" "$HOME/.claude/agents/ship-planner.md"
+	link_file "$DOTFILES_DIR/.claude/agents/ship-builder.md" "$HOME/.claude/agents/ship-builder.md"
+	link_file "$DOTFILES_DIR/.claude/agents/ship-critic.md" "$HOME/.claude/agents/ship-critic.md"
+	link_file "$DOTFILES_DIR/.claude/commands/ship-slice.md" "$HOME/.claude/commands/ship-slice.md"
 	link_file "$DOTFILES_DIR/codex/.codex/AGENTS.md" "$HOME/.codex/AGENTS.md"
 	link_file "$DOTFILES_DIR/codex/.codex/agents/plan.toml" "$HOME/.codex/agents/plan.toml"
 	link_file "$DOTFILES_DIR/codex/.codex/agents/review.toml" "$HOME/.codex/agents/review.toml"
@@ -271,6 +276,9 @@ link_dotfiles() {
 	link_file "$DOTFILES_DIR/codex/.codex/agents/docs.toml" "$HOME/.codex/agents/docs.toml"
 	link_file "$DOTFILES_DIR/codex/.codex/agents/test-writer.toml" "$HOME/.codex/agents/test-writer.toml"
 	link_file "$DOTFILES_DIR/codex/.codex/agents/commit.toml" "$HOME/.codex/agents/commit.toml"
+	link_file "$DOTFILES_DIR/codex/.codex/agents/ship-planner.toml" "$HOME/.codex/agents/ship-planner.toml"
+	link_file "$DOTFILES_DIR/codex/.codex/agents/ship-builder.toml" "$HOME/.codex/agents/ship-builder.toml"
+	link_file "$DOTFILES_DIR/codex/.codex/agents/ship-critic.toml" "$HOME/.codex/agents/ship-critic.toml"
 
 	link_file "$DOTFILES_DIR/opencode/.config/opencode/opencode.json" "$HOME/.config/opencode/opencode.json"
 	link_file "$DOTFILES_DIR/opencode/.config/opencode/tui.json" "$HOME/.config/opencode/tui.json"
@@ -289,6 +297,10 @@ link_dotfiles() {
 	link_file "$DOTFILES_DIR/opencode/.config/opencode/commands/pr.md" "$HOME/.config/opencode/commands/pr.md"
 	link_file "$DOTFILES_DIR/opencode/.config/opencode/commands/debug.md" "$HOME/.config/opencode/commands/debug.md"
 	link_file "$DOTFILES_DIR/opencode/.config/opencode/commands/tdd.md" "$HOME/.config/opencode/commands/tdd.md"
+	link_file "$DOTFILES_DIR/opencode/.config/opencode/agents/ship-planner.md" "$HOME/.config/opencode/agents/ship-planner.md"
+	link_file "$DOTFILES_DIR/opencode/.config/opencode/agents/ship-builder.md" "$HOME/.config/opencode/agents/ship-builder.md"
+	link_file "$DOTFILES_DIR/opencode/.config/opencode/agents/ship-critic.md" "$HOME/.config/opencode/agents/ship-critic.md"
+	link_file "$DOTFILES_DIR/opencode/.config/opencode/commands/ship-slice.md" "$HOME/.config/opencode/commands/ship-slice.md"
 
 	# One versioned skill source serves all three agent clients. Link entries
 	# individually so Codex's bundled .system directory remains untouched.
