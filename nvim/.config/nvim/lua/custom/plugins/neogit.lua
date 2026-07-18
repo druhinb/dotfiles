@@ -4,8 +4,10 @@ return {
     'nvim-lua/plenary.nvim', -- required
     'sindrets/diffview.nvim', -- optional - Diff integration
 
-    -- Only one of these is needed, not both.
+    -- Only one picker integration is needed; the config below picks
+    -- whichever one lua/search.lua resolves for the current host.
     'ibhagwan/fzf-lua', -- optional
+    'nvim-telescope/telescope.nvim', -- optional
   },
   cmd = 'Neogit',
   keys = {
@@ -26,6 +28,7 @@ return {
       integrations = {
         diffview = true,
         fzf_lua = require('search').has_fzf(),
+        telescope = require('search').has_telescope(),
       },
     }
   end,

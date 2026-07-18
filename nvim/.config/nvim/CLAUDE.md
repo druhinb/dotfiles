@@ -54,7 +54,7 @@ return {
 - Include `desc` on user-facing keymaps. Register new leader groups in `lua/kickstart/plugins/which-key.lua`.
 - Do not install packages, parsers, or tools during ordinary startup.
 - Prefer native Neovim APIs and the existing focused plugin over another overlapping subsystem.
-- fzf-lua is the preferred picker. Keep `lua/search.lua` fallbacks working when `fzf` is unavailable over SSH.
+- fzf-lua is the preferred picker, local or over SSH, whenever the `fzf` binary is present. `custom/plugins/telescope.lua` is the fallback picker when it isn't (e.g. a remote host without `fzf` installed); keep `lua/search.lua`'s native fallbacks working for hosts with neither.
 - Preserve capability-aware, buffer-local LSP mappings and native document highlighting.
 
 ## Language bundles
