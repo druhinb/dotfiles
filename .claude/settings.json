@@ -2,7 +2,8 @@
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "cleanupPeriodDays": 30,
   "attribution": {
-    "commit": ""
+    "commit": "",
+    "pr": ""
   },
   "permissions": {
     "allow": [
@@ -23,10 +24,6 @@
       "Bash(shellcheck *)"
     ],
     "deny": [
-      "Bash(git commit)",
-      "Bash(git commit *)",
-      "Bash(git push)",
-      "Bash(git push *)",
       "Bash(git reset --hard)",
       "Bash(git reset --hard *)",
       "Bash(git clean *)",
@@ -36,10 +33,23 @@
       "Bash(rm -fr *)",
       "Bash(sudo *)",
       "Bash(chown *)"
-    ]
+    ],
+    "defaultMode": "default"
   },
   "model": "opus",
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/symlink-guard.sh\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "Edit|Write",
@@ -48,6 +58,11 @@
             "type": "command",
             "command": "bash \"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/format-config.sh\"",
             "timeout": 20
+          },
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/lint-feedback.sh\"",
+            "timeout": 30
           }
         ]
       }
@@ -60,6 +75,16 @@
             "type": "command",
             "command": "bash \"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/compact-context.sh\"",
             "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "startup|resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/hooks/session-context.sh\"",
+            "timeout": 10
           }
         ]
       }
@@ -77,6 +102,7 @@
       }
     ]
   },
+  "enableWorkflows": true,
   "statusLine": {
     "type": "command",
     "command": "bash \"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/statusline.sh\"",
@@ -86,6 +112,9 @@
   "subagentStatusLine": {
     "type": "command",
     "command": "bash \"${CLAUDE_CONFIG_DIR:-$HOME/.claude}/subagent-statusline.sh\""
+  },
+  "enabledPlugins": {
+    "clangd-lsp@claude-plugins-official": true
   },
   "spinnerTipsEnabled": false,
   "awaySummaryEnabled": true,
@@ -101,5 +130,6 @@
   "showTurnDuration": true,
   "showMessageTimestamps": true,
   "terminalProgressBarEnabled": true,
-  "todoFeatureEnabled": true
+  "todoFeatureEnabled": true,
+  "agentPushNotifEnabled": false
 }

@@ -246,6 +246,7 @@ link_file() {
 
 link_dotfiles() {
 	log "Linking dotfiles"
+	run "$DOTFILES_DIR/sync-agents.sh"
 	link_file "$DOTFILES_DIR/zsh/.zshenv" "$HOME/.zshenv"
 	link_file "$DOTFILES_DIR/zsh/.zprofile" "$HOME/.zprofile"
 	link_file "$DOTFILES_DIR/zsh/.zshrc" "$HOME/.zshrc"
@@ -258,49 +259,41 @@ link_dotfiles() {
 	link_file "$DOTFILES_DIR/karabiner/.config/karabiner" "$HOME/.config/karabiner"
 	link_file "$DOTFILES_DIR/wezterm/.wezterm.lua" "$HOME/.wezterm.lua"
 	link_file "$DOTFILES_DIR/herdr/.config/herdr/config.toml" "$HOME/.config/herdr/config.toml"
+	link_file "$DOTFILES_DIR/.claude/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
 	link_file "$DOTFILES_DIR/.claude/settings.json" "$HOME/.claude/settings.json"
 	link_file "$DOTFILES_DIR/.claude/keybindings.json" "$HOME/.claude/keybindings.json"
 	link_file "$DOTFILES_DIR/.claude/statusline.sh" "$HOME/.claude/statusline.sh"
 	link_file "$DOTFILES_DIR/.claude/subagent-statusline.sh" "$HOME/.claude/subagent-statusline.sh"
-	link_file "$DOTFILES_DIR/.claude/hooks/compact-context.sh" "$HOME/.claude/hooks/compact-context.sh"
-	link_file "$DOTFILES_DIR/.claude/hooks/format-config.sh" "$HOME/.claude/hooks/format-config.sh"
-	link_file "$DOTFILES_DIR/.claude/hooks/ship-gate.sh" "$HOME/.claude/hooks/ship-gate.sh"
-	link_file "$DOTFILES_DIR/.claude/agents/ship-planner.md" "$HOME/.claude/agents/ship-planner.md"
-	link_file "$DOTFILES_DIR/.claude/agents/ship-builder.md" "$HOME/.claude/agents/ship-builder.md"
-	link_file "$DOTFILES_DIR/.claude/agents/ship-critic.md" "$HOME/.claude/agents/ship-critic.md"
-	link_file "$DOTFILES_DIR/.claude/commands/ship-slice.md" "$HOME/.claude/commands/ship-slice.md"
+	local hook_file
+	for hook_file in "$DOTFILES_DIR"/.claude/hooks/*.sh; do
+		[[ -e "$hook_file" ]] || continue
+		link_file "$hook_file" "$HOME/.claude/hooks/$(basename "$hook_file")"
+	done
+	local agent_file
+	for agent_file in "$DOTFILES_DIR"/.claude/agents/*.md; do
+		[[ -e "$agent_file" ]] || continue
+		link_file "$agent_file" "$HOME/.claude/agents/$(basename "$agent_file")"
+	done
+	for agent_file in "$DOTFILES_DIR"/.claude/commands/*.md; do
+		[[ -e "$agent_file" ]] || continue
+		link_file "$agent_file" "$HOME/.claude/commands/$(basename "$agent_file")"
+	done
 	link_file "$DOTFILES_DIR/codex/.codex/AGENTS.md" "$HOME/.codex/AGENTS.md"
-	link_file "$DOTFILES_DIR/codex/.codex/agents/plan.toml" "$HOME/.codex/agents/plan.toml"
-	link_file "$DOTFILES_DIR/codex/.codex/agents/review.toml" "$HOME/.codex/agents/review.toml"
-	link_file "$DOTFILES_DIR/codex/.codex/agents/debug.toml" "$HOME/.codex/agents/debug.toml"
-	link_file "$DOTFILES_DIR/codex/.codex/agents/docs.toml" "$HOME/.codex/agents/docs.toml"
-	link_file "$DOTFILES_DIR/codex/.codex/agents/test-writer.toml" "$HOME/.codex/agents/test-writer.toml"
-	link_file "$DOTFILES_DIR/codex/.codex/agents/commit.toml" "$HOME/.codex/agents/commit.toml"
-	link_file "$DOTFILES_DIR/codex/.codex/agents/ship-planner.toml" "$HOME/.codex/agents/ship-planner.toml"
-	link_file "$DOTFILES_DIR/codex/.codex/agents/ship-builder.toml" "$HOME/.codex/agents/ship-builder.toml"
-	link_file "$DOTFILES_DIR/codex/.codex/agents/ship-critic.toml" "$HOME/.codex/agents/ship-critic.toml"
+	for agent_file in "$DOTFILES_DIR"/codex/.codex/agents/*.toml; do
+		[[ -e "$agent_file" ]] || continue
+		link_file "$agent_file" "$HOME/.codex/agents/$(basename "$agent_file")"
+	done
 
 	link_file "$DOTFILES_DIR/opencode/.config/opencode/opencode.json" "$HOME/.config/opencode/opencode.json"
 	link_file "$DOTFILES_DIR/opencode/.config/opencode/tui.json" "$HOME/.config/opencode/tui.json"
-	link_file "$DOTFILES_DIR/opencode/.config/opencode/agents/build.md" "$HOME/.config/opencode/agents/build.md"
-	link_file "$DOTFILES_DIR/opencode/.config/opencode/agents/plan.md" "$HOME/.config/opencode/agents/plan.md"
-	link_file "$DOTFILES_DIR/opencode/.config/opencode/agents/review.md" "$HOME/.config/opencode/agents/review.md"
-	link_file "$DOTFILES_DIR/opencode/.config/opencode/agents/debug.md" "$HOME/.config/opencode/agents/debug.md"
-	link_file "$DOTFILES_DIR/opencode/.config/opencode/agents/commit.md" "$HOME/.config/opencode/agents/commit.md"
-	link_file "$DOTFILES_DIR/opencode/.config/opencode/agents/docs.md" "$HOME/.config/opencode/agents/docs.md"
-	link_file "$DOTFILES_DIR/opencode/.config/opencode/agents/test-writer.md" "$HOME/.config/opencode/agents/test-writer.md"
-	link_file "$DOTFILES_DIR/opencode/.config/opencode/commands/review.md" "$HOME/.config/opencode/commands/review.md"
-	link_file "$DOTFILES_DIR/opencode/.config/opencode/commands/tests.md" "$HOME/.config/opencode/commands/tests.md"
-	link_file "$DOTFILES_DIR/opencode/.config/opencode/commands/explain.md" "$HOME/.config/opencode/commands/explain.md"
-	link_file "$DOTFILES_DIR/opencode/.config/opencode/commands/goal.md" "$HOME/.config/opencode/commands/goal.md"
-	link_file "$DOTFILES_DIR/opencode/.config/opencode/commands/commit.md" "$HOME/.config/opencode/commands/commit.md"
-	link_file "$DOTFILES_DIR/opencode/.config/opencode/commands/pr.md" "$HOME/.config/opencode/commands/pr.md"
-	link_file "$DOTFILES_DIR/opencode/.config/opencode/commands/debug.md" "$HOME/.config/opencode/commands/debug.md"
-	link_file "$DOTFILES_DIR/opencode/.config/opencode/commands/tdd.md" "$HOME/.config/opencode/commands/tdd.md"
-	link_file "$DOTFILES_DIR/opencode/.config/opencode/agents/ship-planner.md" "$HOME/.config/opencode/agents/ship-planner.md"
-	link_file "$DOTFILES_DIR/opencode/.config/opencode/agents/ship-builder.md" "$HOME/.config/opencode/agents/ship-builder.md"
-	link_file "$DOTFILES_DIR/opencode/.config/opencode/agents/ship-critic.md" "$HOME/.config/opencode/agents/ship-critic.md"
-	link_file "$DOTFILES_DIR/opencode/.config/opencode/commands/ship-slice.md" "$HOME/.config/opencode/commands/ship-slice.md"
+	for agent_file in "$DOTFILES_DIR"/opencode/.config/opencode/agents/*.md; do
+		[[ -e "$agent_file" ]] || continue
+		link_file "$agent_file" "$HOME/.config/opencode/agents/$(basename "$agent_file")"
+	done
+	for agent_file in "$DOTFILES_DIR"/opencode/.config/opencode/commands/*.md; do
+		[[ -e "$agent_file" ]] || continue
+		link_file "$agent_file" "$HOME/.config/opencode/commands/$(basename "$agent_file")"
+	done
 
 	# One versioned skill source serves all three agent clients. Link entries
 	# individually so Codex's bundled .system directory remains untouched.

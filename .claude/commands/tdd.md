@@ -1,5 +1,5 @@
 ---
-description: "Test-driven development flow for a feature or change"
+description: Test-driven development flow for a feature or change
 ---
 Apply strict TDD for: $ARGUMENTS
 

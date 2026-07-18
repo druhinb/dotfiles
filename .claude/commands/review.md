@@ -1,7 +1,6 @@
 ---
-description: "Review uncommitted changes for bugs, style, and security"
-agent: review
-subtask: true
+description: Review uncommitted changes for bugs, style, and security
+allowed-tools: Bash(git diff:*), Bash(git ls-files:*), Bash(git status:*)
 ---
 Review the current uncommitted changes. Do not modify files.
 

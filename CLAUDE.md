@@ -11,7 +11,7 @@ Do not add an in-Neovim agent plugin or another agent multiplexer. Neovim's auto
 - `zsh/`: `.zshenv`, `.zprofile`, and interactive `.zshrc`.
 - `tmux/`: tmux configuration; TPM owns plugins at runtime.
 - `nvim/.config/nvim/`: modular Kickstart/lazy.nvim configuration and its nested `CLAUDE.md`.
-- `.claude/`: shared Claude Code settings, keybindings, path-scoped rules, hooks, and status-line scripts.
+- `.claude/`: shared Claude Code settings, keybindings, path-scoped rules, hooks, status-line scripts, and the global `CLAUDE.md` engineering principles linked to `~/.claude/CLAUDE.md`.
 - `.codex/`: project-level Codex settings. `codex/.codex/` contains global
   Codex guidance and custom subagent profiles linked by `setup.sh`.
 - `agents/skills/`: canonical shared skills, linked into Claude Code, Codex,
@@ -30,6 +30,16 @@ Shared skill directories are linked individually into all three agent clients.
 Before replacing an existing target, `link_file` moves it into a timestamped
 backup directory. Add any new runtime script or hook to `link_dotfiles` during
 the integration phase; creating links by hand is not the lasting fix.
+
+Claude Code is the source of truth for shared agents and commands
+(`.claude/agents/*.md`, `.claude/commands/*.md`), including the unified
+`/review`, `/commit`, and `/tdd` commands and the `verifier` agent. `sync-agents.sh` regenerates
+the Codex `.toml` and Opencode `.md` agents plus the Opencode commands from
+those sources, merging Claude's body, name, and description over the preserved
+per-client metadata (Opencode model/temperature/permission map, Codex extra
+keys). It only rewrites targets that have a Claude source, so client-only agents
+and commands are never deleted or touched. `setup.sh` runs `sync-agents.sh`
+before linking; validate drift with `./sync-agents.sh --check`.
 
 Machine-specific shell paths belong in the untracked `~/.zshrc.local`, never in the shared zsh files.
 
@@ -55,6 +65,7 @@ zsh -n zsh/.zshenv zsh/.zprofile zsh/.zshrc
 shfmt -d setup.sh .claude/*.sh .claude/hooks/*.sh
 shellcheck setup.sh .claude/*.sh .claude/hooks/*.sh
 stylua --check nvim/.config/nvim
+./sync-agents.sh --check
 ./setup.sh --dry-run --skip-neovim-tools
 git diff --check
 ```
