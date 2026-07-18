@@ -27,9 +27,11 @@ if ! parsed=$(
 fi
 eval "$parsed"
 
-[[ -n "$file_path" ]] || fail "hook input did not include tool_input.file_path"
+# The Edit|Write matcher should guarantee tool_input.file_path is set; exit
+# quietly rather than failing loudly in case that matcher ever widens.
+[[ -n "$file_path" ]] || exit 0
 [[ "$file_path" == /* ]] || file_path="${cwd%/}/$file_path"
-[[ -f "$file_path" ]] || fail "edited file does not exist: $file_path"
+[[ -f "$file_path" ]] || exit 0
 
 case "$file_path" in
 *.json)
@@ -38,7 +40,7 @@ case "$file_path" in
 	if ! jq --indent 2 . -- "$file_path" >"$temporary"; then
 		fail "jq could not format $file_path"
 	fi
-	if ! cmp -s "$temporary" "$file_path" && ! command cat "$temporary" >"$file_path"; then
+	if ! cmp -s "$temporary" "$file_path" && ! cp "$temporary" "$file_path"; then
 		fail "could not update $file_path"
 	fi
 	;;

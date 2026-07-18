@@ -14,10 +14,10 @@ if ! event=$(printf '%s' "$input" | jq -er '[.hook_event_name // "", .source // 
 	exit 1
 fi
 
-if [[ "$event" != $'SessionStart\tcompact' ]]; then
-	printf 'Claude compact hook expected a SessionStart compact event\n' >&2
-	exit 1
-fi
+# The SessionStart/compact matcher already restricts when this hook fires;
+# this is just a defensive check in case that matcher ever widens. Exit
+# quietly rather than surfacing noise for something that shouldn't happen.
+[[ "$event" == $'SessionStart\tcompact' ]] || exit 0
 
 printf '%s\n' \
 	'Dotfiles workflow context: the repository files are symlink sources; setup.sh owns linking and dependency installation. Claude Code remains terminal-first inside tmux, Ctrl+g hands text to Neovim, and Neovim autoreads external edits. Existing user changes are preserved, relevant path-scoped rules are re-read before edits, and commits, pushes, or destructive commands remain manual.'
