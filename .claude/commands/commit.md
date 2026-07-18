@@ -1,7 +1,6 @@
 ---
-description: "Generate a Conventional Commit message from staged or working-tree changes"
-agent: commit
-subtask: true
+description: Generate a Conventional Commit message from staged or working-tree changes
+allowed-tools: Bash(git diff:*), Bash(git log:*)
 ---
 Write a commit message for the current changes. Do not stage or commit.
 

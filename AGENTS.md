@@ -13,8 +13,13 @@ multiplexer.
 - `agents/skills/` is the canonical copy of shared skills. Setup links each
   skill into Claude Code, Codex, and OpenCode. Codex's built-in
   `~/.codex/skills/.system` directory is intentionally left untouched.
-- `codex/.codex/` owns global Codex guidance and custom-agent profiles.
-- `opencode/` owns OpenCode's configuration, agents, and commands.
+- `codex/.codex/` owns global Codex guidance and custom-agent profiles. Any
+  agent `.toml` with a matching Claude source is generated from it by
+  `sync-agents.sh`; edit `.claude/agents/*.md`, not the generated output.
+- `opencode/` owns OpenCode's configuration, agents, and commands. Agents and
+  commands with a matching Claude source (currently the ship-* set, verifier,
+  ship-slice, review, commit, and tdd) are likewise generated from the Claude
+  sources by `sync-agents.sh`; client-only agents and commands are hand-owned.
 - Keep machine-specific shell setup in the untracked `~/.zshrc.local`.
 
 ## Safe editing
@@ -48,6 +53,7 @@ zsh -n zsh/.zshenv zsh/.zprofile zsh/.zshrc
 shfmt -d setup.sh .claude/*.sh .claude/hooks/*.sh
 shellcheck setup.sh .claude/*.sh .claude/hooks/*.sh
 stylua --check nvim/.config/nvim
+./sync-agents.sh --check
 ./setup.sh --dry-run --skip-neovim-tools
 git diff --check
 ```
