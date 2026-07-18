@@ -339,6 +339,10 @@ local function setup_keymaps(event)
         return
       end
     end
+    if require('search').has_telescope() then
+      require('telescope.builtin').lsp_references()
+      return
+    end
     require('search').lsp_references()
   end, 'References')
 
@@ -372,6 +376,10 @@ local function setup_keymaps(event)
         return
       end
     end
+    if require('search').has_telescope() then
+      require('telescope.builtin').lsp_document_symbols()
+      return
+    end
     require('search').lsp_document_symbols()
   end, 'Document Symbols')
   map('<leader>cW', function()
@@ -381,6 +389,10 @@ local function setup_keymaps(event)
         fzf.lsp_live_workspace_symbols()
         return
       end
+    end
+    if require('search').has_telescope() then
+      require('telescope.builtin').lsp_dynamic_workspace_symbols()
+      return
     end
     require('search').lsp_workspace_symbols()
   end, 'Workspace Symbols')

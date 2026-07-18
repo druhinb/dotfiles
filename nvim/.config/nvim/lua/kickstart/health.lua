@@ -26,8 +26,10 @@ local function check_executables()
   end
   if require('search').has_fzf() then
     vim.health.ok 'fzf-lua is available'
+  elseif require('search').has_telescope() then
+    vim.health.info 'fzf is unavailable; falling back to telescope.nvim'
   else
-    vim.health.info 'fzf is unavailable or this is an SSH session; native search fallbacks will be used'
+    vim.health.warn 'fzf and telescope are both unavailable; native search fallbacks will be used'
   end
 end
 

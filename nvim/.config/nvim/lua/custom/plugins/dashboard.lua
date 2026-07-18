@@ -27,12 +27,12 @@ return {
         dashboard.button(
           'f',
           '  > Find File',
-          [[:lua if require("search").has_fzf() then require("fzf-lua").files() else require("search").files() end<CR>]]
+          [[:lua local s = require("search"); if s.has_fzf() then require("fzf-lua").files() elseif s.has_telescope() then require("telescope.builtin").find_files() else s.files() end<CR>]]
         ),
         dashboard.button(
           'r',
           '  > Recent',
-          [[:lua if require("search").has_fzf() then require("fzf-lua").oldfiles() else require("search").oldfiles() end<CR>]]
+          [[:lua local s = require("search"); if s.has_fzf() then require("fzf-lua").oldfiles() elseif s.has_telescope() then require("telescope.builtin").oldfiles() else s.oldfiles() end<CR>]]
         ),
         dashboard.button('s', '  > Restore Session', [[:lua require("persistence").load() <cr>]]),
         dashboard.button('l', '󰒲  > Lazy', ':Lazy<CR>'),

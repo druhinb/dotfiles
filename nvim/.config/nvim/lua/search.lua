@@ -1,9 +1,19 @@
 local M = {}
 
-local is_ssh = vim.env.SSH_CLIENT ~= nil or vim.env.SSH_TTY ~= nil or vim.env.SSH_CONNECTION ~= nil
-
+-- fzf-lua just shells out to the `fzf` binary, which works fine over SSH as
+-- long as it's installed on the remote host, so this only checks for that.
 function M.has_fzf()
-  return not is_ssh and vim.fn.executable 'fzf' == 1
+  return vim.fn.executable 'fzf' == 1
+end
+
+-- telescope.nvim is pure Lua and needs no external binary, so it's the
+-- fallback picker on hosts where `fzf` itself isn't installed.
+function M.has_telescope()
+  local lazy_ok, lazy = pcall(require, 'lazy')
+  if lazy_ok then
+    pcall(lazy.load, { plugins = { 'telescope.nvim' } })
+  end
+  return (pcall(require, 'telescope.builtin'))
 end
 
 local function open_file(path)
