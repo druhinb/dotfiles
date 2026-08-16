@@ -134,8 +134,9 @@ vim.o.confirm = true
 vim.opt.smartindent = true
 vim.opt.autoindent = true
 
--- Show matching parentheses
-vim.opt.showmatch = true
+-- 'showmatch' parks the cursor on the match for 'matchtime' tenths of a second (500ms here)
+-- every time a bracket is typed. The bundled matchparen plugin highlights the pair without moving.
+vim.opt.showmatch = false
 
 --
 local swap_dir = vim.fn.stdpath 'cache' .. '/swap'

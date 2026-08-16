@@ -266,6 +266,10 @@ map('n', '<leader>ul', '<cmd>set list!<cr>', { desc = 'Toggle list chars' })
 map('n', '<leader>uc', '<cmd>set cursorline!<cr>', { desc = 'Toggle cursorline' })
 map('n', '<leader>uC', '<cmd>set cursorcolumn!<cr>', { desc = 'Toggle cursorcolumn' })
 
+map('n', '<leader>ut', function()
+  require('theme').pick()
+end, { desc = 'Pick colorscheme' })
+
 -- Toggle diagnostics
 local diagnostics_active = true
 map('n', '<leader>ud', function()

@@ -48,10 +48,40 @@
 --   },
 -- }
 
--- THEME: ONEDARK PRO (Custom "Modern Pro" Variant)
+-- specs here must not call :colorscheme; lua/theme.lua applies the persisted one
 return {
+  -- THEME: GRUVBOX MATERIAL (default)
+  -- desaturated warm palette, 8.2:1 on body text
+  {
+    'sainnhe/gruvbox-material',
+    lazy = false,
+    priority = 1000,
+    init = function()
+      vim.g.gruvbox_material_background = 'medium'
+      vim.g.gruvbox_material_foreground = 'material'
+      vim.g.gruvbox_material_enable_italic = 1
+      vim.g.gruvbox_material_diagnostic_virtual_text = 'colored'
+      vim.g.gruvbox_material_current_word = 'grey background'
+      vim.g.gruvbox_material_float_style = 'dim'
+      vim.g.gruvbox_material_better_performance = 1
+    end,
+  },
+
+  -- THEME: MODUS (modus_operandi light, modus_vivendi dark)
+  -- every fg/bg pair meets WCAG AAA
+  {
+    'miikanissi/modus-themes.nvim',
+    lazy = false,
+    priority = 1000,
+    opts = {
+      variant = 'tinted',
+    },
+  },
+
+  -- THEME: ONEDARK PRO (Custom "Modern Pro" Variant)
   {
     'olimorris/onedarkpro.nvim',
+    lazy = false,
     priority = 1000,
     config = function()
       require('onedarkpro').setup {
@@ -114,8 +144,6 @@ return {
           functions = 'bold',
         },
       }
-
-      vim.cmd 'colorscheme onedark'
     end,
   },
 } -- vim: ts=2 sts=2 sw=2 et

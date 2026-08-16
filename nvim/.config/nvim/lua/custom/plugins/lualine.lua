@@ -48,6 +48,11 @@ local bright_colors = {
   removed = '#ff616e',
 }
 
+-- onedark_modern is hand-matched to onedark's palette; nothing else can use it
+local function statusline_theme()
+  return vim.g.colors_name == 'onedark' and onedark_modern or 'auto'
+end
+
 return {
   {
     'nvim-lualine/lualine.nvim',
@@ -165,9 +170,9 @@ return {
         return table.concat(status, ' ')
       end
 
-      require('lualine').setup {
+      local opts = {
         options = {
-          theme = onedark_modern,
+          theme = statusline_theme(),
           component_separators = { left = '', right = '' },
           section_separators = { left = '', right = '' },
           globalstatus = true,
@@ -229,6 +234,16 @@ return {
           lualine_z = { 'tabs' },
         },
       }
+
+      require('lualine').setup(opts)
+
+      vim.api.nvim_create_autocmd('ColorScheme', {
+        group = vim.api.nvim_create_augroup('lualine-follow-colorscheme', { clear = true }),
+        callback = function()
+          opts.options.theme = statusline_theme()
+          require('lualine').setup(opts)
+        end,
+      })
     end,
   },
 }

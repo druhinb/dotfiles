@@ -18,7 +18,7 @@ multiplexer.
   `sync-agents.sh`; edit `.claude/agents/*.md`, not the generated output.
 - `opencode/` owns OpenCode's configuration, agents, and commands. Agents and
   commands with a matching Claude source (currently the ship-* set, verifier,
-  ship-slice, review, commit, and tdd) are likewise generated from the Claude
+  ship-slice, review-diff, commit, and tdd) are likewise generated from the Claude
   sources by `sync-agents.sh`; client-only agents and commands are hand-owned.
 - Keep machine-specific shell setup in the untracked `~/.zshrc.local`.
 

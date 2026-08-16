@@ -5,19 +5,19 @@ return {
   enabled = not is_ssh,
   event = 'VeryLazy',
   opts = {
-    -- Physics: High damping prevents the "bounce"
-    stiffness = 0.55,
-    trailing_stiffness = 0.3,
-    damping = 0.8, -- Higher damping stops the overshooting
+    -- stiffness/damping below the 0.6/0.45/0.85 defaults stretch the settle time on every
+    -- cursor jump, including the one-column move out of insert mode. These overshoot it.
+    stiffness = 0.85,
+    trailing_stiffness = 0.75,
+    damping = 0.9,
 
-    -- Smoothness: Lower threshold for sub-pixel stops
-    distance_stop_animating = 0.1, -- Finish the move fully to avoid stutters
+    -- stop a whole cell early; converging to 0.1 spends most of the animation on
+    -- sub-cell motion that never renders differently
+    distance_stop_animating = 1.0,
 
-    -- Mode Control
-    smear_insert_mode = false, -- No animation while typing
+    smear_insert_mode = false,
 
-    -- Technical
-    matrix_pixel_threshold = 0.3, -- Lower values can help smoothness on high-DPI
+    matrix_pixel_threshold = 0.3,
   },
 } -- Faster Smear
 --  opts = {                                -- Default  Range

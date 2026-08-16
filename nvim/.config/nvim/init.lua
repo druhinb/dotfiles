@@ -107,11 +107,17 @@ require 'lazy-bootstrap'
 -- [[ Configure and install plugins ]]
 require 'lazy-plugins'
 
+-- [[ Apply the persisted colorscheme ]]
+--  must run after lazy.setup so the theme plugins are on the runtimepath
+require('theme').setup()
+
 -- Enable autoread and set up checking triggers
 -- This allows neovim to detect changes in files made by other programs (like git, CLI tools)
 -- 'checktime' checks for these changes.
 vim.o.autoread = true
-vim.api.nvim_create_autocmd({ 'FocusGained', 'BufEnter', 'CursorHold', 'CursorHoldI' }, {
+-- CursorHoldI is omitted: stat'ing the file every 'updatetime' of idle typing costs more
+-- than it buys, and an external write mid-edit is picked up on the next focus or buffer switch.
+vim.api.nvim_create_autocmd({ 'FocusGained', 'BufEnter', 'CursorHold' }, {
   group = vim.api.nvim_create_augroup('kickstart-autoread', { clear = true }),
   pattern = '*',
   callback = function()

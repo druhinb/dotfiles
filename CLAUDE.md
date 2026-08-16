@@ -33,7 +33,7 @@ the integration phase; creating links by hand is not the lasting fix.
 
 Claude Code is the source of truth for shared agents and commands
 (`.claude/agents/*.md`, `.claude/commands/*.md`), including the unified
-`/review`, `/commit`, and `/tdd` commands and the `verifier` agent. `sync-agents.sh` regenerates
+`/review-diff`, `/commit`, and `/tdd` commands and the `verifier` agent. `sync-agents.sh` regenerates
 the Codex `.toml` and Opencode `.md` agents plus the Opencode commands from
 those sources, merging Claude's body, name, and description over the preserved
 per-client metadata (Opencode model/temperature/permission map, Codex extra

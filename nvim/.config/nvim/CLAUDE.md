@@ -9,6 +9,7 @@ init.lua                         leader, options, keymaps, lazy bootstrap, plugi
 lua/lazy-plugins.lua             lazy.nvim setup and explicit core specs
 lua/tooling.lua                  shared LSP/format/lint/DAP/test/parser inventory
 lua/search.lua                   built-in search and quickfix fallbacks
+lua/theme.lua                    persisted colorscheme selection and picker
 lua/kickstart/plugins/           core LSP, completion, format, lint, DAP, treesitter, UI specs
 lua/custom/plugins/              auto-imported personal and language-bundle specs
 ```
@@ -56,6 +57,7 @@ return {
 - Prefer native Neovim APIs and the existing focused plugin over another overlapping subsystem.
 - fzf-lua is the preferred picker, local or over SSH, whenever the `fzf` binary is present. `custom/plugins/telescope.lua` is the fallback picker when it isn't (e.g. a remote host without `fzf` installed); keep `lua/search.lua`'s native fallbacks working for hosts with neither.
 - Preserve capability-aware, buffer-local LSP mappings and native document highlighting.
+- Colorscheme plugins register in `kickstart/plugins/colorscheme.lua` and must not call `:colorscheme` themselves. `lua/theme.lua` applies the persisted choice after `lazy.setup` and records every later change; switch with `:Theme`, `<leader>ut`, or `<leader>st`.
 
 ## Language bundles
 

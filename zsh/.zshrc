@@ -80,50 +80,25 @@ if (( $+commands[fnm] )); then
   eval "$(fnm env --use-on-cd --shell zsh)"
 fi
 
-# Load conda/mamba only when first invoked.
-_conda_init=""
-if (( $+commands[conda] )); then
-  _conda_init="${commands[conda]}"
-else
-  for _conda_root in "$HOME/mambaforge" "$HOME/miniforge3" "$HOME/miniconda3"; do
-    if [[ -r "$_conda_root/etc/profile.d/conda.sh" ]]; then
-      _conda_init="$_conda_root/etc/profile.d/conda.sh"
-      break
-    fi
-  done
-  unset _conda_root
-fi
-
-if [[ -n "$_conda_init" ]]; then
-  _load_conda() {
-    local hook
-    unfunction conda mamba 2>/dev/null
-    if [[ -x "$_conda_init" ]]; then
-      hook="$("$_conda_init" shell.zsh hook 2>/dev/null)" || return
-      [[ -n "$hook" ]] || return 1
-      eval "$hook"
-    else
-      source "$_conda_init"
-    fi
-  }
-
-  _run_conda_command() {
-    local command_name="$1"
-    shift
-    _load_conda || {
-      print -u2 "Unable to initialize conda/mamba."
+# micromamba is resolved from PATH and its root prefix comes from .zshenv, so no
+# install location is baked in here. The shell hook costs a subprocess, so it is
+# deferred until the first micromamba/mamba call rather than run at every prompt.
+if (( $+commands[micromamba] )); then
+  # The stubs must be functions, not aliases: the hook body contains a `mamba() {`
+  # branch that zsh parses even when unreachable, and an alias of that name makes
+  # the whole eval a parse error.
+  _load_micromamba() {
+    unfunction micromamba mamba 2>/dev/null
+    eval "$(command micromamba shell hook --shell zsh)" || {
+      print -u2 "micromamba shell hook failed."
       return 1
     }
-    if whence "$command_name" >/dev/null; then
-      "$command_name" "$@"
-    else
-      print -u2 "$command_name is not installed."
-      return 127
-    fi
+    # the hook defines only the function matching its own basename
+    mamba() { micromamba "$@" }
   }
 
-  conda() { _run_conda_command conda "$@" }
-  mamba() { _run_conda_command mamba "$@" }
+  micromamba() { _load_micromamba && micromamba "$@" }
+  mamba() { _load_micromamba && micromamba "$@" }
 fi
 
 # let `cd` fall back to zoxide when a direct path does not exist.

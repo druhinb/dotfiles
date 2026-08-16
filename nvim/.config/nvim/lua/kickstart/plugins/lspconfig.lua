@@ -131,9 +131,6 @@ local servers = {
   -- Systems Programming
   -- ===========================================================================
   rust_analyzer = {
-    -- nvim-lspconfig's default root detector invokes rustc. Keep Rust buffers
-    -- usable on hosts where the Rust toolchain has not been installed yet.
-    root_dir = vim.fn.executable 'rustc' == 1 and nil or function() end,
     settings = {
       ['rust-analyzer'] = {
         cargo = {
@@ -307,6 +304,13 @@ local servers = {
   sqlls = {},
 }
 
+-- nvim-lspconfig's default rust_analyzer root detector shells out to rustc. A
+-- root_dir that never calls on_dir keeps Rust buffers usable on hosts without a
+-- toolchain.
+if vim.fn.executable 'rustc' == 0 then
+  servers.rust_analyzer.root_dir = function() end
+end
+
 -- =============================================================================
 -- LSP Keymaps (LazyVim Style)
 -- =============================================================================
@@ -433,12 +437,14 @@ local function on_attach(event, opts)
   -- Document highlight
   if client_supports_method(client, vim.lsp.protocol.Methods.textDocument_documentHighlight, event.buf) then
     local highlight_augroup = vim.api.nvim_create_augroup('kickstart-lsp-highlight', { clear = false })
-    vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
+    -- insert-mode variants are omitted: they put a documentHighlight round trip on the
+    -- main loop every 'updatetime' of idle typing, and the result is not readable mid-edit
+    vim.api.nvim_create_autocmd('CursorHold', {
       buffer = event.buf,
       group = highlight_augroup,
       callback = vim.lsp.buf.document_highlight,
     })
-    vim.api.nvim_create_autocmd({ 'CursorMoved', 'CursorMovedI' }, {
+    vim.api.nvim_create_autocmd('CursorMoved', {
       buffer = event.buf,
       group = highlight_augroup,
       callback = vim.lsp.buf.clear_references,
