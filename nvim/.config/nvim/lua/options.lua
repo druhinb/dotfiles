@@ -19,7 +19,7 @@ vim.o.showmode = false
 -- Schedule the setting after `UiEnter` because it can increase startup-time.
 -- Remove this option if you want your OS clipboard to remain independent.
 -- See `:help 'clipboard'`
-local is_ssh = vim.env.SSH_CLIENT ~= nil or vim.env.SSH_TTY ~= nil or vim.env.SSH_CONNECTION ~= nil
+local is_ssh = require('env').is_ssh
 
 vim.schedule(function()
   if is_ssh then

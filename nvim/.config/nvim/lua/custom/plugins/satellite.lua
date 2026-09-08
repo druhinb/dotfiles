@@ -1,4 +1,4 @@
-local is_ssh = vim.env.SSH_CLIENT ~= nil or vim.env.SSH_TTY ~= nil or vim.env.SSH_CONNECTION ~= nil
+local is_ssh = require('env').is_ssh
 
 return {
   'lewis6991/satellite.nvim',
