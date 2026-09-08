@@ -138,6 +138,40 @@ vim.opt.autoindent = true
 -- every time a bracket is typed. The bundled matchparen plugin highlights the pair without moving.
 vim.opt.showmatch = false
 
+-- Keep the view when jumping back through the jumplist
+vim.o.jumpoptions = 'view'
+
+-- Scroll and wrap
+vim.o.smoothscroll = true
+vim.o.linebreak = true
+vim.o.sidescrolloff = 8
+
+-- Let visual block selections extend past end of line
+vim.o.virtualedit = 'block'
+
+vim.o.undolevels = 10000
+
+-- Drop 'o' so pressing o/O below a comment does not continue the comment leader.
+-- The ftplugins add it back per filetype, so this has to run after them.
+vim.api.nvim_create_autocmd('FileType', {
+  group = vim.api.nvim_create_augroup('kickstart-formatoptions', { clear = true }),
+  pattern = '*',
+  callback = function()
+    vim.opt_local.formatoptions:remove 'o'
+  end,
+})
+
+-- persistence.nvim restores plugin state from 'globals'; 'skiprtp' keeps the
+-- session from pinning a stale runtimepath
+vim.opt.sessionoptions:append { 'globals', 'skiprtp' }
+
+-- W: no "written" message, c: no ins-completion messages, C: no scanning messages
+vim.opt.shortmess:append 'WcC'
+
+vim.o.pumheight = 12
+vim.o.splitkeep = 'screen'
+vim.o.laststatus = 3
+
 -- Tree-sitter drives 'foldexpr'; kickstart/plugins/treesitter.lua turns folding on
 -- per window once a parser has attached, so parserless buffers keep manual folds.
 vim.o.foldlevel = 99
