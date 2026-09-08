@@ -278,15 +278,12 @@ end, { desc = 'Toggle diagnostics' })
 -- Miscellaneous
 -- ════════════════════════════════════════════════════════════════════════════
 
--- Better paste in visual mode (don't yank replaced text)
-map('x', 'p', '"_dP', { desc = 'Paste (no yank)' })
+-- Visual-mode P keeps the unnamed register; "_dP loses the last line at end of buffer
+map('x', 'p', 'P', { desc = 'Paste (no yank)' })
 
 -- Add blank lines
 map('n', ']<space>', 'o<Esc>k', { desc = 'Add blank line below' })
 map('n', '[<space>', 'O<Esc>j', { desc = 'Add blank line above' })
-
--- Select all
-map('n', '<C-a>', 'gg<S-v>G', { desc = 'Select all' })
 
 -- Lazy plugin manager
 map('n', '<leader>L', '<cmd>Lazy<cr>', { desc = 'Lazy' })

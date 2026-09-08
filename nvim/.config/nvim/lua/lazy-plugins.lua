@@ -52,8 +52,7 @@ require('lazy').setup({
   --
   require 'kickstart.plugins.debug',
   require 'kickstart.plugins.int',
-  -- NOTE: autopairs disabled - using mini.pairs instead (see mini.lua)
-  -- require 'kickstart.plugins.autopairs',
+  -- NOTE: pairs come from mini.pairs (see mini.lua)
   -- require 'kickstart.plugins.neo-tree',
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
