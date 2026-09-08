@@ -4,32 +4,9 @@ return {
     event = { 'InsertEnter', 'CmdlineEnter' },
     version = '1.*',
     dependencies = {
-      -- Snippet Engine
-      {
-        'L3MON4D3/LuaSnip',
-        version = '2.*',
-        build = (function()
-          -- Build Step is needed for regex support in snippets.
-          -- This step is not supported in many windows environments.
-          -- Remove the below condition to re-enable on windows.
-          if vim.fn.has 'win32' == 1 or vim.fn.executable 'make' == 0 then
-            return
-          end
-          return 'make install_jsregexp'
-        end)(),
-        dependencies = {
-          -- `friendly-snippets` contains a variety of premade snippets.
-          --    See the README about individual language/framework/plugin snippets:
-          --    https://github.com/rafamadriz/friendly-snippets
-          {
-            'rafamadriz/friendly-snippets',
-            config = function()
-              require('luasnip.loaders.from_vscode').lazy_load()
-            end,
-          },
-        },
-        opts = {},
-      },
+      -- blink's default snippet source reads these off the runtimepath through
+      -- vim.snippet, so no separate snippet engine is loaded
+      'rafamadriz/friendly-snippets',
       'folke/lazydev.nvim',
     },
     --- @module 'blink.cmp'
@@ -62,9 +39,6 @@ return {
 
         ['<C-k>'] = { 'select_prev', 'fallback' },
         ['<C-j>'] = { 'select_next', 'fallback' },
-
-        -- For more advanced Luasnip keymaps (e.g. selecting choice nodes, expansi
-        --    https://github.com/L3MON4D3/LuaSnip?tab=readme-ov-file#keymaps
       },
 
       appearance = {
@@ -104,14 +78,14 @@ return {
       },
 
       completion = {
-        -- 'prefix' (default) for top-down, 'postfix' for bottom-up
-        -- list = { selection = { preselect = false, auto_insert = true } },
+        -- auto_insert would commit a candidate on every <C-j>/<C-k>, which
+        -- fights super-tab and ghost text
+        list = { selection = { preselect = true, auto_insert = false } },
 
-        -- By default, you may press `<c-space>` to show the documentation.
-        -- Optionally, set `auto_show = true` to show the documentation after a delay.
+        -- a zero delay resolves documentation for every item the cursor passes
         documentation = {
           auto_show = true,
-          auto_show_delay_ms = 0,
+          auto_show_delay_ms = 200,
           window = { border = 'rounded' },
         },
 
@@ -130,13 +104,14 @@ return {
         default = { 'lsp', 'path', 'snippets', 'lazydev', 'buffer' },
         providers = {
           lazydev = { module = 'lazydev.integrations.blink', score_offset = 100 },
+          buffer = { max_items = 5 },
           cmdline = {
             min_keyword_length = 2,
           },
         },
       },
 
-      snippets = { preset = 'luasnip' },
+      snippets = { preset = 'default' },
 
       -- Blink.cmp includes an optional, recommended rust fuzzy matcher,
       -- which automatically downloads a prebuilt binary when enabled.
@@ -145,7 +120,11 @@ return {
       -- the rust implementation via `'prefer_rust_with_warning'`
       --
       -- See :h blink-cmp-config-fuzzy for more information
-      fuzzy = { implementation = 'prefer_rust_with_warning' },
+      -- 'exact' first keeps LSP items above buffer words that merely fuzzy-match
+      fuzzy = {
+        implementation = 'prefer_rust_with_warning',
+        sorts = { 'exact', 'score', 'sort_text' },
+      },
 
       -- Shows a signature help window while you type arguments for a function
       signature = {
@@ -158,4 +137,4 @@ return {
   },
 }
 
--- vim: ts=2 sts=2 sw=2 enter
+-- vim: ts=2 sts=2 sw=2 et

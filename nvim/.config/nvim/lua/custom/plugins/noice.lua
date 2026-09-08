@@ -154,16 +154,9 @@ return {
         view = nil,
         opts = {},
       },
+      -- blink.cmp draws the signature window; two of them stack on top of each other
       signature = {
-        enabled = true,
-        auto_open = {
-          enabled = true,
-          trigger = true,
-          luasnip = true,
-          throttle = 50,
-        },
-        view = nil,
-        opts = {},
+        enabled = false,
       },
       message = {
         enabled = true,
