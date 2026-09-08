@@ -141,33 +141,42 @@ return {
         return table.concat(result, ' > ')
       end
 
-      -- Your Git Function
-      local is_ssh = vim.env.SSH_CLIENT ~= nil or vim.env.SSH_TTY ~= nil or vim.env.SSH_CONNECTION ~= nil
+      -- Ahead/behind counts, refreshed off the statusline redraw path. The
+      -- component only reads the cache; a subprocess inside a lualine component
+      -- blocks on every mode change and every refresh tick.
+      local is_ssh = require('env').is_ssh
+      local sync_status = ''
+
+      local function refresh_sync_status()
+        vim.system({ 'git', 'rev-list', '--count', '--left-right', '@{u}...HEAD' }, { text = true }, function(result)
+          local behind, ahead = (result.stdout or ''):match '(%d+)%s+(%d+)'
+          local parts = {}
+          if behind and tonumber(ahead) > 0 then
+            parts[#parts + 1] = '⇡' .. ahead
+          end
+          if behind and tonumber(behind) > 0 then
+            parts[#parts + 1] = '⇣' .. behind
+          end
+          local next_status = table.concat(parts, ' ')
+          if next_status ~= sync_status then
+            sync_status = next_status
+            vim.schedule(function()
+              vim.cmd.redrawstatus()
+            end)
+          end
+        end)
+      end
+
       local function git_sync_status()
-        if is_ssh then
-          return ''
-        end
-        local handle = io.popen 'git rev-list --count --left-right @{u}...HEAD 2>/dev/null'
-        if not handle then
-          return ''
-        end
-        local result = handle:read '*a'
-        handle:close()
-        if not result or result == '' then
-          return ''
-        end
-        local behind, ahead = result:match '(%d+)%s+(%d+)'
-        if not behind then
-          return ''
-        end
-        local status = {}
-        if tonumber(ahead) > 0 then
-          table.insert(status, '⇡' .. ahead)
-        end
-        if tonumber(behind) > 0 then
-          table.insert(status, '⇣' .. behind)
-        end
-        return table.concat(status, ' ')
+        return sync_status
+      end
+
+      if not is_ssh then
+        vim.api.nvim_create_autocmd({ 'BufWritePost', 'FocusGained' }, {
+          group = vim.api.nvim_create_augroup('lualine-git-sync', { clear = true }),
+          callback = refresh_sync_status,
+        })
+        vim.uv.new_timer():start(0, 30000, vim.schedule_wrap(refresh_sync_status))
       end
 
       local opts = {
