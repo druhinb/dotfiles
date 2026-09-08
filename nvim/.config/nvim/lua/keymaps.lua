@@ -238,10 +238,9 @@ map('n', '<leader>xl', '<cmd>lopen<cr>', { desc = 'Location list' })
 -- ════════════════════════════════════════════════════════════════════════════
 
 local diagnostic_goto = function(next, severity)
-  local go = next and vim.diagnostic.goto_next or vim.diagnostic.goto_prev
   severity = severity and vim.diagnostic.severity[severity] or nil
   return function()
-    go { severity = severity }
+    vim.diagnostic.jump { count = next and 1 or -1, severity = severity, float = true }
   end
 end
 
@@ -271,14 +270,8 @@ map('n', '<leader>ut', function()
 end, { desc = 'Pick colorscheme' })
 
 -- Toggle diagnostics
-local diagnostics_active = true
 map('n', '<leader>ud', function()
-  diagnostics_active = not diagnostics_active
-  if diagnostics_active then
-    vim.diagnostic.enable()
-  else
-    vim.diagnostic.disable()
-  end
+  vim.diagnostic.enable(not vim.diagnostic.is_enabled())
 end, { desc = 'Toggle diagnostics' })
 
 -- ════════════════════════════════════════════════════════════════════════════

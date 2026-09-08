@@ -131,12 +131,9 @@ return {
         { ']e', desc = 'Next Error' },
         { '[w', desc = 'Prev Warning' },
         { ']w', desc = 'Next Warning' },
-        -- Code/Git navigation
-        { '[c', desc = 'Prev Change' },
-        { ']c', desc = 'Next Change' },
-        -- Git navigation
-        { '[h', desc = 'Prev Hunk' },
-        { ']h', desc = 'Next Hunk' },
+        -- Git hunk navigation
+        { '[c', desc = 'Prev Hunk' },
+        { ']c', desc = 'Next Hunk' },
         -- Tree-sitter navigation
         { '[f', desc = 'Prev Function' },
         { ']f', desc = 'Next Function' },

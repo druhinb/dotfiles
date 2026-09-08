@@ -69,7 +69,7 @@ return {
         map('n', '<leader>ghs', gitsigns.stage_hunk, { desc = 'Stage hunk' })
         map('n', '<leader>ghr', gitsigns.reset_hunk, { desc = 'Reset hunk' })
         map('n', '<leader>ghS', gitsigns.stage_buffer, { desc = 'Stage buffer' })
-        map('n', '<leader>ghu', gitsigns.undo_stage_hunk, { desc = 'Undo stage hunk' })
+        map('n', '<leader>ghu', gitsigns.stage_hunk, { desc = 'Unstage hunk' })
         map('n', '<leader>ghR', gitsigns.reset_buffer, { desc = 'Reset buffer' })
         map('n', '<leader>ghp', gitsigns.preview_hunk, { desc = 'Preview hunk' })
         map('n', '<leader>ghb', gitsigns.blame_line, { desc = 'Blame line' })
@@ -79,8 +79,6 @@ return {
     },
     config = function(_, opts)
       require('gitsigns').setup(opts)
-
-      -- Disable gitsigns when a merge or rebase conflict is detected
     end,
   },
 }

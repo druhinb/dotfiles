@@ -205,16 +205,11 @@ local servers = {
   -- ===========================================================================
   marksman = {},
 
-  ltex = {
-    filetypes = { 'markdown', 'text', 'latex', 'tex', 'bib', 'gitcommit' },
+  harper_ls = {
+    filetypes = { 'markdown', 'text', 'gitcommit' },
     settings = {
-      ltex = {
-        language = 'en-US',
-        disabledRules = {
-          ['en-US'] = { 'MORFOLOGIK_RULE_EN_US' },
-        },
-        dictionary = {},
-        checkFrequency = 'save',
+      ['harper-ls'] = {
+        userDictPath = vim.fn.stdpath 'config' .. '/spell/harper.txt',
       },
     },
   },
@@ -328,8 +323,12 @@ local function setup_keymaps(event)
   map('gD', vim.lsp.buf.declaration, 'Goto Declaration')
   map('gI', vim.lsp.buf.implementation, 'Goto Implementation')
   map('gy', vim.lsp.buf.type_definition, 'Goto Type Definition')
-  map('K', vim.lsp.buf.hover, 'Hover Documentation')
-  map('gK', vim.lsp.buf.signature_help, 'Signature Help')
+  map('K', function()
+    vim.lsp.buf.hover { border = 'rounded' }
+  end, 'Hover Documentation')
+  map('gK', function()
+    vim.lsp.buf.signature_help { border = 'rounded' }
+  end, 'Signature Help')
 
   map('gr', function()
     require('trouble').open { mode = 'lsp_references', focus = true }
@@ -420,22 +419,45 @@ local function on_attach(event, opts)
 
   setup_keymaps(event)
 
-  local function client_supports_method(c, method, bufnr)
-    if vim.fn.has 'nvim-0.11' == 1 then
-      return c:supports_method(method, bufnr)
-    else
-      return c.supports_method(method, { bufnr = bufnr })
-    end
-  end
+  local methods = vim.lsp.protocol.Methods
 
-  if client_supports_method(client, vim.lsp.protocol.Methods.textDocument_inlayHint, event.buf) then
+  if client:supports_method(methods.textDocument_inlayHint, event.buf) then
     vim.keymap.set('n', '<leader>uh', function()
       vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled { bufnr = event.buf })
     end, { buffer = event.buf, desc = 'LSP: Toggle Inlay Hints' })
+
+    -- hints re-layout the line on every keystroke, so they are off while typing
+    local insert_augroup = vim.api.nvim_create_augroup('kickstart-lsp-inlay-hint', { clear = false })
+    local was_enabled = false
+    vim.api.nvim_create_autocmd('InsertEnter', {
+      buffer = event.buf,
+      group = insert_augroup,
+      callback = function()
+        was_enabled = vim.lsp.inlay_hint.is_enabled { bufnr = event.buf }
+        if was_enabled then
+          vim.lsp.inlay_hint.enable(false, { bufnr = event.buf })
+        end
+      end,
+    })
+    vim.api.nvim_create_autocmd('InsertLeave', {
+      buffer = event.buf,
+      group = insert_augroup,
+      callback = function()
+        if was_enabled then
+          vim.lsp.inlay_hint.enable(true, { bufnr = event.buf })
+        end
+      end,
+    })
+  end
+
+  -- renaming an open tag renames its closing tag (html, vtsls); unlike
+  -- document colour this is off by default
+  if client:supports_method(methods.textDocument_linkedEditingRange, event.buf) then
+    vim.lsp.linked_editing_range.enable(true, { client_id = client.id })
   end
 
   -- Document highlight
-  if client_supports_method(client, vim.lsp.protocol.Methods.textDocument_documentHighlight, event.buf) then
+  if client:supports_method(methods.textDocument_documentHighlight, event.buf) then
     local highlight_augroup = vim.api.nvim_create_augroup('kickstart-lsp-highlight', { clear = false })
     -- insert-mode variants are omitted: they put a documentHighlight round trip on the
     -- main loop every 'updatetime' of idle typing, and the result is not readable mid-edit
@@ -459,7 +481,7 @@ local function on_attach(event, opts)
   end
 
   -- Code lens
-  if client_supports_method(client, vim.lsp.protocol.Methods.textDocument_codeLens, event.buf) then
+  if client:supports_method(methods.textDocument_codeLens, event.buf) then
     vim.keymap.set('n', '<leader>cL', vim.lsp.codelens.run, { buffer = event.buf, desc = 'LSP: Run Code Lens' })
     if opts.codelens.enabled then
       if vim.lsp.codelens.enable then
@@ -585,31 +607,6 @@ return {
       -- Configure Diagnostics
       -- ===========================================================================
       vim.diagnostic.config(opts.diagnostics)
-      vim.opt.updatetime = 250
-
-      -- ===========================================================================
-      -- Configure LSP Handlers (Borders for hover and signatureHelp)
-      -- ===========================================================================
-      vim.lsp.handlers['textDocument/hover'] = function(err, result, ctx, config)
-        return vim.lsp.handlers.hover(
-          err,
-          result,
-          ctx,
-          vim.tbl_deep_extend('force', {
-            border = 'rounded',
-          }, config or {})
-        )
-      end
-      vim.lsp.handlers['textDocument/signatureHelp'] = function(err, result, ctx, config)
-        return vim.lsp.handlers.signatureHelp(
-          err,
-          result,
-          ctx,
-          vim.tbl_deep_extend('force', {
-            border = 'rounded',
-          }, config or {})
-        )
-      end
 
       -- ===========================================================================
       -- Enable Inlay Hints (if supported)
