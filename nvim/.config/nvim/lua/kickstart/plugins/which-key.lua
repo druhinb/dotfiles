@@ -137,6 +137,11 @@ return {
         -- Git navigation
         { '[h', desc = 'Prev Hunk' },
         { ']h', desc = 'Next Hunk' },
+        -- Tree-sitter navigation
+        { '[f', desc = 'Prev Function' },
+        { ']f', desc = 'Next Function' },
+        { '[F', desc = 'Prev Function End' },
+        { ']F', desc = 'Next Function End' },
         -- ════════════════════════════════════════════════════════════════════
         -- Surround/Text Object Groups (gs prefix for mini.surround)
         -- ════════════════════════════════════════════════════════════════════

@@ -138,7 +138,12 @@ vim.opt.autoindent = true
 -- every time a bracket is typed. The bundled matchparen plugin highlights the pair without moving.
 vim.opt.showmatch = false
 
---
+-- Tree-sitter drives 'foldexpr'; kickstart/plugins/treesitter.lua turns folding on
+-- per window once a parser has attached, so parserless buffers keep manual folds.
+vim.o.foldlevel = 99
+vim.o.foldlevelstart = 99
+vim.o.foldtext = ''
+
 local swap_dir = vim.fn.stdpath 'cache' .. '/swap'
 vim.fn.mkdir(swap_dir, 'p')
 vim.opt.directory = swap_dir
