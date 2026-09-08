@@ -10,6 +10,7 @@ lua/lazy-plugins.lua             lazy.nvim setup and explicit core specs
 lua/tooling.lua                  shared LSP/format/lint/DAP/test/parser inventory
 lua/search.lua                   built-in search and quickfix fallbacks
 lua/theme.lua                    persisted colorscheme selection and picker
+lua/format_hunks.lua             git-hunk-scoped formatting used by format on save
 lua/kickstart/plugins/           core LSP, completion, format, lint, DAP, treesitter, UI specs
 lua/custom/plugins/              auto-imported personal and language-bundle specs
 ```
@@ -82,4 +83,6 @@ nvim --headless "+lua require('tooling').mason_packages()" +qa
 
 Useful interactive diagnostics are `:checkhealth`, `:Lazy`, `:Mason`, `:ConformInfo`, `:LspInfo`, and the DAP/neotest UIs. Do not run `:Lazy update`, `:Lazy clean`, Mason installation, or every-language checks unless the task calls for integration testing.
 
-`kickstart/plugins/int.lua` is the nvim-lint spec despite its historical filename. Formatting uses `:Format`/`:FormatToggle`; linting uses `:Lint`/`:LintToggle`.
+`kickstart/plugins/int.lua` is the nvim-lint spec despite its historical filename. Linting uses `:Lint`/`:LintToggle`.
+
+Format on save is owned by `lua/format_hunks.lua`, not conform's `format_on_save`: it diffs the buffer against `HEAD`, runs the formatter chain once, and applies only the formatter hunks overlapping changed lines, so a save never rewrites untouched code. Files with no git base (untracked, renamed, outside a repo) are formatted whole. `:Format`/`<leader>cf` still formats the entire buffer, `:FormatHunks`/`<leader>cF` formats changed hunks on demand, `:FormatHunksBase` switches the base between `HEAD` and the index, and `:FormatToggle` still disables format on save.
