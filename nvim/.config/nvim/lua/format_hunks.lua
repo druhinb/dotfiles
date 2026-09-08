@@ -19,16 +19,24 @@ local function resolve_buf(bufnr)
   return bufnr
 end
 
-local function normalize(text)
-  text = text:gsub('\r\n', '\n')
-  if text ~= '' and not text:match '\n$' then
-    text = text .. '\n'
-  end
-  return text
+--- Both sides of every diff go through here. The trailing newline is
+--- unconditional, the way conform does it: without it a buffer that already ends
+--- in a blank line hides its own last line from vim.text.diff, and the hunk that
+--- deletes it comes back one line short.
+local function lines_to_text(lines)
+  return table.concat(lines, '\n') .. '\n'
 end
 
-local function buf_text(bufnr)
-  return normalize(table.concat(vim.api.nvim_buf_get_lines(bufnr, 0, -1, true), '\n'))
+local function text_to_lines(text)
+  local lines = vim.split((text:gsub('\r\n', '\n')), '\n', { plain = true })
+  if #lines > 1 and lines[#lines] == '' then
+    table.remove(lines)
+  end
+  return lines
+end
+
+local function buf_lines(bufnr)
+  return vim.api.nvim_buf_get_lines(bufnr, 0, -1, true)
 end
 
 local function diff_indices(before, after)
@@ -37,7 +45,7 @@ end
 
 --- `git show` from the file's own directory, so no toplevel or relpath is needed.
 --- Nil means the file has no base: untracked, renamed, outside a repo, or git timed out.
-local function base_text(bufnr, base)
+local function base_lines(bufnr, base)
   local name = vim.api.nvim_buf_get_name(bufnr)
   if name == '' then
     return nil
@@ -49,7 +57,7 @@ local function base_text(bufnr, base)
   if not ok or result.code ~= 0 then
     return nil
   end
-  return normalize(result.stdout)
+  return text_to_lines(result.stdout)
 end
 
 --- Lines of `bufnr` that differ from `base`, as 1-based inclusive `{first, last}` pairs.
@@ -57,12 +65,12 @@ end
 ---@return table[]|nil
 function M.changed_ranges(bufnr, base)
   bufnr = resolve_buf(bufnr)
-  local before = base_text(bufnr, base or M.config.base)
+  local before = base_lines(bufnr, base or M.config.base)
   if not before then
     return nil
   end
   local ranges = {}
-  for _, hunk in ipairs(diff_indices(before, buf_text(bufnr))) do
+  for _, hunk in ipairs(diff_indices(lines_to_text(before), lines_to_text(buf_lines(bufnr)))) do
     local _, _, first, count = unpack(hunk)
     if count > 0 then
       local previous = ranges[#ranges]
@@ -87,7 +95,8 @@ end
 --- Apply the formatter's hunks that overlap `ranges`, bottom-up so earlier edits
 --- do not shift later line numbers. One synchronous pass, so one undo step.
 local function apply_overlapping(bufnr, original, formatted, ranges)
-  local before, after = normalize(table.concat(original, '\n')), normalize(table.concat(formatted, '\n'))
+  ranges = vim.deepcopy(ranges)
+  local before, after = lines_to_text(original), lines_to_text(formatted)
   -- black and friends emit nothing for excluded files; conform guards the same way
   if after:match '^%s*$' and not before:match '^%s*$' then
     return false
@@ -156,7 +165,7 @@ local function format_ranges_via_lsp(bufnr, ranges, opts)
       timeout_ms = opts.timeout_ms,
       lsp_format = 'fallback',
       quiet = opts.quiet,
-      range = { start = { first, 0 }, ['end'] = { last, #last_line } },
+      range = { start = { first, 0 }, ['end'] = { last, math.max(#last_line - 1, 0) } },
     }
     if not attempted then
       return false
@@ -197,7 +206,7 @@ function M.format_hunks(bufnr, opts)
   local names = vim.tbl_map(function(formatter)
     return formatter.name
   end, formatters)
-  local original = vim.api.nvim_buf_get_lines(bufnr, 0, -1, true)
+  local original = buf_lines(bufnr)
   local was_parseable = has_syntax_error(bufnr) == false
   local _, formatted = conform.format_lines(names, original, {
     bufnr = bufnr,

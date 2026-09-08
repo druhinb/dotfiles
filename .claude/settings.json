@@ -3,7 +3,8 @@
   "cleanupPeriodDays": 30,
   "attribution": {
     "commit": "",
-    "pr": ""
+    "pr": "",
+    "sessionUrl": false
   },
   "permissions": {
     "allow": [
@@ -36,7 +37,7 @@
     ],
     "defaultMode": "default"
   },
-  "model": "opus",
+  "model": "opus[1m]",
   "hooks": {
     "PreToolUse": [
       {
