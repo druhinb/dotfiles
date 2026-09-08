@@ -140,6 +140,15 @@ M.bundle_servers = {
   'vtsls',
 }
 
+-- Servers that must not attach even when Mason still has them installed.
+-- mason-lspconfig enables every installed server it recognizes, so dropping a
+-- server from M.lsp is not enough on a machine that already downloaded it.
+M.disabled_servers = {
+  -- harper-ls replaced it; ltex-ls is a ~1GB JVM process per markdown buffer
+  'ltex',
+  'ltex_plus',
+}
+
 M.treesitter = {
   'bash',
   'c',

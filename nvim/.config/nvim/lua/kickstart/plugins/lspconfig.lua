@@ -657,7 +657,7 @@ return {
         ensure_installed = {},
         automatic_installation = false,
         automatic_enable = {
-          exclude = tooling.bundle_servers,
+          exclude = vim.list_extend(vim.deepcopy(tooling.bundle_servers), tooling.disabled_servers),
         },
       }
     end,
