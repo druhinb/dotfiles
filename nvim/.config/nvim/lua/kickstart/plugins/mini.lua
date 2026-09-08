@@ -4,7 +4,8 @@
 -- ============================================================================
 return {
   -- ══════════════════════════════════════════════════════════════════════════
-  -- mini.ai - Enhanced Text Objects (replaces nvim-treesitter-textobjects)
+  -- mini.ai - Enhanced Text Objects; the treesitter specs read the queries
+  -- nvim-treesitter-textobjects puts on the runtimepath (see treesitter.lua)
   -- ══════════════════════════════════════════════════════════════════════════
   {
     'echasnovski/mini.ai',

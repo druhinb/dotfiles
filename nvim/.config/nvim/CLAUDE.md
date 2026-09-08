@@ -11,6 +11,7 @@ lua/tooling.lua                  shared LSP/format/lint/DAP/test/parser inventor
 lua/search.lua                   built-in search and quickfix fallbacks
 lua/theme.lua                    persisted colorscheme selection and picker
 lua/format_hunks.lua             git-hunk-scoped formatting used by format on save
+lua/env.lua                      host facts plugin specs branch on (SSH detection)
 lua/kickstart/plugins/           core LSP, completion, format, lint, DAP, treesitter, UI specs
 lua/custom/plugins/              auto-imported personal and language-bundle specs
 ```
@@ -34,6 +35,8 @@ Neovim autoread is enabled in `init.lua`. External edits made by Claude are pick
 `lua/kickstart/plugins/lspconfig.lua`, `conform.lua`, `int.lua`, `debug.lua`, and `treesitter.lua` consume that inventory. Add tools there rather than creating a second install list.
 
 Most servers use Neovim 0.11+ `vim.lsp.config` and `vim.lsp.enable` in `lspconfig.lua`. clangd, vtsls/Tailwind, jdtls, and Roslyn are owned by filetype-triggered bundles under `custom/plugins/lang-*.lua`; keep those server names in `tooling.bundle_servers` to avoid duplicate clients.
+
+mason-lspconfig enables every installed Mason server it recognizes, so removing a server from `tooling.lsp` does not stop it attaching on a machine that already downloaded it. Retired servers go in `tooling.disabled_servers`; both lists feed the `automatic_enable.exclude` set. Prose checking is harper-ls, not ltex-ls.
 
 Mason installation is explicit. `mason-tool-installer.nvim` has `run_on_start = false`; `setup.sh` invokes `:MasonToolsInstallSync`. Tree-sitter parser installation is exposed through `:ToolingInstallTreesitter`, not normal startup.
 
