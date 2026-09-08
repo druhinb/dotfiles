@@ -105,9 +105,13 @@ local function apply_overlapping(bufnr, original, formatted, ranges)
     end
     local range = overlapping(ranges, first_a, last_a)
     if range then
-      -- range formatting produces paired delete/insert hunks; reach past this one
-      -- so its partner is applied too rather than half of the pair
-      range[2] = math.max(range[2], last_a + 1)
+      -- a formatter can split one rewrite into a delete and a separate insert at
+      -- the same spot; reach one line past those so the partner is applied too.
+      -- A replace hunk is self-contained, and extending past it would reformat
+      -- the untouched line below.
+      if is_insert or count_b == 0 then
+        range[2] = math.max(range[2], last_a + 1)
+      end
       local from = is_insert and first_a or first_a - 1
       edits[#edits + 1] = { from, from + count_a, vim.list_slice(formatted, first_b, first_b + count_b - 1) }
     end
@@ -117,6 +121,27 @@ local function apply_overlapping(bufnr, original, formatted, ranges)
     vim.api.nvim_buf_set_lines(bufnr, edits[i][1], edits[i][2], true, edits[i][3])
   end
   return #edits > 0
+end
+
+--- Applying a subset of a formatter's hunks can split a change that spans more
+--- than the changed lines, such as a call parenthesis opened inside the range and
+--- closed below it. Nil means the buffer has no parser and cannot be checked.
+---@return boolean|nil
+local function has_syntax_error(bufnr)
+  local ok, parser = pcall(vim.treesitter.get_parser, bufnr)
+  if not ok or not parser then
+    return nil
+  end
+  local parsed, trees = pcall(parser.parse, parser, true)
+  if not parsed or not trees then
+    return nil
+  end
+  for _, tree in ipairs(trees) do
+    if tree:root():has_error() then
+      return true
+    end
+  end
+  return false
 end
 
 --- Filetypes with no CLI formatter go through textDocument/rangeFormatting, one
@@ -173,6 +198,7 @@ function M.format_hunks(bufnr, opts)
     return formatter.name
   end, formatters)
   local original = vim.api.nvim_buf_get_lines(bufnr, 0, -1, true)
+  local was_parseable = has_syntax_error(bufnr) == false
   local _, formatted = conform.format_lines(names, original, {
     bufnr = bufnr,
     timeout_ms = run.timeout_ms,
@@ -181,7 +207,14 @@ function M.format_hunks(bufnr, opts)
   if not formatted then
     return false
   end
-  return apply_overlapping(bufnr, original, formatted, ranges)
+
+  local applied = apply_overlapping(bufnr, original, formatted, ranges)
+  if applied and was_parseable and has_syntax_error(bufnr) then
+    vim.api.nvim_buf_set_lines(bufnr, 0, -1, true, original)
+    vim.notify('Formatting this hunk alone would break syntax; run :Format for the whole buffer', vim.log.levels.WARN)
+    return false
+  end
+  return applied
 end
 
 function M.setup_autocmd()
