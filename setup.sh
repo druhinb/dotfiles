@@ -14,7 +14,9 @@ Usage: ./setup.sh [--dry-run] [--link-only] [--skip-neovim-tools]
 
 Installs tools used by this dotfiles repo on Linux or macOS, links configs
 into place, installs shell/tmux/Vim/Neovim plugins, and switches the default
-shell to zsh. macOS setup assumes Homebrew is already installed.
+shell to zsh. macOS setup assumes Homebrew is already installed. Linux setup
+uses apt plus upstream release binaries in ~/.local for tools the distro lacks
+or ships too old.
 
 Options:
   --dry-run            Print actions without changing files.
@@ -69,15 +71,19 @@ have() {
 	command -v "$1" >/dev/null 2>&1
 }
 
+prepend_path() {
+	case ":$PATH:" in
+	*":$1:"*) ;;
+	*) export PATH="$1:$PATH" ;;
+	esac
+}
+
 prepend_path_if_exists() {
 	local dir="$1"
 
 	[[ -d "$dir" ]] || return
 
-	case ":$PATH:" in
-	*":$dir:"*) ;;
-	*) export PATH="$dir:$PATH" ;;
-	esac
+	prepend_path "$dir"
 }
 
 setup_homebrew_path() {
@@ -93,6 +99,10 @@ sudo_run() {
 	fi
 }
 
+apt_install() {
+	sudo_run env DEBIAN_FRONTEND=noninteractive apt-get install -y "$@"
+}
+
 install_apt_packages() {
 	if ! have apt-get; then
 		warn "apt-get not found; skipping distro package installation."
@@ -101,16 +111,133 @@ install_apt_packages() {
 
 	log "Installing distro packages"
 	sudo_run apt-get update
-	sudo_run apt-get install -y \
+	apt_install \
 		zsh tmux vim fzf ripgrep fd-find bat zoxide \
-		git curl wget unzip build-essential cmake jq shellcheck
+		git curl wget unzip build-essential cmake jq shellcheck python3-venv
 
 	# Package names and availability vary across supported Linux releases.
 	# Keep these conveniences best-effort instead of blocking the bootstrap.
 	local package
 	for package in eza lazygit shfmt; do
-		have "$package" || sudo_run apt-get install -y "$package" || warn "apt-get install $package failed; continuing."
+		have "$package" || apt_install "$package" || warn "apt-get install $package failed; continuing."
 	done
+}
+
+# repo, x86_64 asset, aarch64 asset, then the binaries to copy out of it.
+# Static musl builds where upstream ships them, so older distro glibc still works.
+LINUX_RELEASE_BINARIES=(
+	"Schniz/fnm fnm-linux.zip fnm-arm64.zip fnm"
+	"starship/starship starship-x86_64-unknown-linux-musl.tar.gz starship-aarch64-unknown-linux-musl.tar.gz starship"
+	"atuinsh/atuin atuin-x86_64-unknown-linux-musl.tar.gz atuin-aarch64-unknown-linux-musl.tar.gz atuin"
+	"JohnnyMorganz/StyLua stylua-linux-x86_64-musl.zip stylua-linux-aarch64-musl.zip stylua"
+	"sxyazi/yazi yazi-x86_64-unknown-linux-musl.zip yazi-aarch64-unknown-linux-musl.zip yazi ya"
+	"eza-community/eza eza_x86_64-unknown-linux-musl.tar.gz eza_aarch64-unknown-linux-gnu.tar.gz eza"
+)
+
+release_url() {
+	printf 'https://github.com/%s/releases/latest/download/%s\n' "$1" "$2"
+}
+
+extract_release_archive() {
+	local url="$1"
+	local dest="$2"
+	local archive="$dest/${url##*/}"
+
+	curl -fsSL --retry 3 -o "$archive" "$url" || return
+
+	case "$archive" in
+	*.zip) unzip -q "$archive" -d "$dest" ;;
+	*) tar -xzf "$archive" -C "$dest" ;;
+	esac
+}
+
+# Subshell bodies so the EXIT trap removes the scratch directory on every path.
+# workdir stays global to the subshell: bash 3.2 drops locals before the trap runs.
+install_release_binaries_from() (
+	url="$1"
+	shift
+
+	workdir="$(mktemp -d)" || exit
+	trap 'rm -rf -- "$workdir"' EXIT
+
+	extract_release_archive "$url" "$workdir" || exit
+	mkdir -p "$HOME/.local/bin" || exit
+
+	for binary in "$@"; do
+		found="$(find "$workdir" -type f -name "$binary" -print -quit)"
+		if [[ -z "$found" ]]; then
+			warn "$binary not found in $url"
+			exit 1
+		fi
+		install -m 0755 "$found" "$HOME/.local/bin/$binary" || exit
+	done
+)
+
+install_neovim_release_from() (
+	url="$1"
+	dest="$HOME/.local/opt/nvim"
+
+	workdir="$(mktemp -d)" || exit
+	trap 'rm -rf -- "$workdir"' EXIT
+
+	extract_release_archive "$url" "$workdir" || exit
+	mkdir -p "$HOME/.local/opt" "$HOME/.local/bin" &&
+		rm -rf -- "$dest" &&
+		mv "$workdir"/nvim-linux-*/ "$dest" &&
+		ln -sfn "$dest/bin/nvim" "$HOME/.local/bin/nvim"
+)
+
+# The config uses vim.lsp.config, which Debian and Ubuntu nvim packages predate.
+have_current_neovim() {
+	have nvim && nvim --clean --headless -c 'if !has("nvim-0.11") | cquit | endif' -c qa >/dev/null 2>&1
+}
+
+install_linux_release_tools() {
+	local arch nvim_arch
+	case "$(uname -m)" in
+	x86_64)
+		arch=x86_64
+		nvim_arch=x86_64
+		;;
+	aarch64 | arm64)
+		arch=aarch64
+		nvim_arch=arm64
+		;;
+	*)
+		warn "No prebuilt release binaries for $(uname -m); skipping."
+		return
+		;;
+	esac
+
+	prepend_path "$HOME/.local/bin"
+	log "Installing release binaries into ~/.local"
+
+	if ! have_current_neovim; then
+		run install_neovim_release_from "$(release_url neovim/neovim "nvim-linux-$nvim_arch.tar.gz")" ||
+			warn "Neovim release install failed; continuing."
+	fi
+
+	local entry fields asset binary missing
+	for entry in "${LINUX_RELEASE_BINARIES[@]}"; do
+		read -ra fields <<<"$entry"
+
+		missing=0
+		for binary in "${fields[@]:3}"; do
+			have "$binary" || missing=1
+		done
+		[[ "$missing" == 1 ]] || continue
+
+		if [[ "$arch" == x86_64 ]]; then
+			asset="${fields[1]}"
+		else
+			asset="${fields[2]}"
+		fi
+		run install_release_binaries_from "$(release_url "${fields[0]}" "$asset")" "${fields[@]:3}" ||
+			warn "${fields[0]} release install failed; continuing."
+	done
+
+	# A too-old nvim found earlier stays hashed until the table is cleared.
+	hash -r
 }
 
 install_brew_packages() {
@@ -170,6 +297,7 @@ install_system_packages() {
 		;;
 	Linux)
 		install_apt_packages
+		install_linux_release_tools
 		;;
 	*)
 		warn "Unsupported OS '$OS_NAME'; skipping system package installation."
@@ -455,7 +583,9 @@ set_default_shell() {
 	if [[ "$OS_NAME" == "Darwin" ]]; then
 		run chsh -s "$zsh_path"
 	else
-		sudo_run chsh -s "$zsh_path" "$USER"
+		# OS Login accounts (common on GCE) live outside /etc/passwd, so chsh rejects them.
+		sudo_run chsh -s "$zsh_path" "$USER" ||
+			warn "chsh failed; if this is an OS Login account, append 'exec zsh' to ~/.bashrc instead."
 	fi
 }
 

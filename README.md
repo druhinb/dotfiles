@@ -13,6 +13,18 @@ Read the script before you run it. It touches your shell config and your home di
 
 The dry run shows you what would change. The real run installs command-line tools, backs up anything it's about to overwrite, lays down the symlinks, installs shell and tmux and Neovim plugins, pulls in the full Neovim tooling inventory, and may switch your login shell to zsh. Pass `--skip-neovim-tools` if you don't want it grabbing every Mason tool and Tree-sitter parser on a fresh machine.
 
+### On a Google Cloud VM
+
+Pick an Ubuntu 24.04 or Debian 13 image. Older images run the shell fine, but the Tree-sitter CLI that Mason installs needs glibc 2.39, so parser builds fail on Debian 12 and Ubuntu 22.04. Both x86_64 and Arm machine types work. SSH in and run:
+
+```bash
+sudo apt-get update && sudo apt-get install -y git
+git clone https://github.com/druhinb/dotfiles.git ~/dotfiles
+~/dotfiles/setup.sh
+```
+
+apt covers the basics. Neovim, fnm, starship, atuin, stylua, yazi, and eza come from their upstream release binaries in `~/.local`, because the distro packages are either missing or too old. If the VM uses OS Login, `chsh` can't change your shell; the script warns, and appending `exec zsh` to `~/.bashrc` does the same job. Reconnect afterwards so the new shell and PATH take effect.
+
 Anything specific to one machine, like a work-only PATH entry or a local API key, goes in `~/.zshrc.local`. That file is never tracked, so it's the right place for things that shouldn't leave this laptop.
 
 ## How it's organized
